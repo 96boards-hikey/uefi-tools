@@ -14,11 +14,14 @@
 #
 # uefi-config uImage.tc2 4000000 y vexpress-v2p-ca15-tc2.dtb > /dev/ttyUSB3
 #
-# uefi-config uImage 4000000 y v2p-ca15-tc1.dtb ~/bin/uefi-base-config-commands-android  > /dev/ttyUSB2
+# uefi-config uImage 4000000 y v2p-ca15-tc1.dtb android  > /dev/ttyUSB2
+# uefi-config uImage 4000000 y v2p-ca15-tc1.dtb ubuntu  > /dev/ttyUSB2
 ##
 
 UEFI_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+KERNEL_CMDLINE_UBUNTU="console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro mem=1024M ip=dhcp clcd=xvga mmci.fmax=MMCI_FREQ"
+KERNEL_CMDLINE_ANDROID="console=tty0 console=ttyAMA0,38400n8 rootwait ro init=/init androidboot.console=ttyAMA0 mmci.fmax=MMCI_FREQ"
 
 if [ $# -lt 1 ]
 then
@@ -48,20 +51,21 @@ else
 	fdt_name=$4
 fi
 
-if [ $# -eq 5 ]
+if [ $# -lt 5 ]
 then
-	file=$5
+	cmdline=$KERNEL_CMDLINE_UBUNTU
 else
-	file=$UEFI_PATH/uefi-base-config-commands
+	cmdline=$KERNEL_CMDLINE_UBUNTU
+	if [ "$5" = "ubuntu" ]
+	then
+		cmdline=$KERNEL_CMDLINE_UBUNTU
+	else
+		cmdline=$KERNEL_CMDLINE_ANDROID
+	fi
 fi
 
-#echo kernel uImage filename: $uimage
-#echo mmci speed:             $mmci
-#echo has fdt:                $fdt
-#echo fdt name:               $fdt_name
-#echo base config:            $file
-
-sed s/KERNEL_UIMAGE/$uimage/ $file | sed s/MMCI_FREQ/$mmci/ | sed s/HAS_FDT/$fdt/ | slowuart
+# It's important to run sed in the right order so that the constants are resolved fully
+sed s/KERNEL_UIMAGE/$uimage/ $UEFI_PATH/uefi-base-config-commands | sed "s%KERNEL_CMDLINE%$cmdline%" | sed s/MMCI_FREQ/$mmci/ | sed s/HAS_FDT/$fdt/ | slowuart
 
 if [ "$fdt" = "y" ]
 then
