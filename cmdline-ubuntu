@@ -1,1 +1,0 @@
-console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro mem=1024M ip=dhcp clcd=xvga mmci.fmax=4000000
