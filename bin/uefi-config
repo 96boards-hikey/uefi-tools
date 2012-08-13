@@ -1,0 +1,49 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]
+then
+	uimage="uImage"
+else
+	uimage=$1
+fi
+
+if [ $# -lt 2 ]
+then
+	mmci="4000000"
+else
+	mmci=$2
+fi
+
+if [ $# -lt 3 ]
+then
+	fdt="n"
+else
+	fdt=$3
+fi
+
+if [ $# -lt 4 ]
+then
+	fdt_name="v2p-ca9.dtb"
+else
+	fdt_name=$4
+fi
+
+if [ $# -eq 5 ]
+then
+	file=$5
+else
+	file=~/doc/uefi/uefi-base-config-commands
+fi
+
+#echo kernel uImage filename: $uimage
+#echo mmci speed:             $mmci
+#echo has fdt:                $fdt
+#echo fdt name:               $fdt_name
+#echo base config:            $file
+
+sed s/KERNEL_UIMAGE/$uimage/ $file | sed s/MMCI_FREQ/$mmci/ | sed s/HAS_FDT/$fdt/ | slowuart
+
+if [ "$fdt" = "y" ]
+then
+	sed s/FDT_NAME/$fdt_name/ ~/doc/uefi/uefi-base-config-commands-add-fdt | slowuart
+fi
