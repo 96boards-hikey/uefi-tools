@@ -14,8 +14,11 @@
 #
 # uefi-config uImage.tc2 4000000 y vexpress-v2p-ca15-tc2.dtb > /dev/ttyUSB3
 #
-# uefi-config uImage 4000000 y v2p-ca15-tc1.dtb ~/doc/uefi/uefi-base-config-commands-android  > /dev/ttyUSB2
+# uefi-config uImage 4000000 y v2p-ca15-tc1.dtb ~/bin/uefi-base-config-commands-android  > /dev/ttyUSB2
 ##
+
+UEFI_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 
 if [ $# -lt 1 ]
 then
@@ -49,7 +52,7 @@ if [ $# -eq 5 ]
 then
 	file=$5
 else
-	file=~/doc/uefi/uefi-base-config-commands
+	file=$UEFI_PATH/uefi-base-config-commands
 fi
 
 #echo kernel uImage filename: $uimage
@@ -62,5 +65,5 @@ sed s/KERNEL_UIMAGE/$uimage/ $file | sed s/MMCI_FREQ/$mmci/ | sed s/HAS_FDT/$fdt
 
 if [ "$fdt" = "y" ]
 then
-	sed s/FDT_NAME/$fdt_name/ ~/doc/uefi/uefi-base-config-commands-add-fdt | slowuart
+	sed s/FDT_NAME/$fdt_name/ $UEFI_PATH/uefi-base-config-commands-add-fdt | slowuart
 fi
