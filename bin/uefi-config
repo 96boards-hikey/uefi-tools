@@ -1,4 +1,21 @@
 #!/bin/bash
+# simple example:
+# kernel: uImage
+# mmci.fmax: 4000000
+# using device tree: n
+#
+# uefi-config > /dev/ttyUSB1
+#
+# more complex example:
+# kernel binary: uImage.tc2
+# mmci.fmax: 4000000
+# Using device tree: y
+# Device tree file: vexpress-v2p-ca15-tc2.dtb
+#
+# uefi-config uImage.tc2 4000000 y vexpress-v2p-ca15-tc2.dtb > /dev/ttyUSB3
+#
+# uefi-config uImage 4000000 y v2p-ca15-tc1.dtb ~/doc/uefi/uefi-base-config-commands-android  > /dev/ttyUSB2
+##
 
 if [ $# -lt 1 ]
 then
