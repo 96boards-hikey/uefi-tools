@@ -26,10 +26,6 @@ then
 	use_fdt="n"
 	UEFI_FDT="v2p-ca9.dtb"
 fi
-if [ "$UEFI_CMDLINE" = "" ]
-then
-	UEFI_CMDLINE=$KERNEL_CMDLINE_UBUNTU
-fi
 if [ "$UEFI_BOOTMENU" = "" ]
 then
 	UEFI_BOOTMENU=3
@@ -69,6 +65,7 @@ function usage
     echo "Usage:"
 	echo "    uefi-config"
     echo "        --cmdline \"put cmdline in quotes\" | android | ubuntu"
+	echo "            using android or ubuntu here gives a default cmdline"
     echo "        --fdt <device tree blob filename>"
     echo "        --image <uImage filename>"
 	echo "        --mmci <mmci speed>"
@@ -139,16 +136,18 @@ while [ "$1" != "" ]; do
     shift
 done
 
-
-###### fix "$UEFI_CMDLINE" 
-# if cmdline == android
-#   use android cmdline
-# if cmdline == blank or ubuntu
-#   use ubuntu cmdline
-# else
-#   use cmdline passed in
-
-
+# configure the command line
+# if the setting is "android" or "ubuntu", then substitue this for a default cmdline
+# not specifying a cmdline will give the default (ubuntu) cmdline
+# And if a cmdline was specified, we use it
+case "$UEFI_CMDLINE" in
+	android )
+		UEFI_CMDLINE="$KERNEL_CMDLINE_ANDROID"
+		;;
+	"" | ubuntu )
+		UEFI_CMDLINE="$KERNEL_CMDLINE_UBUNTU"
+		;;
+esac
 set_title
 
 
