@@ -59,11 +59,29 @@ function set_title
 	#	echo "UEFI_TITLE=$UEFI_TITLE"
 	fi
 }
+
+function set_cmdline
+{
+# configure the command line
+# if the setting is "android" or "ubuntu", then substitue this for a default cmdline
+# not specifying a cmdline will give the default (ubuntu) cmdline
+# And if a cmdline was specified, we use it
+case "$UEFI_CMDLINE" in
+	android )
+		UEFI_CMDLINE="$KERNEL_CMDLINE_ANDROID"
+		;;
+	"" | ubuntu )
+		UEFI_CMDLINE="$KERNEL_CMDLINE_UBUNTU"
+		;;
+esac
+}
+
 # over-ride any previous values with arguments passed to this script
 function usage
 {
     echo "Usage:"
 	echo "    uefi-config"
+	echo "        --android"
     echo "        --cmdline \"put cmdline in quotes\" | android | ubuntu"
 	echo "            using android or ubuntu here gives a default cmdline"
     echo "        --fdt <device tree blob filename>"
@@ -75,6 +93,8 @@ function usage
 	echo "Example:"
 	echo "    uefi-config --cmdline \"console ttyAMA0,384000\" --fdt v2p-ca9.dtb --image uImage --mmci 4000000 --title \"uImage for Android\"   "
 	echo ""
+	set_cmdline
+	set_title
 	echo "Current configuration:"
 	echo "    UEFI_IMAGE         $UEFI_IMAGE"
 	echo "    UEFI_MMCI          $UEFI_MMCI" 
@@ -82,17 +102,20 @@ function usage
 	echo "    UEFI_CMDLINE       $UEFI_CMDLINE"
 	echo "    UEFI_BOOTMENU      $UEFI_BOOTMENU"
 	echo "    UEFI_REMOVE_COUNT  $UEFI_REMOVE_COUNT"
+	echo "    UEFI_TITLE         $UEFI_TITLE"
 	echo ""
 	echo "You can set any of the above variables in your environment as defaults for this script."
 	echo ""
-	set_title
-	echo "Running this script with no arguments is the equivalent of this command:"
+	echo "Running this script with no additional arguments is the equivalent of this command:"
 	echo "    uefi-config--image $UEFI_IMAGE -fdt $UEFI_FDT --mmci $UEFI_MMCI --title \"$UEFI_TITLE\" --remove $UEFI_REMOVE_COUNT --cmdline \"$UEFI_CMDLINE\"  "
 }
 
 
 while [ "$1" != "" ]; do
     case $1 in
+		-a | --android )
+			UEFI_CMDLINE=$KERNEL_CMDLINE_ANDROID
+			;;
         -b | --bootmenu )
             shift
             UEFI_BOOTMENU="$1"
@@ -120,7 +143,7 @@ while [ "$1" != "" ]; do
             ;;
         -t | --title )
             shift
-            title=$1
+            UEFI_TITLE=$1
             ;;
 
 
@@ -136,18 +159,7 @@ while [ "$1" != "" ]; do
     shift
 done
 
-# configure the command line
-# if the setting is "android" or "ubuntu", then substitue this for a default cmdline
-# not specifying a cmdline will give the default (ubuntu) cmdline
-# And if a cmdline was specified, we use it
-case "$UEFI_CMDLINE" in
-	android )
-		UEFI_CMDLINE="$KERNEL_CMDLINE_ANDROID"
-		;;
-	"" | ubuntu )
-		UEFI_CMDLINE="$KERNEL_CMDLINE_UBUNTU"
-		;;
-esac
+set_cmdline
 set_title
 
 
