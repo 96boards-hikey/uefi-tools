@@ -12,67 +12,119 @@ UEFI_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 KERNEL_CMDLINE_UBUNTU="console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro mem=1024M ip=dhcp mmci.fmax=MMCI_FREQ"
 KERNEL_CMDLINE_ANDROID="console=tty0 console=ttyAMA0,38400n8 rootwait ro init=/init androidboot.console=ttyAMA0 mmci.fmax=MMCI_FREQ"
 
-#define defaults
-uimage="uImage"
-mmci="4000000"
-fdt="n"
-fdt_name="v2p-ca9.dtb"
-cmdline=$KERNEL_CMDLINE_UBUNTU
-title=uimage
+# define defaults
+if [ "$UEFI_IMAGE" = "" ]
+then
+	UEFI_IMAGE="uImage"
+fi
+if [ "$UEFI_MMCI" = "" ]
+then
+	UEFI_MMCI="4000000"
+fi
+if [ "$UEFI_FDT" = "" ]
+then
+	use_fdt="n"
+	UEFI_FDT="v2p-ca9.dtb"
+fi
+if [ "$UEFI_CMDLINE" = "" ]
+then
+	UEFI_CMDLINE=$KERNEL_CMDLINE_UBUNTU
+fi
+if [ "$UEFI_BOOTMENU" = "" ]
+then
+	UEFI_BOOTMENU=3
+fi
+if [ "$UEFI_REMOVE_COUNT" = "" ]
+then
+	UEFI_REMOVE_COUNT=1
+fi
 
+function set_title
+{
+	if [ "$UEFI_TITLE" = "" ]
+	then
+		UEFI_TITLE="$UEFI_IMAGE"
 
+		if [ "$use_fdt" = "n" ]
+		then
+			UEFI_TITLE="$UEFI_TITLE (ATAGS)"
+		else
+			UEFI_TITLE="$UEFI_TITLE (DT)"
+		fi
+
+		if [ "$android" = "1" ]
+		then
+			UEFI_TITLE="$UEFI_TITLE for Android"
+		else
+			UEFI_TITLE="$UEFI_TITLE for Ubuntu"
+		fi
+
+		UEFI_TITLE="$UEFI_TITLE on SD card"
+	#	echo "UEFI_TITLE=$UEFI_TITLE"
+	fi
+}
+# over-ride any previous values with arguments passed to this script
 function usage
 {
     echo "Usage:"
 	echo "    uefi-config"
-    echo "        --android"
-    echo "        --cmdline \"put cmdline in quotes\""
+    echo "        --cmdline \"put cmdline in quotes\" | android | ubuntu"
     echo "        --fdt <device tree blob filename>"
     echo "        --image <uImage filename>"
 	echo "        --mmci <mmci speed>"
 	echo "        --title \"put title in quotes\""
+	echo "        --remove <number of current entries to remove>"
     echo ""
 	echo "Example:"
-	echo "    uefi-config --android --cmdline \"console ttyAMA0,384000\" --fdt v2p-ca9.dtb --image uImage --mmci 4000000 --title \"uImage for Android\"   "
-	echo "Running $0 with no arguments is the equivalent of this command:"
-	echo "    uefi-config --cmdline \"$cmdline\" --image uImage --mmci 4000000 --title \"uImage\"   "
+	echo "    uefi-config --cmdline \"console ttyAMA0,384000\" --fdt v2p-ca9.dtb --image uImage --mmci 4000000 --title \"uImage for Android\"   "
+	echo ""
+	echo "Current configuration:"
+	echo "    UEFI_IMAGE         $UEFI_IMAGE"
+	echo "    UEFI_MMCI          $UEFI_MMCI" 
+	echo "    UEFI_FDT           $UEFI_FDT"
+	echo "    UEFI_CMDLINE       $UEFI_CMDLINE"
+	echo "    UEFI_BOOTMENU      $UEFI_BOOTMENU"
+	echo "    UEFI_REMOVE_COUNT  $UEFI_REMOVE_COUNT"
+	echo ""
+	echo "You can set any of the above variables in your environment as defaults for this script."
+	echo ""
+	set_title
+	echo "Running this script with no arguments is the equivalent of this command:"
+	echo "    uefi-config--image $UEFI_IMAGE -fdt $UEFI_FDT --mmci $UEFI_MMCI --title \"$UEFI_TITLE\" --remove $UEFI_REMOVE_COUNT --cmdline \"$UEFI_CMDLINE\"  "
 }
 
 
 while [ "$1" != "" ]; do
     case $1 in
-        -a | --android )
-			#echo "setting cmdline to Android"
-			cmdline=$KERNEL_CMDLINE_ANDROID
+        -b | --bootmenu )
+            shift
+            UEFI_BOOTMENU="$1"
             ;;
         -c | --cmdline )
             shift
-			#echo "setting cmdline to $1"
-            cmdline="$1"
+            UEFI_CMDLINE="$1"
             ;;
         -f | --fdt )
             shift
-			#echo "setting fdt to $1"
-			fdt="y"
-            fdt_name=$1
+			use_fdt="y"
+            UEFI_FDT=$1
             ;;
         -i | --image )
             shift
-			#echo "setting image to $1"
-            uimage=$1
+            UEFI_IMAGE=$1
             ;;
         -m | --mmci )
             shift
-			#echo "setting mmci to $1"
-            mmci=$1
+            UEFI_MMCI=$1
+            ;;
+        -r | --remove )
+            shift
+            UEFI_REMOVE_COUNT=$1
             ;;
         -t | --title )
             shift
-			#echo "setting title to $1"
             title=$1
             ;;
-
-
 
 
         /h | /? | -? | -h | --help )
@@ -87,10 +139,41 @@ while [ "$1" != "" ]; do
     shift
 done
 
-# It's important to run sed in the right order so that the constants are resolved fully
-sed s/KERNEL_UIMAGE/$uimage/ $UEFI_PATH/uefi-base-config-commands | sed "s/TITLE/$title/" | sed "s%KERNEL_CMDLINE%$cmdline%" | sed s/MMCI_FREQ/$mmci/ | sed s/HAS_FDT/$fdt/ | slowuart
 
-if [ "$fdt" = "y" ]
+###### fix "$UEFI_CMDLINE" 
+# if cmdline == android
+#   use android cmdline
+# if cmdline == blank or ubuntu
+#   use ubuntu cmdline
+# else
+#   use cmdline passed in
+
+
+set_title
+
+
+# This assumes that we're sat at the top level menu in UEFI before script runs
+################################################################################
+# Enter the Boot Menu
+echo "$UEFI_BOOTMENU" | slowuart
+
+# Remove some boot options
+###### TODO - this should be a loop!!!!
+for (( i=0; i<$UEFI_REMOVE_COUNT; i++ ))
+do
+	echo "3" | slowuart
+	echo "#1" | slowuart
+done
+
+# Add a new boot option
+# It's important to run sed in the right order so that the constants are resolved fully
+sed s/KERNEL_UIMAGE/$UEFI_IMAGE/ $UEFI_PATH/uefi-base-config-commands | sed "s/TITLE/$UEFI_TITLE/" | sed "s%KERNEL_CMDLINE%$UEFI_CMDLINE%" | sed s/MMCI_FREQ/$UEFI_MMCI/ | sed s/HAS_FDT/$use_fdt/ | slowuart
+
+# Add the device tree config
+if [ "$use_fdt" = "y" ]
 then
-	sed s/FDT_NAME/$fdt_name/ $UEFI_PATH/uefi-base-config-commands-add-fdt | slowuart
+	sed s/FDT_NAME/$UEFI_FDT/ $UEFI_PATH/uefi-base-config-commands-add-fdt | slowuart
 fi
+
+# Drop back to the top level menu
+echo "5" | slowuart
