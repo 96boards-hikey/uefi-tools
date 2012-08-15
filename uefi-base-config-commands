@@ -8,6 +8,6 @@ HAS_FDT
 y
 uInitrd
 KERNEL_CMDLINE
-KERNEL_UIMAGE
+TITLE
 ######5
 

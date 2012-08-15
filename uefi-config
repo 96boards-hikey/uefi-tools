@@ -1,71 +1,94 @@
 #!/bin/bash
-# simple example:
-# kernel: uImage
-# mmci.fmax: 4000000
-# using device tree: n
+# Output character to the terminal to emulate the user configuring UEFI
+# on a Versatile Express board.
 #
-# uefi-config > /dev/ttyUSB1
+# The user can then redirect the output of this script to automate configuring the board.
 #
-# more complex example:
-# kernel binary: uImage.tc2
-# mmci.fmax: 4000000
-# Using device tree: y
-# Device tree file: vexpress-v2p-ca15-tc2.dtb
-#
-# uefi-config uImage.tc2 4000000 y vexpress-v2p-ca15-tc2.dtb > /dev/ttyUSB3
-#
-# uefi-config uImage 4000000 y v2p-ca15-tc1.dtb android  > /dev/ttyUSB2
-# uefi-config uImage 4000000 y v2p-ca15-tc1.dtb ubuntu  > /dev/ttyUSB2
-##
+# eg:
+#   uefi-config --image=uImage > /dev/ttyUSB0
 
 UEFI_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-KERNEL_CMDLINE_UBUNTU="console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro mem=1024M ip=dhcp clcd=xvga mmci.fmax=MMCI_FREQ"
+KERNEL_CMDLINE_UBUNTU="console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro mem=1024M ip=dhcp mmci.fmax=MMCI_FREQ"
 KERNEL_CMDLINE_ANDROID="console=tty0 console=ttyAMA0,38400n8 rootwait ro init=/init androidboot.console=ttyAMA0 mmci.fmax=MMCI_FREQ"
 
-if [ $# -lt 1 ]
-then
-	uimage="uImage"
-else
-	uimage=$1
-fi
+#define defaults
+uimage="uImage"
+mmci="4000000"
+fdt="n"
+fdt_name="v2p-ca9.dtb"
+cmdline=$KERNEL_CMDLINE_UBUNTU
+title=uimage
 
-if [ $# -lt 2 ]
-then
-	mmci="4000000"
-else
-	mmci=$2
-fi
 
-if [ $# -lt 3 ]
-then
-	fdt="n"
-else
-	fdt=$3
-fi
+function usage
+{
+    echo "Usage:"
+	echo "    uefi-config"
+    echo "        --android"
+    echo "        --cmdline \"put cmdline in quotes\""
+    echo "        --fdt <device tree blob filename>"
+    echo "        --image <uImage filename>"
+	echo "        --mmci <mmci speed>"
+	echo "        --title \"put title in quotes\""
+    echo ""
+	echo "Example:"
+	echo "    uefi-config --android --cmdline \"console ttyAMA0,384000\" --fdt v2p-ca9.dtb --image uImage --mmci 4000000 --title \"uImage for Android\"   "
+	echo "Running $0 with no arguments is the equivalent of this command:"
+	echo "    uefi-config --cmdline \"$cmdline\" --image uImage --mmci 4000000 --title \"uImage\"   "
+}
 
-if [ $# -lt 4 ]
-then
-	fdt_name="v2p-ca9.dtb"
-else
-	fdt_name=$4
-fi
 
-if [ $# -lt 5 ]
-then
-	cmdline=$KERNEL_CMDLINE_UBUNTU
-else
-	cmdline=$KERNEL_CMDLINE_UBUNTU
-	if [ "$5" = "ubuntu" ]
-	then
-		cmdline=$KERNEL_CMDLINE_UBUNTU
-	else
-		cmdline=$KERNEL_CMDLINE_ANDROID
-	fi
-fi
+while [ "$1" != "" ]; do
+    case $1 in
+        -a | --android )
+			#echo "setting cmdline to Android"
+			cmdline=$KERNEL_CMDLINE_ANDROID
+            ;;
+        -c | --cmdline )
+            shift
+			#echo "setting cmdline to $1"
+            cmdline="$1"
+            ;;
+        -f | --fdt )
+            shift
+			#echo "setting fdt to $1"
+			fdt="y"
+            fdt_name=$1
+            ;;
+        -i | --image )
+            shift
+			#echo "setting image to $1"
+            uimage=$1
+            ;;
+        -m | --mmci )
+            shift
+			#echo "setting mmci to $1"
+            mmci=$1
+            ;;
+        -t | --title )
+            shift
+			#echo "setting title to $1"
+            title=$1
+            ;;
+
+
+
+
+        /h | /? | -? | -h | --help )
+            usage
+            exit
+            ;;
+        * )
+            usage
+			echo "unknown arg $1"
+            exit 1
+    esac
+    shift
+done
 
 # It's important to run sed in the right order so that the constants are resolved fully
-sed s/KERNEL_UIMAGE/$uimage/ $UEFI_PATH/uefi-base-config-commands | sed "s%KERNEL_CMDLINE%$cmdline%" | sed s/MMCI_FREQ/$mmci/ | sed s/HAS_FDT/$fdt/ | slowuart
+sed s/KERNEL_UIMAGE/$uimage/ $UEFI_PATH/uefi-base-config-commands | sed "s/TITLE/$title/" | sed "s%KERNEL_CMDLINE%$cmdline%" | sed s/MMCI_FREQ/$mmci/ | sed s/HAS_FDT/$fdt/ | slowuart
 
 if [ "$fdt" = "y" ]
 then
