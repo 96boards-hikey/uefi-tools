@@ -114,6 +114,7 @@ function usage
 while [ "$1" != "" ]; do
     case $1 in
 		-a | --android )
+			android=1
 			UEFI_CMDLINE=$KERNEL_CMDLINE_ANDROID
 			;;
         -b | --bootmenu )
