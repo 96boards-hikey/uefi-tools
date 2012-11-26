@@ -5,5 +5,5 @@ HAS_FDT
 y
 uInitrd
 KERNEL_CMDLINE
-TITLE
+LOCAL_FDT TITLE
 ######

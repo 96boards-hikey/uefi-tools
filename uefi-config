@@ -21,10 +21,9 @@ if [ "$UEFI_MMCI" = "" ]
 then
 	UEFI_MMCI="4000000"
 fi
-if [ "$UEFI_FDT" = "" ]
+if [ "$UEFI_GLOBAL_FDT" = "" ]
 then
-	use_fdt="n"
-	UEFI_FDT="v2p-ca9.dtb"
+	use_fdt="a"
 fi
 if [ "$UEFI_BOOTMENU" = "" ]
 then
@@ -41,11 +40,16 @@ function set_title
 	then
 		UEFI_TITLE="$UEFI_IMAGE"
 
-		if [ "$use_fdt" = "n" ]
+		if [ "$use_fdt" = "a" ]
 		then
 			UEFI_TITLE="$UEFI_TITLE (ATAGS)"
 		else
-			UEFI_TITLE="$UEFI_TITLE (DT)"
+			if [ "$use_fdt" = "g" ]
+			then
+				UEFI_TITLE="$UEFI_TITLE (global FDT)"
+			else
+				UEFI_TITLE="$UEFI_TITLE (local FDT)"
+			fi
 		fi
 
 		if [ "$android" = "1" ]
@@ -82,23 +86,29 @@ function usage
     echo "Usage:"
 	echo "    uefi-config"
 	echo "        --android"
-    echo "        --cmdline \"put cmdline in quotes\" | android | ubuntu"
+    echo "        --cmdline|-c \"put cmdline in quotes\" | android | ubuntu"
 	echo "            using android or ubuntu here gives a default cmdline"
-    echo "        --fdt <device tree blob filename>"
+    echo "        --global-fdt <device tree blob filename>"
+    echo "        --local-fdt <device tree blob filename>"
     echo "        --image <uImage filename>"
 	echo "        --mmci <mmci speed>"
 	echo "        --title \"put title in quotes\""
 	echo "        --remove <number of current entries to remove>"
     echo ""
 	echo "Example:"
-	echo "    uefi-config --cmdline \"console ttyAMA0,384000\" --fdt v2p-ca9.dtb --image uImage --mmci 4000000 --title \"uImage for Android\"   "
+	echo "    uefi-config --cmdline \"console ttyAMA0,384000\" --global-fdt v2p-ca9.dtb --image uImage --mmci 4000000 --title \"uImage for Android\"   "
+    echo ""
+	echo "Most parameters can be abbreviated to their first letter:"
+	echo "Example:"
+	echo "    uefi-config -c \"console ttyAMA0,384000\" -g v2p-ca9.dtb -i uImage -m 4000000 -t \"uImage for Android\"   "
 	echo ""
 	set_cmdline
 	set_title
 	echo "Current configuration:"
 	echo "    UEFI_IMAGE         $UEFI_IMAGE"
 	echo "    UEFI_MMCI          $UEFI_MMCI" 
-	echo "    UEFI_FDT           $UEFI_FDT"
+	echo "    UEFI_GLOBAL_FDT    $UEFI_GLOBAL_FDT"
+	echo "    UEFI_LOCAL_FDT     $UEFI_LOCAL_FDT"
 	echo "    UEFI_CMDLINE       $UEFI_CMDLINE"
 	echo "    UEFI_BOOTMENU      $UEFI_BOOTMENU"
 	echo "    UEFI_REMOVE_COUNT  $UEFI_REMOVE_COUNT"
@@ -107,7 +117,18 @@ function usage
 	echo "You can set any of the above variables in your environment as defaults for this script."
 	echo ""
 	echo "Running this script with no additional arguments is the equivalent of this command:"
-	echo "    uefi-config--image $UEFI_IMAGE -fdt $UEFI_FDT --mmci $UEFI_MMCI --title \"$UEFI_TITLE\" --remove $UEFI_REMOVE_COUNT --cmdline \"$UEFI_CMDLINE\"  "
+		if [ "$UEFI_GLOBAL_FDT" = "" ]
+		then
+			if [ "$UEFI_LOCAL_FDT" = "" ]
+			then
+				FDT_ARG=""
+			else
+				FDT_ARG="--local-fdt $UEFI_LOCAL_FDT"
+			fi
+		else
+			FDT_ARG="--global-fdt $UEFI_GLOBAL_FDT"
+		fi
+	echo "    uefi-config --image $UEFI_IMAGE --mmci $UEFI_MMCI $FDT_ARG --title \"$UEFI_TITLE\" --remove $UEFI_REMOVE_COUNT --cmdline \"$UEFI_CMDLINE\"  "
 }
 
 
@@ -125,10 +146,15 @@ while [ "$1" != "" ]; do
             shift
             UEFI_CMDLINE="$1"
             ;;
-        -f | --fdt )
+        -g | --global-fdt )
             shift
-			use_fdt="y"
-            UEFI_FDT=$1
+			use_fdt="g"
+            UEFI_GLOBAL_FDT=$1
+            ;;
+        -l | --localfdt )
+            shift
+			use_fdt="l"
+            UEFI_LOCAL_FDT="$1\n"
             ;;
         -i | --image )
             shift
@@ -179,12 +205,12 @@ done
 
 # Add a new boot option
 # It's important to run sed in the right order so that the constants are resolved fully
-sed s/KERNEL_UIMAGE/$UEFI_IMAGE/ $UEFI_PATH/uefi-base-config-commands | sed "s/TITLE/$UEFI_TITLE/" | sed "s%KERNEL_CMDLINE%$UEFI_CMDLINE%" | sed s/MMCI_FREQ/$UEFI_MMCI/ | sed s/HAS_FDT/$use_fdt/ | slowuart
+sed s/KERNEL_UIMAGE/$UEFI_IMAGE/ $UEFI_PATH/uefi-base-config-commands | sed "s/TITLE/$UEFI_TITLE/" | sed "s%KERNEL_CMDLINE%$UEFI_CMDLINE%" | sed s/MMCI_FREQ/$UEFI_MMCI/ | sed "s/HAS_FDT/$use_fdt/" | sed "s/LOCAL_FDT /$UEFI_LOCAL_FDT/" | slowuart
 
 # Add the device tree config
-if [ "$use_fdt" = "y" ]
+if [ "$use_fdt" = "g" ]
 then
-	sed s/FDT_NAME/$UEFI_FDT/ $UEFI_PATH/uefi-base-config-commands-add-fdt | slowuart
+	sed s/FDT_NAME/$UEFI_GLOBAL_FDT/ $UEFI_PATH/uefi-base-config-commands-add-fdt | slowuart
 fi
 
 # Drop back to the top level menu
