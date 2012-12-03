@@ -19,33 +19,34 @@ git read-tree --prefix=edk2/FatPkg/ -u $TREE:FatPkg
 git commit -m "Adding $TREE FatPkg into edk2 tree"
 
 # 4) rebase tracking branches
-git checkout armlt-tracking-a5
+git checkout linaro-tracking-a5
 git rebase master
-git checkout armlt-tracking-a9
+git checkout linaro-tracking-a9
 git rebase master
-git checkout armlt-tracking-menu
+git checkout linaro-tracking-menu
 git rebase master
-git checkout armlt-tracking-misc
+git checkout linaro-tracking-misc
 git rebase master
-git checkout armlt-tracking-origen
+git checkout linaro-tracking-origen
 git rebase master
-git checkout armlt-tracking-panda
+git checkout linaro-tracking-panda
 git rebase master
-git checkout armlt-tracking-tc1
+git checkout linaro-tracking-tc1
 git rebase master
-git checkout armlt-tracking-tc2
+git checkout linaro-tracking-tc2
 
 git checkout master
-git branch -D armlt-tracking
-git branch armlt-tracking
-git checkout armlt-tracking
+git branch -D linaro-tracking
+git branch linaro-tracking
+git checkout linaro-tracking
 
-git merge armlt-tracking-a5
-git merge armlt-tracking-a9
-git merge armlt-tracking-menu
-git merge armlt-tracking-misc
-git merge armlt-tracking-origen
-git merge armlt-tracking-panda
-git merge armlt-tracking-tc1
-git merge armlt-tracking-tc2
+git merge linaro-tracking-a5
+git merge linaro-tracking-a9
+git merge linaro-tracking-local-fdt
+git merge linaro-tracking-menu
+git merge linaro-tracking-misc
+git merge linaro-tracking-origen
+git merge linaro-tracking-panda
+git merge linaro-tracking-tc1
+git merge linaro-tracking-tc2
 
