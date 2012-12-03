@@ -18,35 +18,28 @@ git merge -s ours --no-commit $TREE/trunk
 git read-tree --prefix=edk2/FatPkg/ -u $TREE:FatPkg
 git commit -m "Adding $TREE FatPkg into edk2 tree"
 
-# 4) rebase tracking branches
-git checkout linaro-tracking-a5
-git rebase master
-git checkout linaro-tracking-a9
-git rebase master
-git checkout linaro-tracking-menu
-git rebase master
-git checkout linaro-tracking-misc
-git rebase master
-git checkout linaro-tracking-origen
-git rebase master
-git checkout linaro-tracking-panda
-git rebase master
-git checkout linaro-tracking-tc1
-git rebase master
-git checkout linaro-tracking-tc2
-
+# 4) Create the main tracking branch
 git checkout master
 git branch -D linaro-tracking
 git branch linaro-tracking
 git checkout linaro-tracking
 
-git merge linaro-tracking-a5
-git merge linaro-tracking-a9
-git merge linaro-tracking-local-fdt
-git merge linaro-tracking-menu
-git merge linaro-tracking-misc
-git merge linaro-tracking-origen
-git merge linaro-tracking-panda
-git merge linaro-tracking-tc1
-git merge linaro-tracking-tc2
+# 5) rebase topic branches and merge them into the main tracking branch
+branches=(`git branch | grep linaro-tracking-`)
+
+for branch in "${branches[@]}" ; do
+	echo "----------------------------------------"
+	echo "Rebasing branch $branch"
+	echo "----------------------------------------"
+	git checkout $branch
+	git rebase master
+	git checkout linaro-tracking
+	echo "----------------------------------------"
+	echo "Merging branch $branch"
+	echo "----------------------------------------"
+	git merge $branch
+
+	# do this to clean up the log
+	sleep 1
+done
 
