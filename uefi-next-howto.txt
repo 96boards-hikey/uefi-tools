@@ -1,0 +1,1097 @@
+--------------------------------------------------------------------------------
+How to fix the bugs
+--------------------------------------------------------------------------------
+BUG2:
+$ cd /linaro/lt/uefi/git/working
+$ cp -R ../g.l.o/mirror-edk2.git/ fix.git
+$ cd fix.git/edk2/
+$ cp -R ../../../g.l.o/mirror-edk2-fatdriver2.git/FatPkg/ .
+$ git rebase --onto 483c67e2789a270e185d00a1269328fbdab9a793^ 483c67e2789a270e185d00a1269328fbdab9a793
+$ vi ArmPkg/Drivers/PL390Gic/PL390GicSecLib.inf
+<fix merge conflict in edk2/ArmPkg/Drivers/PL390Gic/PL390GicSecLib.inf>
+$ git add ArmPkg/Drivers/PL390Gic/PL390GicSecLib.inf
+$ git rebase --continue
+BUG1:
+<commit id 6ebd4e1 becomes 9afce30 after previous rebase>
+$ git rebase --onto 9afce30^ 9afce30
+
+
+
+
+
+--------------------------------------------------------------------------------
+Working in this directory with "git bisect":
+  /linaro/lt/uefi/git/working/mirror-edk2.git
+
+Known Good starting point:
+08fba38 ArmPkg/ArmLib: Replaced 'UINTN' type by architecture agnostic types (EFI_PHYSICAL_ADDRESS & EFI_VIRTUAL_ADDRESS) to des
+
+Known bad commits:
+Latest HEAD:
+772ad89 Add new extension PerformanceLib APIs to store ID info.
+	- BUG 1
+	- this commit hangs at boot with the following message:
+		Boot firmware (version  built at 11:22:15 on Apr 26 2012)
+		DataAbort Exception at 0x4400AEB4
+
+96d57cf AppPkg/Applications/Sockets: Address GCC and Linux compilation problems.   1) Fix copyright and license notices.
+	- BUG 2
+	- this commit boots OK, but when it tried to run the linux kernel, it hangs
+
+Known good commits:
+08fba38 ArmPkg/ArmLib: Replaced 'UINTN' type by architecture agnostic types (EFI_PHYSICAL_ADDRESS & EFI_VIRTUAL_ADDRESS) to describe memory addresses
+
+--------------------------------------------------------------------------------
+Known good commits for BUG 1:
+96d57cf AppPkg/Applications/Sockets: Address GCC and Linux compilation problems.   1) Fix copyright and license notices.
+5ee9831 Nt32Pkg: Add Secure Boot build option including Custom Mode setup
+4f47c56 Update function comments to remove confused description on PerformanceLib EndPerformanceMeasurement API.
+364f18d MdeModulePkg PiSmmCore: Fix a bug in SmmLoadImage() in PiSmmCore that in-correct status codes may be returned.
+d8bf510 Update IfConfig.c to use TPL_CALLBACK instead of TPL_CALLBACK - 1 to follow UEFI spec.
+
+Known bad commits for BUG 1:
+ca363a5 Fix build fail for DDK.
+6ebd4e1 Validate some fields in PE image to make sure not access violation for later code.
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+git bisect blames this commit for breaking boot on VE
+--------------------------------------------------------------------------------
+6ebd4e1e4e0823421dd7370feb6150226aa49735 is the first bad commit
+commit 6ebd4e1e4e0823421dd7370feb6150226aa49735
+Author: ydong10 <ydong10@6f19259b-4bc3-4df7-8a09-765794883524>
+Date:   Tue Apr 24 03:00:32 2012 +0000
+
+    Validate some fields in PE image to make sure not access violation for later code.
+    
+    Signed-off-by: Eric Dong <eric.dong@intel.com>
+    Reviewed-by: Liming Gao <liming.gao@intel.com>
+    
+    git-svn-id: https://edk2.svn.sourceforge.net/svnroot/edk2/trunk@13211 6f19259b-4bc3-4df7-8a09-765794883524
+--------------------------------------------------------------------------------
+
+
+
+
+BUG 2: Bisect points in order:
+--------------------------------------------------------------------------------
+[5ee9831a13e5d1c370a2cd25ff0e9245b754ba10] Nt32Pkg: Add Secure Boot build option including Custom Mode setup
+--------------------------------------------------------------------------------
+[4f47c56c75cba0f4847a5d1d113858718c598558] Update function comments to remove confused description on PerformanceLib EndPerformanceMeasurement API.
+--------------------------------------------------------------------------------
+[364f18d2042a3db7e8c38f082432955fa05b1719] MdeModulePkg PiSmmCore: Fix a bug in SmmLoadImage() in PiSmmCore that in-correct status codes may be returned.
+--------------------------------------------------------------------------------
+[ca363a521bccbd1bb95e657455fb9dc5bb5bae96] Fix build fail for DDK.
+--------------------------------------------------------------------------------
+[d8bf510e414328dba86ec7228f9e2b3aa6d8ddef] Update IfConfig.c to use TPL_CALLBACK instead of TPL_CALLBACK - 1 to follow UEFI spec.
+--------------------------------------------------------------------------------
+[6ebd4e1e4e0823421dd7370feb6150226aa49735] Validate some fields in PE image to make sure not access violation for later code.
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+Known good commits for BUG 2:
+5440ee8 1. Add more error handling code to DxeImageVerificationLib and BaseCryptLib.
+00cb2a9 EADK (StdLib, AppPkg, StdLibPrivateInternalFiles):  Python Beta Release. Clean up and clearly differentiate required an
+57827ee ArmPlatformPkg/ArmPlatformGlobalVariableLib: Fixed incorrect type casting
+9fcd17a ArmPkg/ArmGicLib: Added function ArmGicSetSecureInterrupts() to define the secure interrupts
+
+Known bad commits for BUG 2:
+52a91a0 ArmPlatformPkg/Sec: Move ArmGicSetupNonSecure() prior to initialize platform-specific security bit
+483c67e ArmPkg/PL390Gic: Introduced PcdGicSgiIntId to define which SGI is used for core synchronisation
+--------------------------------------------------------------------------------
+
+git bisect blames this commit:
+--------------------------------------------------------------------------------
+483c67e2789a270e185d00a1269328fbdab9a793 is the first bad commit
+commit 483c67e2789a270e185d00a1269328fbdab9a793
+Author: oliviermartin <oliviermartin@6f19259b-4bc3-4df7-8a09-765794883524>
+Date:   Mon Mar 26 10:46:25 2012 +0000
+
+    ArmPkg/PL390Gic: Introduced PcdGicSgiIntId to define which SGI is used for core synchronisation
+    
+    By default this PCD is set to use SGI #0.
+    
+    
+    
+    git-svn-id: https://edk2.svn.sourceforge.net/svnroot/edk2/trunk@13123 6f19259b-4bc3-4df7-8a09-765794883524
+--------------------------------------------------------------------------------
+
+
+
+
+BUG 2: Bisect points in order:
+--------------------------------------------------------------------------------
+[96d57cf5c38ef878f47ef31168322d8380e81928] AppPkg/Applications/Sockets: Address GCC and Linux compilation problems.   1) Fix copyright and license notices.   2) Replace '\' in include paths with '/'.   3) Fix case mismatch between include paths and actual files and directories.
+--------------------------------------------------------------------------------
+[5440ee80425c104060444dbbf33c17c391804f64] 1. Add more error handling code to DxeImageVerificationLib and BaseCryptLib.
+--------------------------------------------------------------------------------
+[52a91a064ebb248bacd7e87980b0ecdd25852689] ArmPlatformPkg/Sec: Move ArmGicSetupNonSecure() prior to initialize platform-specific security bit
+--------------------------------------------------------------------------------
+[00cb2a92598692a28f1749f8c2a70e8e84edd084] EADK (StdLib, AppPkg, StdLibPrivateInternalFiles):  Python Beta Release. Clean up and clearly differentiate required and optional items in configuration files. Enable the system command and synchronize configuration options between all CPU architectures. Replace the UEFI_ENV macro with UEFI_C_SOURCE to align with Linux and Posix conventions. Update copyrights and versions and make minor cosmetic enhancements to files. Fix compiler-specific build errors. Add Python-specific ReadMe file.
+--------------------------------------------------------------------------------
+[483c67e2789a270e185d00a1269328fbdab9a793] ArmPkg/PL390Gic: Introduced PcdGicSgiIntId to define which SGI is used for core synchronisation
+--------------------------------------------------------------------------------
+[57827ee4cb2ed355d80112e3856e2dfdbf2aaf0b] ArmPlatformPkg/ArmPlatformGlobalVariableLib: Fixed incorrect type casting
+--------------------------------------------------------------------------------
+[9fcd17a1e27df966500cb9eda7f9ab9560b0195d] ArmPkg/ArmGicLib: Added function ArmGicSetSecureInterrupts() to define the secure interrupts
+--------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+git bisect stuff from here down is a load of shite because I was doing something wrong
+--------------------------------------------------------------------------------
+
+Good version for A9 without patches:
+08fba38 ArmPkg/ArmLib: Replaced 'UINTN' type by architecture agnostic types (EFI_PHYSICAL_ADDRESS & EFI_VIRTUAL_ADDRESS) to describe memory addresses
+ec8667f Update the offset when read every debug entries info. Signed-off-by: ydong10 Reviewed-by: lgao4
+00cb2a9 EADK (StdLib, AppPkg, StdLibPrivateInternalFiles):  Python Beta Release. Clean up and clearly differentiate required and optional items in configuration files. Enable the system command and
+09d119c ArmPlatformPkg/PrePi: Fix comment (minor change)
+
+
+Known bad versions:
+ab9832d ArmPlatformPkg: Fixed build after latest BaseTools syncup
+03f0893 ArmPkg: Declared ARM Hypervisor Firmware PCDs
+7fdb48b ArmPkg/LinuxLoader: Remove unused DebugLib (Minor change)
+52a91a0 ArmPlatformPkg/Sec: Move ArmGicSetupNonSecure() prior to initialize platform-specific security bit
+41440aa ArmPlatformPkg/Sec: Fixed monitor stack setup
+
+
+Last action:
+[21:52:26] ryan@vaio ((no branch)) /linaro/lt/uefi/git/working/mirror-edk2.git
+$ git bisect good
+Bisecting: 5 revisions left to test after this (roughly 3 steps)
+[09d119c77e96e3ee10e301bde4d81199a8dfd921] ArmPlatformPkg/PrePi: Fix comment (minor change)
+
+But that is literally only a comment change, so I marked it as "good" without testing and ended up here:
+[7fdb48bcc6ca29e1638cfd78cd5eba0e39ed9d8d] ArmPkg/LinuxLoader: Remove unused DebugLib (Minor change)
+
+
+--------------------------------------------------------------------------------
+The commit wot broken it:
+41440aa ArmPlatformPkg/Sec: Fixed monitor stack setup
+--------------------------------------------------------------------------------
+diff --git a/edk2/ArmPlatformPkg/Sec/Helper.S b/edk2/ArmPlatformPkg/Sec/Helper.S
+index 9e3b13b..8bdb66a 100644
+--- a/edk2/ArmPlatformPkg/Sec/Helper.S
++++ b/edk2/ArmPlatformPkg/Sec/Helper.S
+@@ -24,13 +24,15 @@ GCC_ASM_EXPORT(set_non_secure_mode)
+ # r1: MpId
+ # r2: Secure Monitor mode stack
+ ASM_PFX(enter_monitor_mode):
+-    mrs     r4, cpsr                    @ Save current mode (SVC) in r1
++    cmp     r2, #0                      @ If a Secure Monitor stack base has not been defined then use the Secure stack
++    moveq   r2, sp^M
++^M
++    mrs     r4, cpsr                    @ Save current mode (SVC) in r4^M
+     bic     r3, r4, #0x1f               @ Clear all mode bits
+     orr     r3, r3, #0x16               @ Set bits for Monitor mode
+     msr     cpsr_cxsf, r3               @ We are now in Monitor Mode
+ 
+-    cmp     r2, #0                      @ If a Secure Monitor stack base has been passed, used it
+-    movne   sp, r2                      @ Use the passed sp
++    mov   sp, r2                      @ Set the stack of the Monitor Mode^M
+ 
+     mov     lr, r0                      @ Use the pass entrypoint as lr
+
+--------------------------------------------------------------------------------
+
+However, before we can fix that commit, the very latest code crashes even sooner in startup.  So we have to bisect again to work that one out...
+
+First, patch out the dodgy commit we found above, then do a bisect from it's parent to HEAD.
+
+$ git rebase --onto 41440aa^ 41440aa
+$ git bisect start
+$ git bisect good 09d119c
+$ git bisect bad HEAD
+Bisecting: 37 revisions left to test after this (roughly 5 steps)
+[b9a67d717cc4856228f5c283b4da74ee199d294b] Sync BaseTools Trunk (version r2518) to EDKII main trunk.
+
+... bisecting leads to this being the bad commit:
+
+--------------------------------------------------------------------------------
+commit 39c0a49041cf4cbf3760c02696c07c79f60c5753
+Author: oliviermartin <oliviermartin@6f19259b-4bc3-4df7-8a09-765794883524>
+Date:   Mon Mar 26 10:51:43 2012 +0000
+
+    ArmPlatformPkg/Sec: Move ArmGicSetupNonSecure() prior to initialize platform-specific security bit
+    
+    
+    
+    git-svn-id: https://edk2.svn.sourceforge.net/svnroot/edk2/trunk@13127 6f19259b-4bc3-4df7-8a09-765794883524
+
+diff --git a/edk2/ArmPlatformPkg/Sec/Sec.c b/edk2/ArmPlatformPkg/Sec/Sec.c
+index 9789553..6b478ac 100644
+--- a/edk2/ArmPlatformPkg/Sec/Sec.c
++++ b/edk2/ArmPlatformPkg/Sec/Sec.c
+@@ -146,6 +146,10 @@ TrustedWorldInitialization (
+ 
+   // Setup the Trustzone Chipsets
+   if (IS_PRIMARY_CORE(MpId)) {
++    // Transfer the interrupt to Non-secure World
++    ArmGicSetupNonSecure (PcdGet32(PcdGicDistributorBase), PcdGet32(PcdGicInterruptInterfaceBase));
++
++    // Initialize platform specific security policy
+     ArmPlatformTrustzoneInit ();
+ 
+     if (ArmIsMpCore()) {
+@@ -160,9 +164,6 @@ TrustedWorldInitialization (
+     ArmCpuSynchronizeWait (ARM_CPU_EVENT_SECURE_INIT);
+   }
+ 
+-  // Transfer the interrupt to Non-secure World
+-  ArmGicSetupNonSecure (PcdGet32(PcdGicDistributorBase), PcdGet32(PcdGicInterruptInterfaceBase));
+-
+   // Call the Platform specific fucntion to execute additional actions if required
+   JumpAddress = PcdGet32 (PcdFvBaseAddress);
+   ArmPlatformSecExtraAction (MpId, &JumpAddress);
+--------------------------------------------------------------------------------
+
+So, remove the dodgy commit:
+$ git rebase --onto 39c0a49^ 39c0a49
+
+but this causes a rebase conflict in Sec.c from patch 
+  ArmPlatformPkg/Sec: Allowed the Secondary Cores to set the Secure/Non Secure bits to their PPIs
+
+I edited Sec.c to revert it to how it was originally, then did
+$ git add edk2/ArmPlatformPkg/Sec/Sec.c
+$ git rebase --continue
+
+... then rebuilt.  But that was shite and didn't rebuild.
+
+Start again (new copy of repo, etc...) and remove the two bad commits:
+
+$ gitlog
+7fdb48b ArmPkg/LinuxLoader: Remove unused DebugLib (Minor change)
+52a91a0 ArmPlatformPkg/Sec: Move ArmGicSetupNonSecure() prior to initialize platform-specific security bit
+41440aa ArmPlatformPkg/Sec: Fixed monitor stack setup
+09d119c ArmPlatformPkg/PrePi: Fix comment (minor change)
+
+We want to remove 52a91a0 and 41440aa:
+$ git rebase --onto 09d119c 52a91a0
+
+Then resolve Sec.c again
+$ git add edk2/ArmPlatformPkg/Sec/Sec.c
+$ git rebase --continue
+
+But its allllll fucked still....
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+How to update the UEFI tree - April 2012
+--------------------------------------------------------------------------------
+
+1) update source trees
+git checkout edk2
+git pull edk2
+git checkout edk2-fatdriver2
+git pull edk2-fatdriver2
+
+2) create a new master branch
+git checkout edk2
+git branch -D master
+git branch master
+git checkout master
+
+3) pull edk2-fatdriver2 into the master branch
+TREE=edk2-fatdriver2
+git merge -s ours --no-commit $TREE/trunk
+git read-tree --prefix=edk2/FatPkg/ -u $TREE:FatPkg
+git commit -m "Adding $TREE FatPkg into edk2 tree"
+
+4) update all topic branches
+git checkout <topic branch>
+git rebase master
+
+5) update tracking branch
+git checkout master
+git branch -D armlt-tracking
+git branch armlt-tracking
+git checkout armlt-tracking
+git merge <tracking topic 1>
+...
+git merge <tracking topic n>
+
+Example:
+git merge tracking-topic-1st-level-fixes
+git merge tracking-topic-basetools
+git merge tracking-topic-fdt
+git merge tracking-topic-tuscan
+git merge tracking-topic-vea15
+git merge tracking-topic-vea5
+git merge tracking-topic-vea9-single-binary
+
+6) Make sure stg-uplevel...parents is up-to-date then run:
+
+stg-push-to-repo
+
+
+
+--------------------------------------------------------------------------------
+Applying upstream's device tree patches
+--------------------------------------------------------------------------------
+Instructions taken from:
+https://sourceforge.net/apps/mediawiki/tianocore/index.php?title=EmbeddedPkg/Fdt
+--------------------------------------------------------------------------------
+
+Device Tree (DT) is a format used to describe the hardware resources of a specific platform. Lbfdt library (dual license - BSD/GPL) is often used to read or modify the information of the FDT (Flat Device Tree).
+
+These patches add:
+
+    Port libfdt to EDK2
+    Allow the ARM Linux Loader to edit the FDT before to start the kernel 
+
+Here are the instructions:
+
+1. Clone the dtc into a temporary directory:
+
+cd $(EDK2_ROOT)/EmbeddedPkg/Library
+git clone git://git.jdl.com/software/dtc.git
+
+2. Copy the content of 'libfdt' into EmbeddedPkg/Library/FdtLib/
+
+cd dtc
+cp -a libfdt/* ../FdtLib/
+
+3. Copy the libfdt headers:
+
+mv ../FdtLib/libfdt.h ../../Include/
+mv ../FdtLib/fdt.h ../../Include/
+rm ../FdtLib/libfdt_env.h
+
+4. Apply the patches
+
+cd $(EDK2_ROOT)
+patch -p1 < 0001-EmbeddedPkg-Added-libfdt-port.patch
+patch -p1 < 0002-ArmPkg-BdsLib-Added-support-for-modifying-the-passed.patch
+patch -p1 < 0003-ArmPlatformPkg-EblCmdLib-Add-dumpfdt-EBL-command.patch
+
+5. You must add the following line to your platform DSC file (required by BdsLib):
+
+FdtLib|EmbeddedPkg/Library/FdtLib/FdtLib.inf
+--------------------------------------------------------------------------------
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+How to update the UEFI tree - March 2012
+--------------------------------------------------------------------------------
+Export all current patches from the existing tree and store them safely.
+
+1) delete all branches except edk2 and edk2-fatdriver2
+2) update edk2 and edk2-fatdriver2 using git pull:
+git checkout edk2
+git pull edk2
+git checkout edk2-fatdriver2
+git pull edk2-fatdriver2
+
+3) re-create the master branch
+git branch master
+git checkout master
+
+4) pull edk2-fatdriver2 into the master branch
+TREE=edk2-fatdriver2
+git merge -s ours --no-commit $TREE/trunk
+git read-tree --prefix=edk2/FatPkg/ -u $TREE:FatPkg
+git commit -m "Adding $TREE FatPkg into edk2 tree"
+
+5) Start creating tracking topics
+
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Ocasionally, you may want to keep branches in your repository that do not share an ancestor with your normal code. Some examples of this might be generated documentation or something along those lines. If you want to create a new branch head that does not use your current codebase as a parent, you can create an empty branch like this:
+
+git symbolic-ref HEAD refs/heads/newbranch 
+rm .git/index 
+git clean -fdx 
+<do work> 
+git add your files 
+git commit -m 'Initial commit'
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+Archived stuff below here in April 2012
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+Managing the UEFI tree
+--------------------------------------------------------------------------------
+The MASTER git tree for uefi is stored on my Sony Vaio work laptop here:
+
+	/linaro/lt/uefi/uefi.git
+
+It is managed using STGIT.
+
+
+Branches
+--------------------------------------------------------------------------------
+
+There are the follwing branches:
+	edk2
+	edk2-fatdriver2
+	master
+	master.stgit
+
+
+Branch: edk2
+------------
+This branch is used to store the clone of the EDK2 repository stored in the remote "edk2".
+
+Branch: edk2-fatdriver2
+-----------------------
+This branch is used to store the clone of the EDK2 repository stored in the remote "edk2".
+
+
+Output Repositories
+--------------------------------------------------------------------------------
+The master repository is pushed out to the Linaro server on this repository:
+
+	publish				git://git.linaro.org/arm/uefi/uefi.git
+
+You update this output repository by doing
+
+	$ git push publish
+
+
+Input Repositories
+--------------------------------------------------------------------------------
+There are the following origin repositories:
+
+	edk2				git://git.linaro.org/mirror/edk2/edk2.git
+	edk2-fatdriver2		git://git.linaro.org/mirror/edk2/edk2-fatdriver2.git
+
+The two mirror repositories listed above are updated automatically to the latest contents from the SourceForge SubVersioN repository.
+
+
+How to update the MASTER uefi.git from the input repositories
+-------------------------------------------------------------
+
+Every so often, the mirror repositories will contain something useful or critical and you will want to update the master repository with the latest EDK2 code.
+
+1) Unstack any local changes managed with STGIT
+2) update the repos
+	$ git checkout edk2
+	$ git pull edk2
+	$ git checkout edk2-fatdriver2
+	$ git pull edk2-fatdriver2
+
+
+
+--------------------------------------------------------------------------------
+Adding a new feature via a topic branch
+--------------------------------------------------------------------------------
+
+$ stg branch --create tracking-topic-FEATURE
+	... make some changes
+$ stg status
+	<shows what files you've edited so far>
+$ stg status --reset
+	<delete any changes you've made since the patch was created>
+$ stg branch --list
+	<list the branches in this repo>
+
+
+
+
+
+
+
+
+
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+Archived the stuff below here on 12th Dec 2011
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+UEFI Setup
+----------
+
+How to build UEFI from sources - 11 Nov 2011
+--------------------------------------------
+1) Create a working directory
+mkdir /linaro/lt/uefi/working
+
+2) clone the GIT trees
+git clone git://git.linaro.org/mirror/edk2/edk2.git
+git clone git://git.linaro.org/mirror/edk2/edk2-fatdriver.git
+
+3) link the fatdriver package into the EDK2 tree
+cd edk2/edk2
+ln -s ../../edk2-fatdriver2/FatPkg .
+
+4) patch the tools
+patch -p0 < ArmPlatformPkg/Documentation/patches/BaseTools-Pending-Patches.patch
+
+(note, we used to have to use "patch -p1" but the latest patch requires -p0)
+
+5) hack GenC.py
+BaseTools/Source/Python/AutoGen/GenC.py
+
+-------------------------------------------------------------------------------
+commit c88e0bdc6bb0bbb93302ee9d32948226c0cc58f1
+Author: Ryan Harkin <ryan.harkin@linaro.org>
+Date:   Fri Nov 11 17:40:23 2011 +0000
+
+    Fixed GenC.py for the ARMLINUXGCC compiler
+
+diff --git a/edk2/BaseTools/Source/Python/AutoGen/GenC.py b/edk2/BaseTools/Source/Python/AutoGen/GenC.py
+index 561114d..572a904 100644
+--- a/edk2/BaseTools/Source/Python/AutoGen/GenC.py
++++ b/edk2/BaseTools/Source/Python/AutoGen/GenC.py
+@@ -926,7 +926,7 @@ def CreateModulePcdCode(Info, AutoGenC, AutoGenH, Pcd):
+                             "No generated token number for %s.%s\n" % (Pcd.TokenSpaceGuidCName, Pcd.TokenCName),
+                             ExtraData="[%s]" % str(Info))
+         TokenNumber = PcdTokenNumber[Pcd.TokenCName, Pcd.TokenSpaceGuidCName]
+-    AutoGenH.Append('\n#define %s  %dU\n' % (PcdTokenName, TokenNumber))
++    AutoGenH.Append('\n#define %s  %d\n' % (PcdTokenName, TokenNumber))
+ 
+     EdkLogger.debug(EdkLogger.DEBUG_3, "Creating code for " + Pcd.TokenCName + "." + Pcd.TokenSpaceGuidCName)
+     if Pcd.Type not in gItemTypeStringDatabase:
+@@ -969,9 +969,9 @@ def CreateModulePcdCode(Info, AutoGenC, AutoGenH, Pcd):
+         if Pcd.DatumType == 'BOOLEAN':
+             BoolValue = Value.upper()
+             if BoolValue == 'TRUE':
+-                Value = '1U'
++                Value = '1'
+             elif BoolValue == 'FALSE':
+-                Value = '0U'
++                Value = '0'
+ 
+         if Pcd.DatumType in ['UINT64', 'UINT32', 'UINT16', 'UINT8']:
+             try:
+@@ -1003,8 +1003,6 @@ def CreateModulePcdCode(Info, AutoGenC, AutoGenH, Pcd):
+                     EdkLogger.error("build", AUTOGEN_ERROR,
+                                     "Too large PCD value for datum type [%s] of PCD %s.%s" % (Pcd.DatumType, Pcd.TokenS
+                                     ExtraData="[%s]" % str(Info))
+-                if not Value.endswith('U'):
+-                    Value += 'U'
+             elif Pcd.DatumType == 'UINT16':
+                 if ValueNumber < 0:
+                     EdkLogger.error("build", AUTOGEN_ERROR,
+@@ -1014,8 +1012,6 @@ def CreateModulePcdCode(Info, AutoGenC, AutoGenH, Pcd):
+                     EdkLogger.error("build", AUTOGEN_ERROR,
+                                     "Too large PCD value for datum type [%s] of PCD %s.%s" % (Pcd.DatumType, Pcd.TokenS
+                                     ExtraData="[%s]" % str(Info))
+-                if not Value.endswith('U'):
+-                    Value += 'U'                    
+             elif Pcd.DatumType == 'UINT8':
+                 if ValueNumber < 0:
+                     EdkLogger.error("build", AUTOGEN_ERROR,
+@@ -1025,8 +1021,6 @@ def CreateModulePcdCode(Info, AutoGenC, AutoGenH, Pcd):
+                     EdkLogger.error("build", AUTOGEN_ERROR,
+                                     "Too large PCD value for datum type [%s] of PCD %s.%s" % (Pcd.DatumType, Pcd.TokenS
+                                     ExtraData="[%s]" % str(Info))
+-                if not Value.endswith('U'):
+-                    Value += 'U'
+         if Pcd.DatumType == 'VOID*':
+             if Pcd.MaxDatumSize == None or Pcd.MaxDatumSize == '':
+                 EdkLogger.error("build", AUTOGEN_ERROR,
+@@ -1146,7 +1140,7 @@ def CreateLibraryPcdCode(Info, AutoGenC, AutoGenH, Pcd):
+         Type = '(VOID *)'
+         Array = '[]'
+ 
+-    AutoGenH.Append('#define _PCD_TOKEN_%s  %dU\n' % (TokenCName, TokenNumber))
++    AutoGenH.Append('#define _PCD_TOKEN_%s  %d\n' % (TokenCName, TokenNumber))
+ 
+     PcdItemType = Pcd.Type
+     #if PcdItemType in gDynamicPcd:
+@@ -1421,7 +1415,7 @@ def CreatePcdDatabasePhaseSpecificAutoGen (Platform, Phase):
+                 if Pcd.DatumType == "UINT64":
+                     ValueList.append(Sku.DefaultValue + "ULL")
+                 elif Pcd.DatumType in ("UINT32", "UINT16", "UINT8"):
+-                    ValueList.append(Sku.DefaultValue + "U")
++                    ValueList.append(Sku.DefaultValue)
+                 else:
+                     ValueList.append(Sku.DefaultValue)
+-------------------------------------------------------------------------------
+
+
+
+<if you are using CodeSourcery toolchain...> 
+export ARMGCC_TOOLS_PATH=/linaro/lt/uefi/arm-2010.09/bin
+export TOOLCHAIN=ARMGCC
+
+6) set up the environment and
+7) build the tools
+export TOOLCHAIN=ARMLINUXGCC
+export EDK_TOOLS_PATH=`pwd`/BaseTools
+. edksetup.sh `pwd`/BaseTools/
+
+make -C $EDK_TOOLS_PATH
+
+8) build the code
+[build -a ARM -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA9x4.dsc -t ARMLINUXGCC -D EDK2_ARMVE_STANDALONE=1]
+build -a ARM -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA9x4.dsc -t $TOOLCHAIN -D EDK2_ARMVE_STANDALONE=1 -D EDK2_ARMVE_SINGLE_BINARY
+build -a ARM -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA5s.dsc -t $TOOLCHAIN -D EDK2_ARMVE_STANDALONE=1
+
+9) copy the code to the vexpress A9 board
+(/media/ARM is the internal MMC card on the vexpress motherboard, mounted via USB Mass Storage)
+
+cp Build/ArmVExpress-CTA9x4-Standalone/DEBUG_ARMLINUXGCC/FV/SEC_ARMVEXPRESS_EFI.fd /media/ARM/SOFTWARE/sec_uefi.bin
+cp Build/ArmVExpress-CTA9x4-Standalone/DEBUG_ARMLINUXGCC/FV/ARMVEXPRESS_EFI.fd /media/ARM/SOFTWARE/uefi.bin
+
+10) reboot & power on the vexpress into the boot monitor
+11) run uefi:
+
+flash run sec_uefi
+
+
+
+
+
+
+
+---------------------------------------------------
+***************************************************
+---------------------------------------------------
+1) Crashes here for Tixy
+MdeModulePkg/Core/DxeIplPeim/DxeLoad.c
+line 109:
+    Status = Variable->GetVariable ( 
+                         Variable, 
+                         EFI_MEMORY_TYPE_INFORMATION_VARIABLE_NAME,
+                         &gEfiMemoryTypeInformationGuid,
+                         NULL,
+                         &DataSize,
+                         &MemoryData
+                         );
+
+2) Add extra debugging
+gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x8000000F  -> 0xFFFFFFFF
+
+Files that contain this:
+
+./ArmPlatformPkg/ArmVExpressPkg/ArmVExpress.dsc.inc
+./ArmPlatformPkg/ArmPlatformPkg.dsc
+
+
+
+Tixy's Debugging Tips (18th November 2011):
+debegging tip #1
+in ArmPlatformPkg/ArmVExpressPkg/ArmVExpress.dsc.inc, you will see "gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x8000000F"
+I turned that to |0xffffffff to turn on more tracinng
+debugging tip #2
+during boot, you will see information about loading libraries at certain addresses...
+can't remember exact sytax of messages but...
+when in DS-5, with debugger attached to board, then in the command window...
+you can type "file name_of.dll 0x12345678" where the hex number is the load address indicated in hte trace
+this will load the symbols for "name_of.dll"
+I had a script which parsed the serial output to fin all DLL load messages and turn the into a list of "file ...." commands that ...
+you can load into DS-5, cant find script at moment, I think I was ccing you on mails to Olivier when I was writing it
+found script it's a one liner...
+sed -e '/^add-symbol-file/!d' -e 's/^add-symbol-//' ~/putty.log >~/load-uefi-symbols.ds
+you can then get "~/load-uefi-symbols.ds" loader into DS-5 as a script to run, again, can't remember exactly how, but I think there's a...
+
+[ryan: source "/linaro/lt/uefi/uefi.git/edk2/load-uefi-symbols.ds"]
+dialog box to add scripts into the UI
+When I was using "file ..." to load symcols, I initially needed to subtract 0x8000 from address, because...
+all binaries we're linked for that address, rather than 0x0, but I think olivier fixed that
+
+sed -e '/^add-symbol-file/!d' -e 's/^add-symbol-//' log001.txt > load-uefi-symbols.ds
+
+Files:
+MdeModulePkg/Core/DxeIplPeim/DxeLoad.c
+MdeModulePkg/Core/Pei/PeiMain/PeiMain.c
+MdePkg/Include/Pi/PiPeiCis.h
+MdeModulePkg/Core/Pei/Ppi/Ppi.c
+
+
+Crash appears to happen in GetVariable call:
+
+./MdeModulePkg/Core/DxeIplPeim/DxeLoad.c, line 209:
+
+  if (!EFI_ERROR (Status)) {
+    DataSize = sizeof (MemoryData);
+    Status = Variable->GetVariable ( 
+                         Variable, 
+                         EFI_MEMORY_TYPE_INFORMATION_VARIABLE_NAME,
+                         &gEfiMemoryTypeInformationGuid,
+                         NULL,
+                         &DataSize,
+                         &MemoryData
+                         );
+
+In DxeLoad.c, ln 201:
+  Status = PeiServicesLocatePpi (
+
+	Which calling into PeiServicesLib.c, ln 103, which calls into PeiServicesTablePointer.c, ln 62, via this call:
+	  PeiServices = GetPeiServicesTablePointer ();
+
+		Which is then calling this function:
+		  ArmPlatformGetGlobalVariable (PcdGet32 (PcdPeiServicePtrGlobalOffset), sizeof(EFI_PEI_SERVICES **), &PeiServicesTablePointer);
+
+			Which is found in PeiArmPlatformGlobalVariableLib.c, ln 33.
+
+				This then calls:
+					  GlobalVariableBase = PcdGet32 (PcdCPUCoresStackBase) + PcdGet32 (PcdCPUCorePrimaryStackSize) - PcdGet32 (PcdPeiGlobalVariableSize) + VariableOffset;
+
+				GlobalVariableBase then becomes: 0x4800FFFC and Variable == 0x9801E3BC and PeiServicesTablePointer = 0x9801E51C
+	Then, it calls:
+		return (*PeiServices)->LocatePpi (PeiServices, Guid, Instance, PpiDescriptor, Ppi);
+
+	And this returns
+
+Then:
+  return (*PeiServices)->LocatePpi (PeiServices, Guid, Instance, PpiDescriptor, Ppi);
+
+
+
+How is LocatePpi defined????
+
+./MdePkg/Include/Pi/PiPeiCis.h:750
+struct _EFI_PEI_SERVICES {
+	...
+	EFI_PEI_LOCATE_PPI              LocatePpi;
+	...
+
+./MdeModulePkg/Core/Pei/PeiMain/PeiMain.c:36
+		EFI_PEI_SERVICES  gPs = {
+		  {
+			PEI_SERVICES_SIGNATURE,
+			PEI_SERVICES_REVISION,
+			sizeof (EFI_PEI_SERVICES),
+			0,
+			0
+		  },
+		  PeiInstallPpi,
+		  PeiReInstallPpi,
+		  PeiLocatePpi,
+		  PeiNotifyPpi,
+
+PeiCore (in PeiMain.c:165,257) copies gPs to PrivateData
+
+--------------------------------------------------------------------------------
+Building UEFI for beagle
+--------------------------------------------------------------------------------
+I've unpacked the CodeSourcery toolchain here:
+	/linaro/lt/uefi/arm-2010.09/bin
+
+
+export ARMGCC_TOOLS_PATH=/linaro/lt/uefi/arm-2010.09/bin/
+export TOOLCHAIN=ARMGCC
+export EDK_TOOLS_PATH=`pwd`/BaseTools
+. edksetup.sh `pwd`/BaseTools/
+make -C $EDK_TOOLS_PATH
+
+cd BeagleBoardPkg/
+./build.sh RELEASE
+
+--------------------------------------------------------------------------------
+(A) use u-boot to start UEFI
+cp ../Build/BeagleBoard/RELEASE_ARMLINUXGCC/FV/BEAGLEBOARD_EFI.fd /media/boot/BEAGLEBOARD_EFI.fd
+sync ; eject /media/boot ; eject /media/rootfs
+
+
+Then, on BeagleBoard, power up the board, interrupt u-boot, type commands:
+
+mmc rescan
+fatload mmc 0:1 80008000 BEAGLEBOARD_EFI.fd
+go 80008000
+
+(B) use UEFI to boot instead of using u-boot
+replace u-boot.bin with the UEFI binary:
+
+cp ../Build/BeagleBoard/RELEASE_ARMLINUXGCC/FV/BEAGLEBOARD_EFI.fd /media/boot/u-boot.bin
+sync ; eject /media/boot ; eject /media/rootfs
+--------------------------------------------------------------------------------
+
+
+... interrupt the boot countdown.  Configure UEFI to boot the linux kernel...
+
+The default boot selection will start in   9 seconds
+[1] Linux from SD
+[2] EBL
+[3] Boot Manager
+Start: 3
+[1] Add Boot Device Entry
+[2] Update Boot Device Entry
+[3] Remove Boot Device Entry
+[4] Update FDT path
+[5] Return to main menu
+Choice: 3
+[1] Linux from SD
+Delete entry: 1
+[1] Add Boot Device Entry
+[2] Update Boot Device Entry
+[3] Remove Boot Device Entry
+[4] Update FDT path
+[5] Return to main menu
+Choice: 1
+[1] SemihostFs (0 MB)
+[2] boot (51 MB)
+[3] VenHw(4D00EF14-C4E0-426B-81B7-30A00A14AAD6)
+Select the Boot Device: 2
+File path of the EFI Application or the kernel: zImage
+Has FDT support? [y/n] n
+Add an initrd: [y/n] y
+File path of the initrd: uInitrd
+Arguments to pass to the binary: console=ttyO2,115200n8 root=/dev/mmcblk0p2 rootwait ro earlyprintk fixrtc nocompcache vram=12M omapfb.mode=dvi:1280x720MR-16@60
+Description for this new Entry: li
+[1] Add Boot Device Entry
+[2] Update Boot Device Entry
+[3] Remove Boot Device Entry
+[4] Update FDT path
+[5] Return to main menu
+Choice: 5
+[1] li
+[2] EBL
+[3] Boot Manager
+Start: 1
+   PEI    275 ms
+   DXE    961 ms
+   BDS   4503 ms
+Total Time = 5740 ms
+
+Uncompressing Linux... done, booting the kernel.
+[    0.000000] Initializing cgroup subsys cpuset
+......
+
+
+PROBLEM:
+UEFI doesn't remember the config over a reboot! So, you have to rebuild it with the options you require.
+
+1) boot uefi on Beagle
+2) interrupt the boot
+3) choose option [2] EBL
+4) run the "devicepath" command
+
+BeagleEdk2 >devicepath
+[0x87B25690] MemoryMapped(0xB,0x80008000,0x80087FFF)
+[0x87B25390] MemoryMapped(0xB,0x87D63000,0x87E9B46F)
+[0x873BF890] VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8,N,1)
+[0x873BEC90] VenHw(4D00EF14-C4E0-426B-81B7-30A00A14AAD6)
+[0x873B8190] VenHw(100C2CFA-B586-4198-9B4C-1683D195B1DA)
+[0x873B7610] PciRoot(0x0)/Pci(0x0,0x0)
+[0x873AFA90] VenHw(E68088EF-D1A4-4336-C1DB-4D3A204730A6)
+[0x873B1F90] VenHw(C5B9C74A-6D72-4719-99AB-C59F199091EB)
+[0x873AD190] VenHw(D3987D4B-971A-435F-8CAF-4967EB627241)/Uart(115200,8,N,1)/VenPcAnsi()
+[0x873A5E10] VenHw(100C2CFA-B586-4198-9B4C-1683D195B1DA)/HD(1,MBR,0x00059C1B,0x3F,0x19FC0)
+[0x873A5B10] VenHw(100C2CFA-B586-4198-9B4C-1683D195B1DA)/HD(2,MBR,0x00059C1B,0x1A000,0x3AF400)
+
+5) the mmc card boot partition is the 2nd last one, where HD(1,MBR,....) indicates it's the first partition on the card.
+6) Edit "edk2/BeagleBoard/BeagleBoard.dsc" to add in the default options:
+
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"Ryan's Linux from SD"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L"VenHw(100C2CFA-B586-4198-9B4C-1683D195B1DA)/HD(1,MBR,0x00059C1B,0x3F,0x19FC0)/zImage"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|"console=ttyO2,115200n8 root=/dev/mmcblk0p2 rootwait ro earlyprintk fixrtc nocompcache vram=12M omapfb.mode=dvi:1280x720MR-16@60"
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootType|1
+  gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|10
+  gArmPlatformTokenSpaceGuid.PcdFdtDevicePath|L"VenHw(100C2CFA-B586-4198-9B4C-1683D195B1DA)/HD(1,MBR,0x00059C1B,0x3F,0x19FC0)/board.dtb"
+
+
+
+
+
+--------------------------------------------------------------------------------
+vexpress: booting UEFI from u-boot
+--------------------------------------------------------------------------------
+1) copy 
+cp edk2/Build/ArmVExpress-CTA9x4-Standalone/DEBUG_ARMGCC/FV/ARMVEXPRESS_EFI.fd /media/boot/uefi.bin
+cp edk2/Build/ArmVExpress-CTA9x4-Standalone/DEBUG_ARMGCC/FV/SEC_ARMVEXPRESS_EFI.fd /media/boot/sec_uefi.bin
+sync ; eject /media/boot ; eject /media/rootfs
+
+2) boot the board with u-boot and interrupt the boot cycle
+
+3) Load uefi.bin from the mmc card and run it
+mmc rescan
+fatload mmc ${mmcdev} ${loadaddr} sec_uefi.bin
+go ${loadaddr}
+
+or load the regular uefi binary:
+fatload mmc ${mmcdev} ${loadaddr} uefi.bin
+go ${loadaddr}
+
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+1. create the debian package
+--------------------------------------------------------------------------------
+cd /linaro/lt/lmc-hacking/packaging-test/minimal
+vi uefi-linaro-vexpress-ca9x4
+equivs-build uefi-linaro-vexpress-ca9x4 
+
+
+--------------------------------------------------------------------------------
+2. create the hwpack, using the local debian package
+--------------------------------------------------------------------------------
+cd ryan@vaio:/linaro/lt/lmc-hacking/hwpack-creation/bzr/hwpack.oneiric.linaro-lt-vexpress-a9/hwpacks
+cp /linaro/lt/lmc-hacking/packaging-test/minimal/*.deb .
+vi linaro-lt-vexpress-a9
+linaro-hwpack-create --local-deb uefi-linaro-vexpress-ca9x4_1.0_all.deb linaro-lt-vexpress-a9 1
+
+--------------------------------------------------------------------------------
+3. create the disk image
+--------------------------------------------------------------------------------
+IMAGE=linaro-o-nano-tar-20111121-0.tar.gz
+HWPACK=hwpack_linaro-lt-vexpress-a9_1_armel_supported.tar.gz
+DISK=/dev/mmcblk0
+BOARD=vexpress-a9
+sudo linaro-media-create --binary $IMAGE --hwpack $HWPACK --dev $BOARD --rootfs ext4 --mmc $DISK --nocheck-mmc --hwpack-force-yes
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+26 Jan 2012 - GIC problems:
+--------------------------------------------------------------------------------
+Loading driver at 0x000BFA74000 EntryPoint=0x000BFA7426D PL390GicDxe.efi
+RMH: pre: Index 0x0
+RMH: read from addr=0x2C0011802C001180
+
+Data Abort Exception PC at 0xBFA75F2C  CPSR 0x60000133 nZCveAifT_svc
+/linaro/lt/uefi/build.003/edk2/Build/ArmVExpress-CTA5s-Standalone/DEBUG_ARMLINUXGCC/ARM/ArmPkg/Drivers/PL390Gic/PL390GicDxe/DEBUG/PL390GicDxe.dll
+loaded at 0xBFA74000 (PE/COFF offset) 0x1F2C (ELF or Mach-O offset) 0x1CEC
+0x681B       LDR    r3, [r3 #0x0]
+  R0 0x00000001   R1 0x0000000A   R2 0x00000000   R3 0x2C001100
+  R4 0x00000004   R5 0x00000000   R6 0x00000000   R7 0x87C487A0
+  R8 0x00000000   R9 0x00000000  R10 0x00000003  R11 0x00000000
+ R12 0xFFFFFFFF   SP 0xBFBCAD68   LR 0xBFA75F0F   PC 0xBFA75F2C
+DFSR 0x00000005 DFAR 0x2C001100 IFSR 0x00001007 IFAR 0x00000000
+ Translation fault on Section: read from 0x2C001100
+ Instruction Translation fault on Page at 0x00000000
+--------------------------------------------------------------------------------
+cd /linaro/lt/uefi/build.003/edk2/ArmPkg/Drivers/PL390Gic
+vi ./PL390GicDxe.c
+
+
+
+
+Build:
+------
+cd /linaro/lt/uefi/build.003/edk2
+export EDK_TOOLS_PATH=`pwd`/BaseTools
+. edksetup.sh `pwd`/BaseTools/
+
+build -a ARM -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA5s.dsc -t ARMLINUXGCC -D EDK2_ARMVE_STANDALONE=1
+cp ./Build/ArmVExpress-CTA5s-Standalone/DEBUG_ARMLINUXGCC/FV/ARMVEXPRESS_EFI.fd /media/VEA5/SOFTWARE/A5/uefi.bin 
+ej 2
+
+
+
+--------------------------------------------------------------------------------
+Updating the combined tree
+--------------------------------------------------------------------------------
+1) update the edk2 branch
+git pull edk2
+
+2) update the edk2fatdriver2 branch
+git pull edk2-fatdriver2
+
+3) empty the master branch
+git checkout master
+git log --oneline
+	<find the entry that says "initialise tree">
+git reset --hard <id>
+
+4) merge in the edk2 branch
+
+git checkout master
+
+TREE=edk2
+git merge -s ours --no-commit $TREE/trunk
+git read-tree --prefix=$TREE/ -u $TREE:$TREE
+git commit -m "Adding $TREE project into main tree"
+
+TREE=edk2-fatdriver2
+git merge -s ours --no-commit $TREE/trunk
+git read-tree --prefix=edk2/FatPkg/ -u $TREE:FatPkg
+git commit -m "Adding $TREE FatPkg into edk2 tree"
+
+
+
+
+--------------------------------------------------------------------------------
+Eclipse DS-5 debugger/debugging
+--------------------------------------------------------------------------------
+How to load a binary file into memory: restore <file> binary <address>
+eg.
+	restore /linaro/arm/tuscan/uefi/build/edk2-11810-patched-build-hacked/Build/ArmTuscan/DEBUG_ARMGCC/FV/TUSCAN_EFI.fd binary 0x10000000
+
+
+
+
