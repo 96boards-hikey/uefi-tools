@@ -10,11 +10,11 @@ else
 fi
 
 
-branches=(`git branch | grep linaro-tracking`)
+branches=(`git branch | grep linaro-tracking | sed "s/*//"`)
 
 for branch in "${branches[@]}" ; do
 	echo "----------------------------------------"
-	echo "Pushing branch $branch to $1"
+	echo "Pushing branch $branch to $REPO"
 	echo "----------------------------------------"
 	git push -f $REPO $branch
 done
