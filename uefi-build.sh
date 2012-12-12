@@ -9,6 +9,7 @@ function uefishell
 		echo "Setting up shell for building UEFI"
 		export TOOLCHAIN=ARMLINUXGCC
 		export EDK_TOOLS_PATH=`pwd`/BaseTools
+		export CROSS_COMPILE=arm-linux-gnueabi-
 		. edksetup.sh `pwd`/BaseTools/
 		make -C $EDK_TOOLS_PATH
 		UEFISHELL_SETUP="y"
@@ -54,14 +55,21 @@ function build_origen
 {
 	uefishell
 	echo "Building Samsung Origen"
-	build -a ARM -b DEBUG -t ARMLINUXGCC -p SamsungPlatformPkg/OrigenBoardPkg/OrigenBoardPkg-Exynos.dsc
+	build -a ARM -b DEBUG -t ARMLINUXGCC -p SamsungPlatformPkgOrigen/OrigenBoardPkg/OrigenBoardPkg-Exynos.dsc
+}
+
+function build_arndale
+{
+	uefishell
+	echo "Building Samsung Arndale"
+	build -a ARM -b DEBUG -t ARMLINUXGCC -p SamsungPlatformPkg/ArndaleBoardPkg/arndale-Exynos5250.dsc -D EXYNOS5250_EVT1 -D DDR3
 }
 
 
 function usage
 {
 	echo "usage:"
-	echo "uefibuild.sh [ all | a5 | a9 | tc1 | tc2 | panda | origen ]"
+	echo "uefibuild.sh [ all | a5 | a9 | tc1 | tc2 | panda | origen | arndale ]"
 	echo "    all       build all supported platforms"
 	echo "    a5        build Versatile Express A5"
 	echo "    a9        build Versatile Express A9"
@@ -69,6 +77,7 @@ function usage
 	echo "    tc2       build Versatile Express TC2"
 	echo "    panda     build TI Pandaboard"
 	echo "    origen    build Samsung Origen"
+	echo "    arndale   build Samsung Arndale"
 }
 
 
@@ -76,7 +85,7 @@ function usage
 # If there were no args, use a menu to select a single board / all boards to build
 if [ $# = 0 ]
 then
-	boards=( a5 a9 tc1 tc2 panda origen all )
+	boards=( a5 a9 tc1 tc2 panda origen arndale all )
 
 	read -p "$(
 			f=0
@@ -113,6 +122,10 @@ then
 	then
 		BUILD_ORIGEN="y"
 	fi
+	if [[ "$selected_board" = "arndale" || "$selected_board" = "all" ]]
+	then
+		BUILD_ARNDALE="y"
+	fi
 else
 	while [ "$1" != "" ]; do
 		case $1 in
@@ -123,6 +136,7 @@ else
 				BUILD_TC2="y"
 				BUILD_PANDA="y"
 				BUILD_ORIGEN="y"
+				BUILD_ARNDALE="y"
 				;;
 			a5 )
 				BUILD_A5="y"
@@ -141,6 +155,9 @@ else
 				;;
 			origen )
 				BUILD_ORIGEN="y"
+				;;
+			arndale )
+				BUILD_ARNDALE="y"
 				;;
 
 			/h | /? | -? | -h | --help )
@@ -179,6 +196,10 @@ fi
 if [ "$BUILD_ORIGEN" = "y" ]
 then
 	build_origen
+fi
+if [ "$BUILD_ARNDALE" = "y" ]
+then
+	build_arndale
 fi
 
 
