@@ -6,10 +6,23 @@ function uefishell
 {
 	if [ "$UEFISHELL_SETUP" != "y" ]
 	then
+		BUILD_ARCH=`uname -m`
+		case $BUILD_ARCH in
+			arm*)
+				ARCH=ARM
+				DEFAULT_CROSS_COMPILE=
+				;;
+			*)
+				DEFAULT_CROSS_COMPILE=arm-linux-gnueabi-
+				;;
+		esac
+		if [ -z "$CROSS_COMPILE" ]; then
+			CROSS_COMPILE="$DEFAULT_CROSS_COMPILE"
+		fi
+		export CROSS_COMPILE ARCH
 		echo "Setting up shell for building UEFI"
 		export TOOLCHAIN=ARMLINUXGCC
 		export EDK_TOOLS_PATH=`pwd`/BaseTools
-		export CROSS_COMPILE=arm-linux-gnueabi-
 		. edksetup.sh `pwd`/BaseTools/
 		make -C $EDK_TOOLS_PATH
 		UEFISHELL_SETUP="y"
