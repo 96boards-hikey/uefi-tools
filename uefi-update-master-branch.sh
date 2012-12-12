@@ -43,3 +43,9 @@ for branch in "${branches[@]}" ; do
 	sleep 1
 done
 
+# create the armlt-tracking branch
+#   the CI job depends on this branch, so we need it
+#   in this case, it's just a clone of linaro-tracking
+git branch -D armlt-tracking
+git branch armlt-tracking
+
