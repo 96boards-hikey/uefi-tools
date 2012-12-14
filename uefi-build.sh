@@ -13,6 +13,7 @@ function uefishell
 				DEFAULT_CROSS_COMPILE=
 				;;
 			*)
+				unset ARCH
 				DEFAULT_CROSS_COMPILE=arm-linux-gnueabi-
 				;;
 		esac
