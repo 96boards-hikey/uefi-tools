@@ -26,6 +26,10 @@ function uefishell
 		export EDK_TOOLS_PATH=`pwd`/BaseTools
 		. edksetup.sh `pwd`/BaseTools/
 		make -C $EDK_TOOLS_PATH
+		if [ $? -ne 0 ]; then
+			echo " !!! UEFI BaseTools failed to build !!! " >&2
+			exit 1
+		fi
 		UEFISHELL_SETUP="y"
 	fi
 }
