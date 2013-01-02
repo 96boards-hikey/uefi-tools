@@ -1,4 +1,25 @@
 --------------------------------------------------------------------------------
+How to update uefi.git
+I've added this as a new script now: uefi-update-release-tree.sh
+--------------------------------------------------------------------------------
+cd /linaro/g.l.o/arm/uefi/
+git clone git://git.linaro.org/arm/uefi/uefi.git uefi.git
+git clone git://git.linaro.org/arm/uefi/uefi.git uefi-next.git
+
+cd /linaro/g.l.o/arm/uefi/uefi.git
+git remote add uefi-next ../uefi-next.git
+git fetch -f uefi-next
+git merge -s ours --no-commit uefi-next/armlt-tracking
+### this will fail ###
+git rm -r edk2
+cp -R ../uefi-next.git/edk2 .
+git add *
+git commit -s -m "Merge branch 'armlt-tracking' of git://git.linaro.org/arm/uefi/uefi-next"
+
+
+
+
+--------------------------------------------------------------------------------
 How to fix the bugs
 --------------------------------------------------------------------------------
 BUG2:
