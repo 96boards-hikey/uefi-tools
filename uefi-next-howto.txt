@@ -1,3 +1,135 @@
+2013 - Linaro UEFI Maintainer process
+
+1) Creating uefi-next
+uefi-next has a core tree that is a long-lived tree consisting of a roll-up of various Tianocore trees:
+- edk2					git://tianocore.git.sourceforge.net/gitroot/tianocore/edk2
+							[svn: https://edk2.svn.sourceforge.net/svnroot/edk2 ]
+- edk2-fatdriver2		git://git.linaro.org/mirror/edk2/edk2-fatdriver2.git
+							[svn: https://edk2-fatdriver2.svn.sourceforge.net/svnroot/edk2-fatdriver2/ ]
+- edk2-BaseTools		git://tianocore.git.sourceforge.net/gitroot/tianocore/buildtools-BaseTools
+							[svn: https://edk2-buildtools.svn.sourceforge.net/svnroot/edk2-buildtools ]
+
+--------------------------------------------------------------------------------
+The BaseTools Saga
+
+The Tianocore SVN repo:
+	http://tianocore.git.sourceforge.net/git/gitweb.cgi?p=tianocore/edk2-BaseTools;a=summary
+
+The GIT mirror of that SVN repo:
+	http://tianocore.git.sourceforge.net/git/gitweb.cgi?p=tianocore/buildtools-BaseTools;a=summary
+	git://tianocore.git.sourceforge.net/gitroot/tianocore/buildtools-BaseTools
+
+Now, when I first started looking for the GIT mirror, I found this one:
+	http://tianocore.git.sourceforge.net/git/gitweb.cgi?p=tianocore/edk2-BaseTools;a=summary
+	git://tianocore.git.sourceforge.net/gitroot/tianocore/edk2-BaseTools
+
+... but it was almost a year out of date.  Then I noticed that it's called buildtools-BaseTools.  I guess there's some history behind that.
+--------------------------------------------------------------------------------
+
+
+edk2 and BaseTools both have GIT mirrors in SourceForge, however, edk2-fatdriver2 only exists as a subversion tree.  Linaro keeps a mirror of the subversion tree as a GIT tree on git.linaro.org, so we will use this to pull in the code.
+
+###############################################################################
+# instructions / commands from here on in
+###############################################################################
+# 1.1) Create the empty tree
+mkdir uefi-next.git
+cd uefi-next.git
+git init
+ln -s . edk2
+git add edk2
+git commit -s -m "create edk2 sub-directory"
+
+#touch .gitignore
+#git add .gitignore
+#git commit -m "init repo"
+
+# 1.2) Create the branches tracking the Tianocore trees
+# Use these variables for the "real" method
+#	GIT_EDK2=git://tianocore.git.sourceforge.net/gitroot/tianocore/edk2
+#	GIT_FATDRIVER2=git://git.linaro.org/mirror/edk2/edk2-fatdriver2.git
+#	GIT_BASETOOLS=git://tianocore.git.sourceforge.net/gitroot/tianocore/buildtools-BaseTools
+#
+#Use these for quicker testing with local trees:
+	GIT_EDK2=/linaro/lt/uefi/git/edk2
+	GIT_FATDRIVER2=/linaro/lt/uefi/git/edk2-fatdriver2.git
+	GIT_BASETOOLS=/linaro/lt/uefi/git/buildtools-BaseTools
+
+# 1.2.1) EDK2
+TREE=tianocore-edk2
+git remote add $TREE $GIT_EDK2
+git checkout --orphan $TREE
+git pull $TREE master
+
+# 1.2.2) FatDriver2
+TREE=tianocore-edk2-fatdriver2
+git remote add $TREE $GIT_FATDRIVER2
+git checkout --orphan $TREE
+git pull $TREE trunk
+
+# 1.2.3) BaseTools
+TREE=tianocore-edk2-basetools
+git remote add $TREE $GIT_BASETOOLS
+git checkout --orphan $TREE
+git pull $TREE master
+
+
+# 1.3) Create a new "master" branch that is a merge of the Tiancore upstreams
+# 1.3.1) First use tianocore-edk2 as the base
+
+# Use this for the real master branch name:
+#   MASTER=master
+# Or use this for testing
+    MASTER=master-test
+
+
+git checkout tianocore-edk2
+git branch -D $MASTER
+git branch $MASTER
+git checkout $MASTER
+
+# 1.3.2) Then merge in fatdriver2
+
+TREE=tianocore-edk2-fatdriver2
+git merge -s ours --no-commit $TREE
+git read-tree --prefix=FatPkg/ -u $TREE:FatPkg
+git commit -m "Adding $TREE FatPkg into edk2 tree"
+
+# 1.3.3) Then merge in BaseTools
+
+TREE=tianocore-edk2-basetools
+git merge -s subtree --no-commit $TREE
+git commit -m "Adding $TREE BaseTools into edk2 tree"
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Everything below here is for the "2012" uefi-next tree.
+The new way of working makes this mostly obsolete.
+Although you may find snippet of info that are useful, so I'll keep it for now.
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+
+
+
 --------------------------------------------------------------------------------
 How to update uefi.git
 I've added this as a new script now: uefi-update-release-tree.sh
