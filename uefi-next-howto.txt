@@ -74,7 +74,7 @@ git checkout --orphan $TREE
 git pull $TREE master
 
 
-# 1.3) Create a new "master" branch that is a merge of the Tiancore upstreams
+# 1.3) Construct a "master" branch that is a merge of the Tiancore upstreams
 # 1.3.1) First use tianocore-edk2 as the base
 
 # Use this for the real master branch name:
@@ -82,11 +82,14 @@ git pull $TREE master
 # Or use this for testing
     MASTER=master-test
 
+## This is wrong, it isn't acting as a clean history tree:
+#git checkout tianocore-edk2
+#git branch -D $MASTER
+#git branch $MASTER
 
-git checkout tianocore-edk2
-git branch -D $MASTER
-git branch $MASTER
+# Simply merge in the EDK2 branch, as this is the first to be merged, it will be a clean merge
 git checkout $MASTER
+git merge tianocore-edk2
 
 # 1.3.2) Then merge in fatdriver2
 
@@ -103,9 +106,144 @@ git commit -m "Adding $TREE BaseTools into edk2 tree"
 
 
 
+#--------------------------------------------------------------------------------
+# At this point, we have a tree with the basic upstreams merged together
+# Then, we should create a monthly branch off this
+# Then we create topic branches off the monthly branch
+# Then we merge all the topic branches into the monthly branch
+#--------------------------------------------------------------------------------
+MONTHLY=linaro-tracking-13.01
+git branch $MONTHLY $MASTER
+
+TOPIC_PREFIX=linaro-topic-
+DIR_PREFIX=linaro-tracking-
+
+BRANCH=a5
+git branch $TOPIC_PREFIX$BRANCH $MONTHLY
+git checkout $TOPIC_PREFIX$BRANCH
+git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$DIR_PREFIX$BRANCH/*.patch
+
+BRANCH=a9
+git branch $TOPIC_PREFIX$BRANCH $MONTHLY
+git checkout $TOPIC_PREFIX$BRANCH
+git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$DIR_PREFIX$BRANCH/*.patch
+
+BRANCH=arndale
+git branch $TOPIC_PREFIX$BRANCH $MONTHLY
+git checkout $TOPIC_PREFIX$BRANCH
+git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$DIR_PREFIX$BRANCH/*.patch
+
+BRANCH=local-fdt
+git branch $TOPIC_PREFIX$BRANCH $MONTHLY
+git checkout $TOPIC_PREFIX$BRANCH
+git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$DIR_PREFIX$BRANCH/*.patch
+
+BRANCH=menu
+git branch $TOPIC_PREFIX$BRANCH $MONTHLY
+git checkout $TOPIC_PREFIX$BRANCH
+git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$DIR_PREFIX$BRANCH/*.patch
+
+BRANCH=misc
+git branch $TOPIC_PREFIX$BRANCH $MONTHLY
+git checkout $TOPIC_PREFIX$BRANCH
+git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$DIR_PREFIX$BRANCH/*.patch
+
+BRANCH=origen
+git branch $TOPIC_PREFIX$BRANCH $MONTHLY
+git checkout $TOPIC_PREFIX$BRANCH
+git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$DIR_PREFIX$BRANCH/*.patch
+
+BRANCH=panda
+git branch $TOPIC_PREFIX$BRANCH $MONTHLY
+git checkout $TOPIC_PREFIX$BRANCH
+git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$DIR_PREFIX$BRANCH/*.patch
+
+BRANCH=tc1
+git branch $TOPIC_PREFIX$BRANCH $MONTHLY
+git checkout $TOPIC_PREFIX$BRANCH
+git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$DIR_PREFIX$BRANCH/*.patch
+
+BRANCH=tc2
+git branch $TOPIC_PREFIX$BRANCH $MONTHLY
+git checkout $TOPIC_PREFIX$BRANCH
+git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$DIR_PREFIX$BRANCH/*.patch
+
+
+#--------------------------------------------------------------------------------
+# Now that we have the topic branches, we merge them all back to the tracking branch
+#--------------------------------------------------------------------------------
+git checkout $MONTHLY
+git merge linaro-topic-a5
+git merge linaro-topic-a9
+git merge linaro-topic-arndale
+git merge linaro-topic-local-fdt
+git merge linaro-topic-menu
+git merge linaro-topic-misc
+git merge linaro-topic-origen
+git merge linaro-topic-panda
+git merge linaro-topic-tc1
+git merge linaro-topic-tc2
+
+
+#--------------------------------------------------------------------------------
+# As new development happens, patches get applied to the topic branches and
+# merged onto the monthly tracking branch.
+# No rebasing.  Ever.
+# If a fix comes in upstream, there are different ways to handle this:
+#  1) For large, disruptive changes, the core branch gets updated and merged onto
+      the monthly tracking branch.
+#  2) For small fixes, they get cherry picked into the monthly branch.
+#     question: do we have to update the core branch to do this? 
+#--------------------------------------------------------------------------------
+
+
+#--------------------------------------------------------------------------------
+# At the end of the month, the tracking branch gets "frozen" and tagged
+# Then it gets merged into the release branch.
+# The release branch is then merged to the release tree - uefi.git
+#--------------------------------------------------------------------------------
 
 
 
+#--------------------------------------------------------------------------------
+# Start of Month
+# The upstream branches get updated and merged to the core branch
+# A new monthly branch is created from this
+# The topic branches are rebased to this new monthly branch
+# The topic branches are then merged back to the new monthly branch as per normal
+#
+#--------------------------------------------------------------------------------
+
+# 1) Update upstreams
+# 1.1) update branches
+
+## I have local copied of the upstreams for testing, I need to update these first
+cd /linaro/lt/uefi/git/buildtools-BaseTools
+git checkout master
+git pull
+cd /linaro/lt/uefi/git/edk2
+git checkout master
+git pull
+cd /linaro/lt/uefi/git/edk2-fatdriver2.git
+git checkout trunk
+git pull
+
+
+## I have now updated me local copied, now do the real update to uefi-next.git
+cd /linaro/lt/uefi/uefi-next.git
+git checkout tianocore-edk2
+git pull tianocore-edk2 master
+
+git checkout tianocore-edk2-fatdriver2
+git pull tianocore-edk2-fatdriver2 trunk
+
+git checkout tianocore-edk2-basetools
+git pull tianocore-edk2-basetools master
+
+# 1.2) update core branch
+git checkout $MASTER
+git merge tianocore-edk2
+git merge tianocore-edk2-fatdriver2
 
 
 
