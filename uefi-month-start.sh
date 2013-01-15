@@ -225,9 +225,9 @@ echo "--------------------------------------------------------------------------
 echo "Update global tracking branches"
 echo "--------------------------------------------------------------------------------"
 git checkout linaro-tracking
-git merge linaro-uefi-$YYMM-rc1
-git checkout armlt-tracking
-git merge linaro-uefi-$YYMM-rc1
+git merge linaro-tracking-$YYMM
+git branch -D armlt-tracking
+git branch armlt-tracking
 
 
 

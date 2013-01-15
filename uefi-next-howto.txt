@@ -51,9 +51,9 @@ git commit -s -m "create edk2 sub-directory"
 #	GIT_BASETOOLS=git://tianocore.git.sourceforge.net/gitroot/tianocore/buildtools-BaseTools
 #
 #Use these for quicker testing with local trees:
-	GIT_EDK2=/linaro/lt/uefi/git/edk2
-	GIT_FATDRIVER2=/linaro/lt/uefi/git/edk2-fatdriver2.git
-	GIT_BASETOOLS=/linaro/lt/uefi/git/buildtools-BaseTools
+GIT_EDK2=/linaro/lt/uefi/git/edk2
+GIT_FATDRIVER2=/linaro/lt/uefi/git/edk2-fatdriver2.git
+GIT_BASETOOLS=/linaro/lt/uefi/git/buildtools-BaseTools
 
 # 1.2.1) EDK2
 TREE=tianocore-edk2
@@ -73,14 +73,14 @@ git remote add $TREE $GIT_BASETOOLS
 git checkout --orphan $TREE
 git pull $TREE master
 
-
 # 1.3) Construct a "master" branch that is a merge of the Tiancore upstreams
 # 1.3.1) First use tianocore-edk2 as the base
 
 # Use this for the real master branch name:
-#   MASTER=master
+MASTER=master
+
 # Or use this for testing
-    MASTER=master-test
+#    MASTER=master-test
 
 ## This is wrong, it isn't acting as a clean history tree:
 #git checkout tianocore-edk2
@@ -88,31 +88,45 @@ git pull $TREE master
 #git branch $MASTER
 
 # Simply merge in the EDK2 branch, as this is the first to be merged, it will be a clean merge
+TREE=tianocore-edk2
 git checkout $MASTER
-git merge tianocore-edk2
+git merge --no-commit $TREE
+#git commit -s -m "Adding $TREE into edk2 tree"
+git commit -s -m "Adding $TREE into edk2 tree" --date "Mon Dec 3 12:12:12 GMT 2012"
+
 
 # 1.3.2) Then merge in fatdriver2
 
 TREE=tianocore-edk2-fatdriver2
 git merge -s ours --no-commit $TREE
 git read-tree --prefix=FatPkg/ -u $TREE:FatPkg
-git commit -m "Adding $TREE FatPkg into edk2 tree"
+git commit -s -m "Adding $TREE FatPkg into edk2 tree" --date "Mon Dec 3 12:13:12 GMT 2012"
 
 # 1.3.3) Then merge in BaseTools
 
 TREE=tianocore-edk2-basetools
 git merge -s subtree --no-commit $TREE
-git commit -m "Adding $TREE BaseTools into edk2 tree"
+git commit -s -m "Adding $TREE BaseTools into edk2 tree" --date "Mon Dec 3 12:14:12 GMT 2012"
 
 
 
 #--------------------------------------------------------------------------------
 # At this point, we have a tree with the basic upstreams merged together
+# Tag the master branch to say that this is where we branch from for the monthly
+# cycle
+# Tag: linaro-base-<yy>.<mm>
+#--------------------------------------------------------------------------------
+git checkout $MASTER
+YY=12
+MM=12
+git tag linaro-base-$YY.$MM
+
+#--------------------------------------------------------------------------------
 # Then, we should create a monthly branch off this
 # Then we create topic branches off the monthly branch
 # Then we merge all the topic branches into the monthly branch
 #--------------------------------------------------------------------------------
-MONTHLY=linaro-tracking-13.01
+MONTHLY=linaro-tracking-$YY.$MM
 git branch $MONTHLY $MASTER
 
 TOPIC_PREFIX=linaro-topic-
@@ -173,16 +187,75 @@ git am --ignore-whitespace --ignore-space-change /linaro/lt/uefi/2012/patches/$D
 # Now that we have the topic branches, we merge them all back to the tracking branch
 #--------------------------------------------------------------------------------
 git checkout $MONTHLY
-git merge linaro-topic-a5
-git merge linaro-topic-a9
-git merge linaro-topic-arndale
-git merge linaro-topic-local-fdt
-git merge linaro-topic-menu
-git merge linaro-topic-misc
-git merge linaro-topic-origen
-git merge linaro-topic-panda
-git merge linaro-topic-tc1
-git merge linaro-topic-tc2
+#git merge linaro-topic-a5
+#git merge linaro-topic-a9
+#git merge linaro-topic-arndale
+#git merge linaro-topic-local-fdt
+#git merge linaro-topic-menu
+#git merge linaro-topic-misc
+#git merge linaro-topic-origen
+#git merge linaro-topic-panda
+#git merge linaro-topic-tc1
+#git merge linaro-topic-tc2
+
+# Note: I'm using a specific date here so that the tree's history looks sane
+# Because we start by creating the tree with a December branch, where Decemeber is
+# in the past, we need to force the date
+
+topic=linaro-topic-a5
+git merge --no-commit $topic 
+git commit -s -m "Merging $topic into $MONTHLY" --date "Mon Dec 3 13:01:13 GMT 2012"
+topic=linaro-topic-a9
+git merge --no-commit $topic 
+git commit -s -m "Merging $topic into $MONTHLY" --date "Mon Dec 3 13:02:13 GMT 2012"
+topic=linaro-topic-arndale
+git merge --no-commit $topic 
+git commit -s -m "Merging $topic into $MONTHLY" --date "Mon Dec 3 13:03:13 GMT 2012"
+topic=linaro-topic-local-fdt
+git merge --no-commit $topic 
+git commit -s -m "Merging $topic into $MONTHLY" --date "Mon Dec 3 13:04:13 GMT 2012"
+topic=linaro-topic-menu
+git merge --no-commit $topic 
+git commit -s -m "Merging $topic into $MONTHLY" --date "Mon Dec 3 13:05:13 GMT 2012"
+topic=linaro-topic-misc
+git merge --no-commit $topic 
+git commit -s -m "Merging $topic into $MONTHLY" --date "Mon Dec 3 13:06:13 GMT 2012"
+topic=linaro-topic-origen
+git merge --no-commit $topic 
+git commit -s -m "Merging $topic into $MONTHLY" --date "Mon Dec 3 13:07:13 GMT 2012"
+topic=linaro-topic-panda
+git merge --no-commit $topic 
+git commit -s -m "Merging $topic into $MONTHLY" --date "Mon Dec 3 13:08:13 GMT 2012"
+topic=linaro-topic-tc1
+git merge --no-commit $topic 
+git commit -s -m "Merging $topic into $MONTHLY" --date "Mon Dec 3 13:09:13 GMT 2012"
+topic=linaro-topic-tc2
+git merge --no-commit $topic 
+git commit -s -m "Merging $topic into $MONTHLY" --date "Mon Dec 3 13:10:13 GMT 2012"
+
+git tag -d $MONTHLY-rc1
+git tag $MONTHLY-rc1
+
+
+#--------------------------------------------------------------------------------
+# Now create a "latest" tracking branch
+# CI and other automated things need to be able to pull a specific, fixed, branch
+# to do their work, so create a branch for this.  Historically, this was:
+#   armlt-tracking
+# Which we'll keep, but we should use something not ARMLT related for the future:
+#   linaro-tracking
+#--------------------------------------------------------------------------------
+git branch armlt-tracking $MONTHLY
+git branch linaro-tracking $MONTHLY
+
+
+#--------------------------------------------------------------------------------
+# At this point, we are at the first "version" of the tree
+# We should tag this as a known point in time, eg:
+# git tag linaro-uefi-12.12-rc1
+#--------------------------------------------------------------------------------
+git checkout $MONTHLY
+git tag linaro-uefi-$YY.$MM-rc1
 
 
 #--------------------------------------------------------------------------------
@@ -202,8 +275,13 @@ git merge linaro-topic-tc2
 # Then it gets merged into the release branch.
 # The release branch is then merged to the release tree - uefi.git
 #--------------------------------------------------------------------------------
+# First time only:  (gives an error if already exists, so it's ok to do it anyway)
+git branch linaro-release $MASTER
 
-
+# Every time
+git checkout linaro-release
+git merge $MONTHLY
+git tag linaro-uefi-$YY.$MM
 
 #--------------------------------------------------------------------------------
 # Start of Month
@@ -213,6 +291,9 @@ git merge linaro-topic-tc2
 # The topic branches are then merged back to the new monthly branch as per normal
 #
 #--------------------------------------------------------------------------------
+# January 2013
+YY=13
+MM=01
 
 # 1) Update upstreams
 # 1.1) update branches
@@ -229,7 +310,7 @@ git checkout trunk
 git pull
 
 
-## I have now updated me local copied, now do the real update to uefi-next.git
+## I have now updated my local copies, now do the real update to uefi-next.git
 cd /linaro/lt/uefi/uefi-next.git
 git checkout tianocore-edk2
 git pull tianocore-edk2 master
@@ -244,11 +325,65 @@ git pull tianocore-edk2-basetools master
 git checkout $MASTER
 git merge tianocore-edk2
 git merge tianocore-edk2-fatdriver2
+git merge tianocore-edk2-basetools
 
+# 1.3) tag it
+git tag linaro-base-$YY.$MM
 
+# 1.4) Create new monthly branch
+MONTHLY=linaro-tracking-$YY.$MM
+git branch $MONTHLY $MASTER
 
+# 1.5) Rebase all the topic branches
+# One of these could fail because a patch made it upstream.
+# Need some error trapping and fixing procedure here
 
+TOPIC=linaro-topic-a5
+git checkout $TOPIC
+git rebase $MONTHLY
+TOPIC=linaro-topic-a9
+git checkout $TOPIC
+git rebase $MONTHLY
+TOPIC=linaro-topic-arndale
+git checkout $TOPIC
+git rebase $MONTHLY
+TOPIC=linaro-topic-local-fdt
+git checkout $TOPIC
+git rebase $MONTHLY
+TOPIC=linaro-topic-menu
+git checkout $TOPIC
+git rebase $MONTHLY
+TOPIC=linaro-topic-misc
+git checkout $TOPIC
+git rebase $MONTHLY
+TOPIC=linaro-topic-origen
+git checkout $TOPIC
+git rebase $MONTHLY
+TOPIC=linaro-topic-panda
+git checkout $TOPIC
+git rebase $MONTHLY
+TOPIC=linaro-topic-tc1
+git checkout $TOPIC
+git rebase $MONTHLY
+TOPIC=linaro-topic-tc2
+git checkout $TOPIC
+git rebase $MONTHLY
 
+# 1.6) update monthly branch
+#--------------------------------------------------------------------------------
+# Now that we have the topic branches, we merge them all back to the tracking branch
+#--------------------------------------------------------------------------------
+git checkout $MONTHLY
+git merge linaro-topic-a5
+git merge linaro-topic-a9
+git merge linaro-topic-arndale
+git merge linaro-topic-local-fdt
+git merge linaro-topic-menu
+git merge linaro-topic-misc
+git merge linaro-topic-origen
+git merge linaro-topic-panda
+git merge linaro-topic-tc1
+git merge linaro-topic-tc2
 
 
 --------------------------------------------------------------------------------
