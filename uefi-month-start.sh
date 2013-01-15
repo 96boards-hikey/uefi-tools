@@ -201,7 +201,7 @@ for topic in "${topics[@]}" ; do
 	fi
 
 	# now commit
-	git commit -s -m "Merging $topic into $MONTH_BRANCH" # --date "Mon Dec 3 13:00:00 GMT 2012"
+	git commit -s -m "Merging $topic into $MONTH_BRANCH" #--date "Mon Jan 7 13:00:00 GMT 2013"
 
 done
 
@@ -211,7 +211,7 @@ echo "Tagging first release candidate"
 echo "--------------------------------------------------------------------------------"
 
 git checkout $MONTH_BRANCH
-git tag linaro-release-$YYMM-rc1
+git tag linaro-uefi-$YYMM-rc1
 
 #--------------------------------------------------------------------------------
 # Now create a "latest" tracking branch
@@ -225,9 +225,9 @@ echo "--------------------------------------------------------------------------
 echo "Update global tracking branches"
 echo "--------------------------------------------------------------------------------"
 git checkout linaro-tracking
-git merge linaro-release-$YYMM-rc1
+git merge linaro-uefi-$YYMM-rc1
 git checkout armlt-tracking
-git merge linaro-release-$YYMM-rc1
+git merge linaro-uefi-$YYMM-rc1
 
 
 
