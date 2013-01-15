@@ -1,223 +1,212 @@
 #!/bin/bash
 
-UEFISHELL_SETUP="n"
+#
+# To add a new platform:
+# - add a <shortname> to the "boards" array
+# - create a <shortname>_LONGNAME variable with a descriptive name
+# - create a <shortname>_build function
+#
 
-function uefishell
+boards=( a5 a9 tc1 tc2 panda origen arndale )
+
+a5_LONGNAME="Versatile Express A5"
+a9_LONGNAME="Versatile Express A9"
+tc1_LONGNAME="Versatile Express TC1"
+tc2_LONGNAME="Versatile Express TC2"
+panda_LONGNAME="TI Pandaboard"
+origen_LONGNAME="Samsung Origen"
+arndale_LONGNAME="Samsung Arndale"
+
+
+RESULT_BUF=`echo -e --------------------------------------------`
+PASS_COUNT=0
+FAIL_COUNT=0
+
+function log_result
 {
-	if [ "$UEFISHELL_SETUP" != "y" ]
-	then
-		BUILD_ARCH=`uname -m`
-		case $BUILD_ARCH in
-			arm*)
-				ARCH=ARM
-				DEFAULT_CROSS_COMPILE=
-				;;
-			*)
-				unset ARCH
-				DEFAULT_CROSS_COMPILE=arm-linux-gnueabi-
-				;;
-		esac
-		if [ -z "$CROSS_COMPILE" ]; then
-			CROSS_COMPILE="$DEFAULT_CROSS_COMPILE"
-		fi
-		export CROSS_COMPILE ARCH
-		echo "Setting up shell for building UEFI"
-		export TOOLCHAIN=ARMLINUXGCC
-		export EDK_TOOLS_PATH=`pwd`/BaseTools
-		. edksetup.sh `pwd`/BaseTools/
-		make -C $EDK_TOOLS_PATH
-		if [ $? -ne 0 ]; then
-			echo " !!! UEFI BaseTools failed to build !!! " >&2
-			exit 1
-		fi
-		UEFISHELL_SETUP="y"
+	if [ $1 -eq 0 ]; then
+		RESULT_BUF="`printf \"%s\n%32s\tpass\" \"$RESULT_BUF\" \"$2\"`"
+		PASS_COUNT=$(($PASS_COUNT + 1))
+	else
+		RESULT_BUF="`printf \"%s\n%32s\tfail\" \"$RESULT_BUF\" \"$2\"`"
+		FAIL_COUNT=$(($FAIL_COUNT + 1))
 	fi
+}
+
+function print_result
+{
+	printf "%s" "$RESULT_BUF"
+	echo -e "\n--------------------------------------------"
+	printf "pass\t$PASS_COUNT\n"
+	printf "fail\t$FAIL_COUNT\n"
+
+	exit $FAIL_COUNT
 }
 
 function build_a5
 {
-	uefishell
-	echo "Building Versatile Express A5"
+	PLATFORM_NAME="$board"_LONGNAME
+	echo "Building ${!PLATFORM_NAME}"
 	build -a ARM -b DEBUG -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA5s.dsc -D EDK2_ARMVE_STANDALONE=1
+	log_result $? "${!PLATFORM_NAME}"
 }
 
 function build_a9
 {
-	uefishell
-	echo "Building Versatile Express A9"
+	PLATFORM_NAME="$board"_LONGNAME
+	echo "Building ${!PLATFORM_NAME}"
 	build -a ARM -b DEBUG -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA9x4.dsc -D EDK2_ARMVE_STANDALONE=1 -D EDK2_ARMVE_SINGLE_BINARY=1
+	log_result $? "${!PLATFORM_NAME}"
 }
 
 function build_tc1
 {
-	uefishell
-	echo "Building Versatile Express A15x2 TC1"
+	PLATFORM_NAME="$board"_LONGNAME
+	echo "Building ${!PLATFORM_NAME}"
 	build -a ARM -b DEBUG -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15x2.dsc -D EDK2_ARMVE_STANDALONE=1
+	log_result $? "${!PLATFORM_NAME}"
 }
 
 function build_tc2
 {
-	uefishell
-	echo "Building Versatile Express A15-A7 TC2"
+	PLATFORM_NAME="$board"_LONGNAME
+	echo "Building ${!PLATFORM_NAME}"
 	build -a ARM -b DEBUG -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15-A7.dsc -D ARM_BIGLITTLE_TC2=1
+	log_result $? "${!PLATFORM_NAME}"
 }
 
 function build_panda
 {
-	uefishell
-	echo "Building TI PandaBoard"
+	PLATFORM_NAME="$board"_LONGNAME
+	echo "Building ${!PLATFORM_NAME}"
 	cd `pwd`/PandaBoardPkg && ./build.sh && cd ..
+	log_result $? "${!PLATFORM_NAME}"
 }
 
 function build_origen
 {
-	uefishell
-	echo "Building Samsung Origen"
+	PLATFORM_NAME="$board"_LONGNAME
+	echo "Building ${!PLATFORM_NAME}"
 	build -a ARM -b DEBUG -t ARMLINUXGCC -p SamsungPlatformPkgOrigen/OrigenBoardPkg/OrigenBoardPkg-Exynos.dsc
+	log_result $? "${!PLATFORM_NAME}"
 }
 
 function build_arndale
 {
-	uefishell
-	echo "Building Samsung Arndale"
+	PLATFORM_NAME="$board"_LONGNAME
+	echo "Building ${!PLATFORM_NAME}"
 	build -a ARM -b DEBUG -t ARMLINUXGCC -p SamsungPlatformPkg/ArndaleBoardPkg/arndale-Exynos5250.dsc -D EXYNOS5250_EVT1 -D DDR3
+	log_result $? "${!PLATFORM_NAME}"
+}
+
+
+function uefishell
+{
+	BUILD_ARCH=`uname -m`
+	case $BUILD_ARCH in
+		arm*)
+			ARCH=ARM
+			DEFAULT_CROSS_COMPILE=
+			;;
+		*)
+			unset ARCH
+			DEFAULT_CROSS_COMPILE=arm-linux-gnueabi-
+			;;
+	esac
+	if [ -z "$CROSS_COMPILE" ]; then
+		CROSS_COMPILE="$DEFAULT_CROSS_COMPILE"
+	fi
+	export CROSS_COMPILE ARCH
+	echo "Setting up shell for building UEFI"
+	export TOOLCHAIN=ARMLINUXGCC
+	export EDK_TOOLS_PATH=`pwd`/BaseTools
+	. edksetup.sh `pwd`/BaseTools/
+	make -C $EDK_TOOLS_PATH
+	if [ $? -ne 0 ]; then
+		echo " !!! UEFI BaseTools failed to build !!! " >&2
+		exit 1
+	fi
 }
 
 
 function usage
 {
 	echo "usage:"
-	echo "uefibuild.sh [ all | a5 | a9 | tc1 | tc2 | panda | origen | arndale ]"
-	echo "    all       build all supported platforms"
-	echo "    a5        build Versatile Express A5"
-	echo "    a9        build Versatile Express A9"
-	echo "    tc1       build Versatile Express TC1"
-	echo "    tc2       build Versatile Express TC2"
-	echo "    panda     build TI Pandaboard"
-	echo "    origen    build Samsung Origen"
-	echo "    arndale   build Samsung Arndale"
+	echo -n "uefibuild.sh [ all "
+	for board in "${boards[@]}" ; do
+	    echo -n "| $board "
+	done
+	echo "]"
+	printf "%8s\tbuild %s\n" "all" "all supported platforms"
+	for board in "${boards[@]}" ; do
+		PLATFORM_NAME="$board"_LONGNAME
+		printf "%8s\tbuild %s\n" "$board" "${!PLATFORM_NAME}"
+	done
 }
 
 
+builds=()
 
 # If there were no args, use a menu to select a single board / all boards to build
 if [ $# = 0 ]
 then
-	boards=( a5 a9 tc1 tc2 panda origen arndale all )
-
 	read -p "$(
 			f=0
 			for board in "${boards[@]}" ; do
 					echo "$((++f)): $board"
 			done
+			echo $((++f)): all
 
 			echo -ne '> '
 	)" selection
 
-	selected_board="${boards[$((selection-1))]}"
-
-	if [[ "$selected_board" = "a5" || "$selected_board" = "all" ]]
-	then
-		BUILD_A5="y"
-	fi
-	if [[ "$selected_board" = "a9" || "$selected_board" = "all" ]]
-	then
-		BUILD_A9="y"
-	fi
-	if [[ "$selected_board" = "tc1" || "$selected_board" = "all" ]]
-	then
-		BUILD_TC1="y"
-	fi
-	if [[ "$selected_board" = "tc2" || "$selected_board" = "all" ]]
-	then
-		BUILD_TC2="y"
-	fi
-	if [[ "$selected_board" = "panda" || "$selected_board" = "all" ]]
-	then
-		BUILD_PANDA="y"
-	fi
-	if [[ "$selected_board" = "origen" || "$selected_board" = "all" ]]
-	then
-		BUILD_ORIGEN="y"
-	fi
-	if [[ "$selected_board" = "arndale" || "$selected_board" = "all" ]]
-	then
-		BUILD_ARNDALE="y"
+	if [ "$selection" -eq $((${#boards[@]} + 1)) ]; then
+		builds=(${boards[@]})
+	else
+		builds="${boards[$((selection-1))]}"
 	fi
 else
 	while [ "$1" != "" ]; do
 		case $1 in
 			all )
-				BUILD_A5="y"
-				BUILD_A9="y"
-				BUILD_TC1="y"
-				BUILD_TC2="y"
-				BUILD_PANDA="y"
-				BUILD_ORIGEN="y"
-				BUILD_ARNDALE="y"
+				builds=(${boards[@]})
+				break
 				;;
-			a5 )
-				BUILD_A5="y"
-				;;
-			a9 )
-				BUILD_A9="y"
-				;;
-			tc1 )
-				BUILD_TC1="y"
-				;;
-			tc2 )
-				BUILD_TC2="y"
-				;;
-			panda )
-				BUILD_PANDA="y"
-				;;
-			origen )
-				BUILD_ORIGEN="y"
-				;;
-			arndale )
-				BUILD_ARNDALE="y"
-				;;
-
 			/h | /? | -? | -h | --help )
 				usage
 				exit
 				;;
 			* )
-				usage
-				echo "unknown arg $1"
-				exit 1
+				MATCH=0
+				for board in "${boards[@]}" ; do
+					if [ "$1" == $board ]; then
+						MATCH=1
+						builds=(${builds[@]} "$board")
+						break
+					fi
+				done
+
+				if [ $MATCH -eq 0 ]; then
+					echo "unknown arg $1"
+					usage
+					exit 1
+				fi
+				;;
 		esac
 		shift
 	done
 fi
-if [ "$BUILD_A5" = "y" ]
-then
-	echo "build a5..."
-	build_a5
-fi
-if [ "$BUILD_A9" = "y" ]
-then
-	build_a9
-fi
-if [ "$BUILD_TC1" = "y" ]
-then
-	build_tc1
-fi
-if [ "$BUILD_TC2" = "y" ]
-then
-	build_tc2
-fi
-if [ "$BUILD_PANDA" = "y" ]
-then
-	build_panda
-fi
-if [ "$BUILD_ORIGEN" = "y" ]
-then
-	build_origen
-fi
-if [ "$BUILD_ARNDALE" = "y" ]
-then
-	build_arndale
-fi
 
+uefishell
 
+for board in "${builds[@]}" ; do
+	type -t build_"$board" >/dev/null
+	if [ $? -ne 0 ]; then
+		echo	 "Don't know how to build '$board'!" >&2
+		usage
+		exit 1
+	fi
+	build_"$board"
+done
+
+print_result
