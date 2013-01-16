@@ -22,27 +22,12 @@ function usage
 # we should pass in the YY.MM used for the release, eg. "13.01" for January 2013
 # and a number for the release candidate, eg, 2.
 
-YYMM=$1
-RC=$2
-
-if [ "$YYMM" = "" ]
-then
-	echo "You need to specify a month tag, eg. 13.01"
-	exit
-fi
-
-git branch | grep linaro-tracking-$YYMM
-
-if [ "$?" = "1" ]
-then
-	echo "linaro-tracking-$YYMM does not exist, you should use in existing tracking branch"
-else
-	echo "YAY! linaro-tracking-$YYMM exists"
-fi
-
+version=`git tag | grep linaro-uefi- | grep rc | tail -1`
+[[ "$version" =~ (.*[^0-9])([0-9]+)$ ]] && version="${BASH_REMATCH[1]}$((${BASH_REMATCH[2]} + 1))";
+RC=`echo $version | sed 's#linaro-uefi-.....-rc##g'`
+YYMM=`echo $version | sed 's#linaro-uefi-##g' | sed 's#-rc.*##g'`
 
 git tag | grep linaro-uefi-$YYMM-rc$RC
-
 if [ "$?" = "0" ]
 then
 	echo "linaro-uefi-$YYMM-rc$RC already exists, you should use a new RC number"
@@ -62,6 +47,7 @@ echo "--------------------------------------------------------------------------
 echo "CONFIG"
 echo "--------------------------------------------------------------------------------"
 echo "YYMM          $YYMM"
+echo "RC            $RC"
 echo "BASE_DIR      $BASE_DIR"
 echo "MASTER        $MASTER"
 echo "MONTH_BRANCH  $MONTH_BRANCH"
