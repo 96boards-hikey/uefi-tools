@@ -25,7 +25,7 @@ git merge -s ours --no-commit uefi-next/armlt-tracking
 
 # Now we should force update the release tree to match the next tree
 git rm -r edk2
-cp -R ../uefi-next.git/edk2 .
+cp -R ../uefi-next.git/ .
 
 # Add all the files and commit them with a sensible message
 git add *
