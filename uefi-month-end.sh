@@ -6,7 +6,7 @@
 #
 # 1) Merge the current monthly branch to the release branch
 # 2) Make sure the linaro/armlt-tracking branches are up-to-date
-# 3) Tag the release branch with linaro-uef-YY.MM
+# 3) Tag the release branch with linaro-uef-YYYY.MM
 ################################################################################
 
 
@@ -14,7 +14,7 @@
 function usage
 {
 	echo "Usage: $0"
-	echo "   YY.MM        where YY is the year and MM is the month"
+	echo "   YYYY.MM        where YYYY is the year and MM is the month"
 }
 ################################################################################
 #
@@ -22,7 +22,7 @@ function usage
 while [ "$1" != "" ]; do
     case $1 in
 		[0-9][0-9].[0-9][0-9])
-			YYMM=$1
+			YYYYMM=$1
 			;;
 
         /h | /? | -? | -h | --help )
@@ -38,7 +38,7 @@ while [ "$1" != "" ]; do
 done
 
 
-if [ "$YYMM" = "" ]
+if [ "$YYYYMM" = "" ]
 then
 	echo "You need to specify a month tag, eg. 13.01"
 	exit
@@ -51,15 +51,15 @@ echo "--------------------------------------------------------------------------
 echo "Updating linaro-release"
 echo "--------------------------------------------------------------------------------"
 git checkout linaro-release
-git merge linaro-tracking-$YYMM
-git tag linaro-uefi-$YYMM
+git merge linaro-tracking-$YYYYMM
+git tag linaro-uefi-$YYYYMM
 
 echo "--------------------------------------------------------------------------------"
 echo "Update global tracking branches"
 echo "--------------------------------------------------------------------------------"
 git checkout linaro-tracking
-git merge linaro-uefi-$YYMM
+git merge linaro-uefi-$YYYYMM
 git checkout armlt-tracking
-git merge linaro-uefi-$YYMM
+git merge linaro-uefi-$YYYYMM
 
 

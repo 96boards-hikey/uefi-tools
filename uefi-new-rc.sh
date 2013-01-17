@@ -24,13 +24,13 @@ function usage
 
 version=`git tag | grep linaro-uefi- | grep rc | tail -1`
 [[ "$version" =~ (.*[^0-9])([0-9]+)$ ]] && version="${BASH_REMATCH[1]}$((${BASH_REMATCH[2]} + 1))";
-RC=`echo $version | sed 's#linaro-uefi-.....-rc##g'`
-YYMM=`echo $version | sed 's#linaro-uefi-##g' | sed 's#-rc.*##g'`
+RC=`echo $version | sed 's#linaro-uefi-.*-rc##g'`
+YYYYMM=`echo $version | sed 's#linaro-uefi-##g' | sed 's#-rc.*##g'`
 
-git tag | grep linaro-uefi-$YYMM-rc$RC
+git tag | grep linaro-uefi-$YYYYMM-rc$RC
 if [ "$?" = "0" ]
 then
-	echo "linaro-uefi-$YYMM-rc$RC already exists, you should use a new RC number"
+	echo "linaro-uefi-$YYYYMM-rc$RC already exists, you should use a new RC number"
 else
 	echo "YAY! you're using a new RC number"
 fi
@@ -38,7 +38,7 @@ fi
 ################################################################################
 BASE_DIR=/linaro/lt/uefi
 MASTER=master
-MONTH_BRANCH=linaro-tracking-$YYMM
+MONTH_BRANCH=linaro-tracking-$YYYYMM
 #UEFI_NEXT_GIT=uefi-next.git
 UEFI_NEXT_GIT=`pwd`
 ################################################################################
@@ -46,7 +46,7 @@ UEFI_NEXT_GIT=`pwd`
 echo "--------------------------------------------------------------------------------"
 echo "CONFIG"
 echo "--------------------------------------------------------------------------------"
-echo "YYMM          $YYMM"
+echo "YYYYMM        $YYYYMM"
 echo "RC            $RC"
 echo "BASE_DIR      $BASE_DIR"
 echo "MASTER        $MASTER"
@@ -73,12 +73,12 @@ for topic in "${topics[@]}" ; do
 done
 
 # Tag the latest merges
-git checkout linaro-tracking-$YYMM
-git tag linaro-uefi-$YYMM-rc$RC
+git checkout linaro-tracking-$YYYYMM
+git tag linaro-uefi-$YYYYMM-rc$RC
 
 # Update linaro-tracking
 git checkout linaro-tracking
-git merge linaro-tracking-$YYMM
+git merge linaro-tracking-$YYYYMM
 
 # re-create armlt-tracking to match linaro-tracking
 git branch -D armlt-tracking

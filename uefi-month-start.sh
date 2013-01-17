@@ -19,7 +19,7 @@ function usage
 }
 ################################################################################
 # Check all the parameters
-# we should pass in the YY.MM used for the release, eg. "13.01" for January 2013
+# we should pass in the YYYY.MM used for the release, eg. "13.01" for January 2013
 
 
 while [ "$1" != "" ]; do
@@ -34,7 +34,7 @@ while [ "$1" != "" ]; do
             ;;
 
 		[0-9][0-9].[0-9][0-9])
-			YYMM=$1
+			YYYYMM=$1
 			;;
 
         /h | /? | -? | -h | --help )
@@ -50,16 +50,16 @@ while [ "$1" != "" ]; do
 done
 
 
-if [ "$YYMM" = "" ]
+if [ "$YYYYMM" = "" ]
 then
-	echo "You need to specify a month tag, eg. 13.01"
+	echo "You need to specify a month tag, eg. 2013.01"
 	exit
 fi
 
 ################################################################################
 BASE_DIR=/linaro/lt/uefi
 MASTER=master
-MONTH_BRANCH=linaro-tracking-$YYMM
+MONTH_BRANCH=linaro-tracking-$YYYYMM
 #UEFI_NEXT_GIT=uefi-next.git
 UEFI_NEXT_GIT=`pwd`
 ################################################################################
@@ -69,7 +69,7 @@ echo "CONFIG"
 echo "--------------------------------------------------------------------------------"
 echo "PULL          $PULL"
 echo "UPDATE        $UPDATE"
-echo "YYMM          $YYMM"
+echo "YYYYMM        $YYYYMM"
 echo "BASE_DIR      $BASE_DIR"
 echo "MASTER        $MASTER"
 echo "MONTH_BRANCH  $MONTH_BRANCH"
@@ -161,7 +161,7 @@ fi
 git checkout $MASTER
 echo "--------------------------------------------------------------------------------"
 echo "Tagging monthly base"
-git tag linaro-base-$YYMM
+git tag linaro-base-$YYYYMM
 
 # 1.4) Create new monthly branch
 git branch $MONTH_BRANCH $MASTER
@@ -211,7 +211,7 @@ echo "Tagging first release candidate"
 echo "--------------------------------------------------------------------------------"
 
 git checkout $MONTH_BRANCH
-git tag linaro-uefi-$YYMM-rc1
+git tag linaro-uefi-$YYYYMM-rc1
 
 #--------------------------------------------------------------------------------
 # Now create a "latest" tracking branch
@@ -225,7 +225,7 @@ echo "--------------------------------------------------------------------------
 echo "Update global tracking branches"
 echo "--------------------------------------------------------------------------------"
 git checkout linaro-tracking
-git merge linaro-tracking-$YYMM
+git merge linaro-tracking-$YYYYMM
 git branch -D armlt-tracking
 git branch armlt-tracking
 
