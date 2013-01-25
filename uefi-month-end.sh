@@ -21,7 +21,7 @@ function usage
 # Check all parameters
 while [ "$1" != "" ]; do
     case $1 in
-		[0-9][0-9].[0-9][0-9])
+		[0-9][0-9][0-9][0-9].[0-9][0-9])
 			YYYYMM=$1
 			;;
 
@@ -51,7 +51,7 @@ echo "--------------------------------------------------------------------------
 echo "Updating linaro-release"
 echo "--------------------------------------------------------------------------------"
 git checkout linaro-release
-git merge linaro-tracking-$YYYYMM
+git merge -Xtheirs linaro-tracking-$YYYYMM
 git tag linaro-uefi-$YYYYMM
 
 echo "--------------------------------------------------------------------------------"
