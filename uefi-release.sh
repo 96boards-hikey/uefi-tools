@@ -14,6 +14,13 @@ RELEASE_TREE=/linaro/lt/uefi/uefi.git
 NEXT_TREE=/linaro/lt/uefi/uefi-next.git
 
 echo "--------------------------------------------------------------------------------"
+echo "Find release tag"
+echo "--------------------------------------------------------------------------------"
+cd $NEXT_TREE
+TAG=`git tag | grep linaro-uefi | grep -v rc | tail -1`
+echo "Release tag is '$TAG'"
+
+echo "--------------------------------------------------------------------------------"
 echo "Add uefi-next remote"
 echo "--------------------------------------------------------------------------------"
 # fetch the latest updates from uefi-next
@@ -45,5 +52,5 @@ echo "--------------------------------------------------------------------------
 # Add all the files and commit them with a sensible message
 git add *
 git commit -s -m "Merge branch 'armlt-tracking' of git://git.linaro.org/arm/uefi/uefi-next"
-
+git tag $TAG
 
