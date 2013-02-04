@@ -78,11 +78,11 @@ git tag linaro-uefi-$YYYYMM-rc$RC
 
 # Update linaro-tracking
 git checkout linaro-tracking
-git merge linaro-tracking-$YYYYMM
+git merge -Xtheirs linaro-tracking-$YYYYMM
 
 # re-create armlt-tracking to match linaro-tracking
-git branch -D armlt-tracking
-git branch armlt-tracking
+git checkout armlt-tracking
+git merge -Xtheirs linaro-tracking
 
 
 exit

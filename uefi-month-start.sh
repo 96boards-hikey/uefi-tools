@@ -33,7 +33,7 @@ while [ "$1" != "" ]; do
             UPDATE="yes"
             ;;
 
-		[0-9][0-9].[0-9][0-9])
+		[0-9][0-9][0-9][0-9].[0-9][0-9])
 			YYYYMM=$1
 			;;
 
@@ -175,7 +175,7 @@ for topic in "${topics[@]}" ; do
 	echo "--------------------------------------------------------------------------------"
 	echo "Rebasing $topic"
 	git checkout $topic
-	git rebase $MASTER
+	git rebase --ignore-whitespace $MASTER
 
 	if [ "$?" != "0" ]
 	then
@@ -225,12 +225,9 @@ echo "--------------------------------------------------------------------------
 echo "Update global tracking branches"
 echo "--------------------------------------------------------------------------------"
 git checkout linaro-tracking
-git merge linaro-tracking-$YYYYMM
-git branch -D armlt-tracking
-git branch armlt-tracking
-
-
-
+git merge -Xtheirs linaro-tracking-$YYYYMM
+git checkout armlt-tracking
+git merge -Xtheirs linaro-tracking
 
 
 exit
