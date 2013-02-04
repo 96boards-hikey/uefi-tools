@@ -391,6 +391,91 @@ git merge linaro-topic-tc2
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
+Booting a build on Arndale
+--------------------------------------------------------------------------------
+1) Connect up the Arndale board
+The board only needs it's own power supply and a UART cable
+
+2) Make sure it boots
+If not, perhaps create a working uSD card image as per Rony's instructions on his wiki:
+    https://wiki.linaro.org/Boards/Arndale/Setup/UEFI
+
+3) build the binary
+cd /linaro/lt/uefi/uefi-next.git
+uefi-build.sh arndale
+
+4) write the binary to a uSD card
+cd /linaro/lt/uefi/uefi-next.git/SamsungPlatformPkg/Apps/Tools/mkbl2
+# insert an SD card, note it's /dev name
+./imgburn --disk /dev/sdX 
+
+
+
+
+--------------------------------------------------------------------------------
+Booting a build on a Pandaboard
+--------------------------------------------------------------------------------
+1) Connect up the Panda
+Use the BeagleBoard power supply
+Connect a UART cable
+Then you just need to insert an SD card and press the power on button to get it to boot
+
+2) Create an SD card using linaro-media-create
+
+3) Copy your UEFI binary onto the SD card using normal copy
+cp ./Build/PandaBoard/DEBUG_ARMLINUXGCC/FV/MLO /media/boot/MLO
+
+4) Boot the board & configure UEFI
+Panda doesn't remember the UEFI config, so you need to type it in each boot
+
+Eg, a working config:
+[1] sd
+	- VenHw(100C2CFA-B586-4198-9B4C-1683D195B1DA)/HD(1,MBR,0x00000000,0x3F,0x19FC0)/zImage
+	- Initrd: VenHw(100C2CFA-B586-4198-9B4C-1683D195B1DA)/HD(1,MBR,0x00000000,0x3F,0x19FC0)/uInitrd
+	- Arguments: 
+	- LoaderType: Linux kernel with ATAG data
+
+
+
+
+
+[1] sd
+	- VenHw(100C2CFA-B586-4198-9B4C-1683D195B1DA)/HD(1,MBR,0x00000000,0x3F,0x19FC0)/zImage
+	- Initrd: VenHw(100C2CFA-B586-4198-9B4C-1683D195B1DA)/HD(1,MBR,0x00000000,0x3F,0x19FC0)/uInitrd
+	- Arguments: 
+	- LoaderType: 1
+
+
+--------------------------------------------------------------------------------
+Booting a build on a Samsung Origen board
+--------------------------------------------------------------------------------
+1) Connect up the Origen
+Use BeagleBoard power supply
+Connect UART
+
+2) Create an SD card using linaro-media-create
+
+3) Write your UEFI image to the SD card
+Like Arndale, you cannot simply copy the image to the card.
+
+wget https://wiki.linaro.org/Boards/Origen/Setup/UEFI?action=AttachFile&do=get&target=Origen-BL1.img
+
+$ sudo dd if=Origen-BL1.img of=$DISK bs=512
+$ sudo dd if=./Build/OrigenBoard-Exynos/DEBUG_ARMLINUXGCC/FV/ORIGENBOARD_EFI.fd of=$DISK bs=512 seek=65 count=4096
+
+4) Insert the SD card into the board
+
+5) Boot the board
+- Press "SWITCH" (LED8 should light up)
+- Press "POWER" (LED4 should light up)
+
+You should see the UEFI log come out of the serial terminal.
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 Everything below here is for the "2012" uefi-next tree.
 The new way of working makes this mostly obsolete.
 Although you may find snippet of info that are useful, so I'll keep it for now.
