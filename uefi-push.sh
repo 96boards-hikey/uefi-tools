@@ -41,4 +41,4 @@ done
 ################################################################################
 git push $REPO armlt-tracking
 git push $REPO linaro-tracking
-
+git push --tags $REPO
