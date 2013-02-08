@@ -17,6 +17,7 @@ panda_LONGNAME="TI Pandaboard"
 origen_LONGNAME="Samsung Origen"
 arndale_LONGNAME="Samsung Arndale"
 
+BUILD=DEBUG
 
 RESULT_BUF=`echo -e --------------------------------------------`
 PASS_COUNT=0
@@ -47,7 +48,7 @@ function build_a5
 {
 	PLATFORM_NAME="$board"_LONGNAME
 	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b DEBUG -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA5s.dsc -D EDK2_ARMVE_STANDALONE=1
+	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA5s.dsc -D EDK2_ARMVE_STANDALONE=1
 	log_result $? "${!PLATFORM_NAME}"
 }
 
@@ -55,7 +56,7 @@ function build_a9
 {
 	PLATFORM_NAME="$board"_LONGNAME
 	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b DEBUG -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA9x4.dsc -D EDK2_ARMVE_STANDALONE=1 -D EDK2_ARMVE_SINGLE_BINARY=1
+	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA9x4.dsc -D EDK2_ARMVE_STANDALONE=1 -D EDK2_ARMVE_SINGLE_BINARY=1
 	log_result $? "${!PLATFORM_NAME}"
 }
 
@@ -63,7 +64,7 @@ function build_tc1
 {
 	PLATFORM_NAME="$board"_LONGNAME
 	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b DEBUG -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15x2.dsc -D EDK2_ARMVE_STANDALONE=1
+	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15x2.dsc -D EDK2_ARMVE_STANDALONE=1
 	log_result $? "${!PLATFORM_NAME}"
 }
 
@@ -71,7 +72,7 @@ function build_tc2
 {
 	PLATFORM_NAME="$board"_LONGNAME
 	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b DEBUG -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15-A7.dsc -D ARM_BIGLITTLE_TC2=1
+	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15-A7.dsc -D ARM_BIGLITTLE_TC2=1
 	log_result $? "${!PLATFORM_NAME}"
 }
 
@@ -87,7 +88,7 @@ function build_origen
 {
 	PLATFORM_NAME="$board"_LONGNAME
 	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b DEBUG -t ARMLINUXGCC -p SamsungPlatformPkgOrigen/OrigenBoardPkg/OrigenBoardPkg-Exynos.dsc
+	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p SamsungPlatformPkgOrigen/OrigenBoardPkg/OrigenBoardPkg-Exynos.dsc
 	log_result $? "${!PLATFORM_NAME}"
 }
 
@@ -95,7 +96,7 @@ function build_arndale
 {
 	PLATFORM_NAME="$board"_LONGNAME
 	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b DEBUG -t ARMLINUXGCC -p SamsungPlatformPkg/ArndaleBoardPkg/arndale-Exynos5250.dsc -D EXYNOS5250_EVT1 -D DDR3
+	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p SamsungPlatformPkg/ArndaleBoardPkg/arndale-Exynos5250.dsc -D EXYNOS5250_EVT1 -D DDR3
 	log_result $? "${!PLATFORM_NAME}"
 }
 
@@ -180,9 +181,14 @@ else
 				builds=(${boards[@]})
 				break
 				;;
-			/h | /? | -? | -h | --help )
+			"/h" | "/?" | "-?" | "-h" | "--help" )
 				usage
 				exit
+				;;
+			"-b" )
+				shift
+				echo "Build profile: $1"
+				BUILD="$1"
 				;;
 			* )
 				MATCH=0
