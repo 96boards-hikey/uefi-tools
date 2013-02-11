@@ -3,20 +3,12 @@
 # Setup the tree for a new month
 #
 # The general idea is to
-# 1) update the master branch to the latest tianocore sources & tag it
-# 2) rebase all the topic branches to the master branch
-# 3) create a new monthly tracking branch, based on master
-# 4) merge all the topic branches into the tracking branch & tag it as "rc1"
-# 5) create the "latest" tracking branch that follows the monthly tracking branch
+# 1) merge all the topic branches into the monthly tracking branch & tag it
+#    as with the latest -rc number
+# 2) update the linaro-tracking branch that follows the monthly tracking branch
 ################################################################################
 
 
-################################################################################
-function usage
-{
-	echo "Usage: $0"
-	echo "   YY.MM X        eg. 13.01 3 means release 13.01-rc3"
-}
 ################################################################################
 # Check all the parameters
 # we should pass in the YY.MM used for the release, eg. "13.01" for January 2013
@@ -36,8 +28,6 @@ else
 fi
 
 ################################################################################
-BASE_DIR=/linaro/lt/uefi
-MASTER=master
 MONTH_BRANCH=linaro-tracking-$YYYYMM
 #UEFI_NEXT_GIT=uefi-next.git
 UEFI_NEXT_GIT=`pwd`
@@ -48,8 +38,6 @@ echo "CONFIG"
 echo "--------------------------------------------------------------------------------"
 echo "YYYYMM        $YYYYMM"
 echo "RC            $RC"
-echo "BASE_DIR      $BASE_DIR"
-echo "MASTER        $MASTER"
 echo "MONTH_BRANCH  $MONTH_BRANCH"
 echo "UEFI_NEXT_GIT $UEFI_NEXT_GIT"
 echo "--------------------------------------------------------------------------------"

@@ -10,8 +10,8 @@
 # git clone git://git.linaro.org/arm/uefi/uefi.git uefi-next.git
 
 # These are my tree on my machine
-RELEASE_TREE=/linaro/lt/uefi/uefi.git
-NEXT_TREE=/linaro/lt/uefi/uefi-next.git
+RELEASE_TREE=/linaro/uefi/master/uefi.git
+NEXT_TREE=/linaro/uefi/master/uefi-next.git
 
 echo "--------------------------------------------------------------------------------"
 echo "Find release tag"
