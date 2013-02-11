@@ -9,8 +9,10 @@
 
 UEFI_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-KERNEL_CMDLINE_UBUNTU="console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro ip=dhcp"
-KERNEL_CMDLINE_ANDROID="console=tty0 console=ttyAMA0,38400n8 rootwait ro init=/init androidboot.console=ttyAMA0"
+#KERNEL_CMDLINE_UBUNTU="console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro ip=dhcp mmci.fmax=12000000"
+#KERNEL_CMDLINE_ANDROID="console=tty0 console=ttyAMA0,38400n8 rootwait ro init=/init androidboot.console=ttyAMA0 mmci.fmax=12000000"
+KERNEL_CMDLINE_UBUNTU="console=tty0 console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro mmci.fmax=12000000 androidboot.console=ttyAMA0 mmci.fmax=12000000"
+KERNEL_CMDLINE_ANDROID=$KERNEL_CMDLINE_UBUNTU
 
 # define defaults
 if [ "$UEFI_IMAGE" = "" ]
