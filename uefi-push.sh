@@ -37,8 +37,12 @@ for branch in "${branches[@]}" ; do
 done
 
 ################################################################################
-# Update topic branches
+# Update tracking branches
 ################################################################################
+MONTH_BRANCH=`git branch | grep linaro-tracking- | tail -1`
+echo "Pushing out monthly branch $REPO $MONTH_BRANCH..."
+git push $REPO $MONTH_BRANCH
+
 git push $REPO armlt-tracking
 git push $REPO linaro-tracking
 git push --tags $REPO
