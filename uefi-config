@@ -8,11 +8,7 @@
 #   uefi-config --image=uImage > /dev/ttyUSB0
 
 UEFI_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-#KERNEL_CMDLINE_UBUNTU="console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro ip=dhcp mmci.fmax=12000000"
-#KERNEL_CMDLINE_ANDROID="console=tty0 console=ttyAMA0,38400n8 rootwait ro init=/init androidboot.console=ttyAMA0 mmci.fmax=12000000"
-KERNEL_CMDLINE_UBUNTU="console=tty0 console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro mmci.fmax=12000000 androidboot.console=ttyAMA0 mmci.fmax=12000000"
-KERNEL_CMDLINE_ANDROID=$KERNEL_CMDLINE_UBUNTU
+UEFI_CMDLINE="console=tty0 console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro androidboot.console=ttyAMA0 mmci.fmax=12000000"
 
 # define defaults
 if [ "$UEFI_IMAGE" = "" ]
@@ -54,32 +50,9 @@ function set_title
 			fi
 		fi
 
-		if [ "$android" = "1" ]
-		then
-			UEFI_TITLE="$UEFI_TITLE for Android"
-		else
-			UEFI_TITLE="$UEFI_TITLE for Ubuntu"
-		fi
-
 		UEFI_TITLE="$UEFI_TITLE on SD card"
 	#	echo "UEFI_TITLE=$UEFI_TITLE"
 	fi
-}
-
-function set_cmdline
-{
-# configure the command line
-# if the setting is "android" or "ubuntu", then substitue this for a default cmdline
-# not specifying a cmdline will give the default (ubuntu) cmdline
-# And if a cmdline was specified, we use it
-case "$UEFI_CMDLINE" in
-	android )
-		UEFI_CMDLINE="$KERNEL_CMDLINE_ANDROID"
-		;;
-	"" | ubuntu )
-		UEFI_CMDLINE="$KERNEL_CMDLINE_UBUNTU"
-		;;
-esac
 }
 
 # over-ride any previous values with arguments passed to this script
@@ -87,9 +60,7 @@ function usage
 {
     echo "Usage:"
 	echo "    uefi-config"
-	echo "        --android"
-    echo "        --cmdline|-c \"put cmdline in quotes\" | android | ubuntu"
-	echo "            using android or ubuntu here gives a default cmdline"
+    echo "        --cmdline|-c \"put cmdline in quotes\""
     echo "        --global-fdt <device tree blob filename>"
     echo "        --local-fdt <device tree blob filename>"
     echo "        --image <uImage filename>"
@@ -98,13 +69,12 @@ function usage
 	echo "        --remove <number of current entries to remove>"
     echo ""
 	echo "Example:"
-	echo "    uefi-config --cmdline \"console ttyAMA0,384000\" --global-fdt v2p-ca9.dtb --image uImage --mmci 4000000 --title \"uImage for Android\"   "
+	echo "    uefi-config --cmdline \"console ttyAMA0,384000\" --global-fdt v2p-ca9.dtb --image uImage --mmci 4000000 --title \"uImage\"   "
     echo ""
 	echo "Most parameters can be abbreviated to their first letter:"
 	echo "Example:"
-	echo "    uefi-config -c \"console ttyAMA0,384000\" -g v2p-ca9.dtb -i uImage -m 4000000 -t \"uImage for Android\"   "
+	echo "    uefi-config -c \"console ttyAMA0,384000\" -g v2p-ca9.dtb -i uImage -m 4000000 -t \"uImage\"   "
 	echo ""
-	set_cmdline
 	set_title
 	echo "Current configuration:"
 	echo "    UEFI_IMAGE         $UEFI_IMAGE"
@@ -136,10 +106,6 @@ function usage
 
 while [ "$1" != "" ]; do
     case $1 in
-		-a | --android )
-			android=1
-			UEFI_CMDLINE=$KERNEL_CMDLINE_ANDROID
-			;;
         -b | --bootmenu )
             shift
             UEFI_BOOTMENU="$1"
@@ -188,7 +154,6 @@ while [ "$1" != "" ]; do
     shift
 done
 
-set_cmdline
 set_title
 
 
