@@ -1,21 +1,57 @@
 #!/bin/bash
 
 #
+# Board Configuration Section
+# ===========================
+#
 # To add a new platform:
 # - add a <shortname> to the "boards" array
 # - create a <shortname>_LONGNAME variable with a descriptive name
-# - create a <shortname>_build function
+# - create a <shortname>_BUILDFLAGS variable with any platform specific
+#   options for edk2 'build'.
+# And for platforms using standard edk2 'build':
+# - create a <shortname>_DSC variable containing the path to the
+#   platform .dsc file.
+# Or for platforms not using edk2 'build' directly:
+# - create a <shortname>_BUILDCMD variable pointing to the path of the
+#   build command to use.
 #
 
 boards=( a5 a9 tc1 tc2 panda origen arndale )
 
 a5_LONGNAME="Versatile Express A5"
+a5_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
+a5_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA5s.dsc"
+
 a9_LONGNAME="Versatile Express A9"
+a9_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1 -D EDK2_ARMVE_SINGLE_BINARY=1"
+a9_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA9x4.dsc"
+
 tc1_LONGNAME="Versatile Express TC1"
+tc1_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
+tc1_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15x2.dsc"
+
 tc2_LONGNAME="Versatile Express TC2"
+tc2_BUILDFLAGS="-D ARM_BIGLITTLE_TC2=1"
+tc2_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15-A7.dsc"
+
 panda_LONGNAME="TI Pandaboard"
+panda_BUILDCMD="./PandaBoardPkg/build.sh"
+panda_BUILDFLAGS=""
+
 origen_LONGNAME="Samsung Origen"
+origen_BUILDFLAGS=""
+origen_DSC="SamsungPlatformPkgOrigen/OrigenBoardPkg/OrigenBoardPkg-Exynos.dsc"
+
 arndale_LONGNAME="Samsung Arndale"
+arndale_BUILDFLAGS="-D EXYNOS5250_EVT1 -D DDR3"
+arndale_DSC="SamsungPlatformPkg/ArndaleBoardPkg/arndale-Exynos5250.dsc"
+
+#
+# End of Board Configuration Section.
+#
+# No need to edit below unless you are changing script functionality.
+#
 
 BUILD=DEBUG
 
@@ -44,59 +80,22 @@ function print_result
 	exit $FAIL_COUNT
 }
 
-function build_a5
+function build_platform
 {
 	PLATFORM_NAME="$board"_LONGNAME
-	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA5s.dsc -D EDK2_ARMVE_STANDALONE=1
-	log_result $? "${!PLATFORM_NAME}"
-}
+	PLATFORM_BUILDFLAGS="$board"_BUILDFLAGS
+	PLATFORM_BUILDCMD="$board"_BUILDCMD
+	PLATFORM_DSC="$board"_DSC
 
-function build_a9
-{
-	PLATFORM_NAME="$board"_LONGNAME
 	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA9x4.dsc -D EDK2_ARMVE_STANDALONE=1 -D EDK2_ARMVE_SINGLE_BINARY=1
-	log_result $? "${!PLATFORM_NAME}"
-}
+	echo "$board"_BUILDFLAGS="'${!PLATFORM_BUILDFLAGS}'"
 
-function build_tc1
-{
-	PLATFORM_NAME="$board"_LONGNAME
-	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15x2.dsc -D EDK2_ARMVE_STANDALONE=1
-	log_result $? "${!PLATFORM_NAME}"
-}
-
-function build_tc2
-{
-	PLATFORM_NAME="$board"_LONGNAME
-	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15-A7.dsc -D ARM_BIGLITTLE_TC2=1
-	log_result $? "${!PLATFORM_NAME}"
-}
-
-function build_panda
-{
-	PLATFORM_NAME="$board"_LONGNAME
-	echo "Building ${!PLATFORM_NAME}"
-	cd `pwd`/PandaBoardPkg && ./build.sh && cd ..
-	log_result $? "${!PLATFORM_NAME}"
-}
-
-function build_origen
-{
-	PLATFORM_NAME="$board"_LONGNAME
-	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p SamsungPlatformPkgOrigen/OrigenBoardPkg/OrigenBoardPkg-Exynos.dsc
-	log_result $? "${!PLATFORM_NAME}"
-}
-
-function build_arndale
-{
-	PLATFORM_NAME="$board"_LONGNAME
-	echo "Building ${!PLATFORM_NAME}"
-	build -a ARM -b "$BUILD" -t ARMLINUXGCC -p SamsungPlatformPkg/ArndaleBoardPkg/arndale-Exynos5250.dsc -D EXYNOS5250_EVT1 -D DDR3
+	if [ X"${!PLATFORM_BUILDCMD}" == X"" ]; then
+		build -a ARM -t ARMLINUXGCC -p "${!PLATFORM_DSC}" -b "$BUILD" \
+			${!PLATFORM_BUILDFLAGS}
+	else
+		${!PLATFORM_BUILDCMD} -b "$BUILD" ${!PLATFORM_BUILDFLAGS}
+	fi
 	log_result $? "${!PLATFORM_NAME}"
 }
 
@@ -214,13 +213,7 @@ fi
 uefishell
 
 for board in "${builds[@]}" ; do
-	type -t build_"$board" >/dev/null
-	if [ $? -ne 0 ]; then
-		echo	 "Don't know how to build '$board'!" >&2
-		usage
-		exit 1
-	fi
-	build_"$board"
+	build_platform
 done
 
 print_result
