@@ -17,7 +17,7 @@
 #   build command to use.
 #
 
-boards=( a5 a9 tc1 tc2 panda origen arndale )
+boards=( a5 a9 tc1 tc2 panda origen arndale rtsm_a15x2 )
 
 a5_LONGNAME="Versatile Express A5"
 a5_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
@@ -26,6 +26,10 @@ a5_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA5s.dsc"
 a9_LONGNAME="Versatile Express A9"
 a9_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1 -D EDK2_ARMVE_SINGLE_BINARY=1"
 a9_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA9x4.dsc"
+
+rtsm_a15x2_LONGNAME="Versatile Express RTSM A15x2"
+rtsm_a15x2_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
+rtsm_a15x2_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-A15_MPCore.dsc"
 
 tc1_LONGNAME="Versatile Express TC1"
 tc1_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
