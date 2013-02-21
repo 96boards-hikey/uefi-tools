@@ -14,12 +14,12 @@
 # we should pass in the YY.MM used for the release, eg. "13.01" for January 2013
 # and a number for the release candidate, eg, 2.
 
-version=`git tag | grep linaro-uefi- | grep rc | tail -1`
+version=`git tag --list linaro-uefi-*-rc* | tail -1`
 [[ "$version" =~ (.*[^0-9])([0-9]+)$ ]] && version="${BASH_REMATCH[1]}$((${BASH_REMATCH[2]} + 1))";
 RC=`echo $version | sed 's#linaro-uefi-.*-rc##g'`
 YYYYMM=`echo $version | sed 's#linaro-uefi-##g' | sed 's#-rc.*##g'`
 
-git tag | grep linaro-uefi-$YYYYMM-rc$RC
+git tag --list linaro-uefi-$YYYYMM-rc$RC
 if [ "$?" = "0" ]
 then
 	echo "linaro-uefi-$YYYYMM-rc$RC already exists, you should use a new RC number"
@@ -47,7 +47,7 @@ echo "--------------------------------------------------------------------------
 # I don't know how we tell "if it's changed", but I think merge takes care of it.
 ################################################################################
 
-topics=(`git branch | grep linaro-topic- | sed "s/*//"`)
+topics=(`git branch --list linaro-topic-* | sed "s/*//"`)
 
 for topic in "${topics[@]}" ; do
 

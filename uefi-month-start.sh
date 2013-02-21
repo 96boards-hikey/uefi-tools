@@ -166,7 +166,7 @@ git tag linaro-base-$YYYYMM
 # 1.4) Create new monthly branch
 git branch $MONTH_BRANCH $MASTER
 
-topics=(`git branch | grep linaro-topic- | sed "s/*//"`)
+topics=(`git branch --list linaro-topic-* | sed "s/*//"`)
 
 for topic in "${topics[@]}" ; do
 	# 1.5) Rebase all the topic branches

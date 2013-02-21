@@ -27,7 +27,7 @@ git push $REPO tianocore-edk2-basetools
 # Update topic branches
 # Use "push -f" because topic branches are rebased
 ################################################################################
-branches=(`git branch | grep linaro-topic- | sed "s/*//"`)
+branches=(`git branch --list linaro-topic-* | sed "s/*//"`)
 
 for branch in "${branches[@]}" ; do
 	echo "----------------------------------------"
@@ -39,7 +39,7 @@ done
 ################################################################################
 # Update tracking branches
 ################################################################################
-MONTH_BRANCH=`git branch | grep linaro-tracking- | tail -1`
+MONTH_BRANCH=`git branch --list linaro-tracking-* | tail -1 | sed "s/*//"`)
 echo "Pushing out monthly branch $REPO $MONTH_BRANCH..."
 git push $REPO $MONTH_BRANCH
 

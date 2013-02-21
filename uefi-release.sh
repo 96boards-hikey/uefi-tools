@@ -17,7 +17,7 @@ echo "--------------------------------------------------------------------------
 echo "Find release tag"
 echo "--------------------------------------------------------------------------------"
 cd $NEXT_TREE
-TAG=`git tag | grep linaro-uefi | grep -v rc | tail -1`
+TAG=`git tag --list linaro-uefi-* | grep -v rc | tail -1`
 echo "Release tag is '$TAG'"
 
 echo "--------------------------------------------------------------------------------"
