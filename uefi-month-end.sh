@@ -17,7 +17,9 @@ function usage
 	echo "   YYYY.MM        where YYYY is the year and MM is the month"
 }
 ################################################################################
-#
+
+$YYYYMM=`date +%Y.%m`
+
 # Check all parameters
 while [ "$1" != "" ]; do
     case $1 in
@@ -40,7 +42,7 @@ done
 
 if [ "$YYYYMM" = "" ]
 then
-	echo "You need to specify a month tag, eg. 13.01"
+	echo "You need to specify a month tag, eg. 2013.01"
 	exit
 fi
 
