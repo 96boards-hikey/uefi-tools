@@ -58,7 +58,7 @@ then
 fi
 
 ################################################################################
-BASE_DIR=/linaro/uefi/master
+GIT_BASE_DIR=/linaro/uefi/git
 MASTER=master
 MONTH_BRANCH=linaro-tracking-$YYYYMM
 #UEFI_NEXT_GIT=uefi-next.git
@@ -71,7 +71,7 @@ echo "--------------------------------------------------------------------------
 echo "PULL          $PULL"
 echo "UPDATE        $UPDATE"
 echo "YYYYMM        $YYYYMM"
-echo "BASE_DIR      $BASE_DIR"
+echo "GIT_BASE_DIR  $GIT_BASE_DIR"
 echo "MASTER        $MASTER"
 echo "MONTH_BRANCH  $MONTH_BRANCH"
 echo "UEFI_NEXT_GIT $UEFI_NEXT_GIT"
@@ -87,25 +87,26 @@ then
 	echo "Updating local mirrors from upstream"
 	echo "--------------------------------------------------------------------------------"
 	echo "EDK2"
-	cd $BASE_DIR/git/edk2
+	pushd $GIT_BASE_DIR/edk2
 	git checkout master
 	git pull
 
 	echo "--------------------------------------------------------------------------------"
 	echo "EDK2-FATDRIVER2"
-	cd $BASE_DIR/git/edk2-fatdriver2.git
+	cd $GIT_BASE_DIR/edk2-fatdriver2.git
 	git checkout trunk
 	git pull
 
 	echo "--------------------------------------------------------------------------------"
 	echo "BaseTools"
-	cd $BASE_DIR/git/buildtools-BaseTools
+	cd $GIT_BASE_DIR/buildtools-BaseTools
 	git checkout master
 	git pull
 
 	echo "--------------------------------------------------------------------------------"
 	echo "Updated all local mirrors"
 	echo "--------------------------------------------------------------------------------"
+	popd
 fi
 
 if [ "$UPDATE" = "yes" ]
