@@ -17,7 +17,7 @@
 #   build command to use.
 #
 
-boards=( a5 a9 tc1 tc2 panda origen arndale rtsm_a15x2 )
+boards=( a5 a9 tc1 tc2 panda origen arndale rtsm_a15x2 beagle )
 
 a5_LONGNAME="Versatile Express A5"
 a5_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
@@ -50,6 +50,10 @@ origen_DSC="SamsungPlatformPkgOrigen/OrigenBoardPkg/OrigenBoardPkg-Exynos.dsc"
 arndale_LONGNAME="Samsung Arndale"
 arndale_BUILDFLAGS="-D EXYNOS5250_EVT1 -D DDR3"
 arndale_DSC="SamsungPlatformPkg/ArndaleBoardPkg/arndale-Exynos5250.dsc"
+
+beagle_LONGNAME="BeagleBoard"
+beagle_BUILDFLAGS=""
+beagle_DSC="BeagleBoardPkg/BeagleBoardPkg.dsc"
 
 #
 # End of Board Configuration Section.
