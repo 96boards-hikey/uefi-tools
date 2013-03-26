@@ -43,7 +43,7 @@ echo "--------------------------------------------------------------------------
 echo "Force the contents or uefi-next into this tree"
 echo "--------------------------------------------------------------------------------"
 # Now we should force update the release tree to match the next tree
-git rm -r edk2
+git rm -r *
 cp -R $NEXT_TREE/* .
 
 echo "--------------------------------------------------------------------------------"
