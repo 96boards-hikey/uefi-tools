@@ -21,7 +21,7 @@ function usage
 # Check all the parameters
 # we should pass in the YYYY.MM used for the release, eg. "2013.01" for January 2013
 
-$YYYYMM=`date +%Y.%m`
+YYYYMM=`date +%Y.%m`
 
 while [ "$1" != "" ]; do
     case $1 in
