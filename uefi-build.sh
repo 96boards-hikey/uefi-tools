@@ -17,43 +17,67 @@
 #   build command to use.
 #
 
-boards=( a5 a9 tc1 tc2 panda origen arndale rtsm_a15x2 beagle )
+boards=( a5 a9 tc1 tc2 panda origen arndale rtsm_a9x4 rtsm_a15x1 rtsm_a15mpcore rtsm_aarch64 beagle )
+
+rtsm_aarch64_LONGNAME="aarch64 RTSM"
+rtsm_aarch64_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-AEMv8Ax4.dsc"
+rtsm_aarch64_BUILDFLAGS=""
+rtsm_aarch64_ARCH="AARCH64"
 
 a5_LONGNAME="Versatile Express A5"
 a5_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
 a5_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA5s.dsc"
+a5_ARCH="ARM"
 
 a9_LONGNAME="Versatile Express A9"
 a9_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1 -D EDK2_ARMVE_SINGLE_BINARY=1"
 a9_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA9x4.dsc"
+a9_ARCH="ARM"
 
-rtsm_a15x2_LONGNAME="Versatile Express RTSM A15x2"
-rtsm_a15x2_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
-rtsm_a15x2_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-A15_MPCore.dsc"
+rtsm_a9x4_LONGNAME="Versatile Express RTSM A9x4"
+rtsm_a9x4_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
+rtsm_a9x4_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-A9x4.dsc"
+rtsm_a9x4_ARCH="ARM"
+
+rtsm_a15x1_LONGNAME="Versatile Express RTSM A15 single core"
+rtsm_a15x1_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
+rtsm_a15x1_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-A15.dsc"
+rtsm_a15x1_ARCH="ARM"
+
+rtsm_a15mpcore_LONGNAME="Versatile Express RTSM A15 MPCore"
+rtsm_a15mpcore_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
+rtsm_a15mpcore_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-A15_MPCore.dsc"
+rtsm_a15mpcore_ARCH="ARM"
 
 tc1_LONGNAME="Versatile Express TC1"
 tc1_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
 tc1_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15x2.dsc"
+tc1_ARCH="ARM"
 
 tc2_LONGNAME="Versatile Express TC2"
 tc2_BUILDFLAGS="-D ARM_BIGLITTLE_TC2=1"
 tc2_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15-A7.dsc"
+tc2_ARCH="ARM"
 
 panda_LONGNAME="TI Pandaboard"
 panda_BUILDCMD="./PandaBoardPkg/build.sh"
 panda_BUILDFLAGS=""
+panda_ARCH="ARM"
 
 origen_LONGNAME="Samsung Origen"
 origen_BUILDFLAGS=""
 origen_DSC="SamsungPlatformPkgOrigen/OrigenBoardPkg/OrigenBoardPkg-Exynos.dsc"
+origen_ARCH="ARM"
 
 arndale_LONGNAME="Samsung Arndale"
 arndale_BUILDFLAGS="-D EXYNOS5250_EVT1 -D DDR3"
 arndale_DSC="SamsungPlatformPkg/ArndaleBoardPkg/arndale-Exynos5250.dsc"
+arndale_ARCH="ARM"
 
 beagle_LONGNAME="BeagleBoard"
 beagle_BUILDFLAGS=""
 beagle_DSC="BeagleBoardPkg/BeagleBoardPkg.dsc"
+beagle_ARCH="ARM"
 
 #
 # End of Board Configuration Section.
@@ -94,12 +118,13 @@ function build_platform
 	PLATFORM_BUILDFLAGS="$board"_BUILDFLAGS
 	PLATFORM_BUILDCMD="$board"_BUILDCMD
 	PLATFORM_DSC="$board"_DSC
+	PLATFORM_ARCH="$board"_ARCH
 
 	echo "Building ${!PLATFORM_NAME}"
 	echo "$board"_BUILDFLAGS="'${!PLATFORM_BUILDFLAGS}'"
 
 	if [ X"${!PLATFORM_BUILDCMD}" == X"" ]; then
-		build -a ARM -t ARMLINUXGCC -p "${!PLATFORM_DSC}" -b "$BUILD" \
+		build -a "${!PLATFORM_ARCH}" -t ARMLINUXGCC -p "${!PLATFORM_DSC}" -b "$BUILD" \
 			${!PLATFORM_BUILDFLAGS}
 	else
 		${!PLATFORM_BUILDCMD} -b "$BUILD" ${!PLATFORM_BUILDFLAGS}
