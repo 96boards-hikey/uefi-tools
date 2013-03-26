@@ -39,7 +39,7 @@ done
 ################################################################################
 # Update tracking branches
 ################################################################################
-MONTH_BRANCH=`git branch --list linaro-tracking-* | tail -1 | sed "s/*//"`)
+MONTH_BRANCH=`git branch --list linaro-tracking-* | tail -1 | sed "s/*//"`
 echo "Pushing out monthly branch $REPO $MONTH_BRANCH..."
 git push $REPO $MONTH_BRANCH
 
