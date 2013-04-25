@@ -58,7 +58,7 @@ then
 fi
 
 ################################################################################
-GIT_BASE_DIR=/linaro/uefi/git
+GIT_BASE_DIR=/linaro/uefi/master/git
 MASTER=master
 MONTH_BRANCH=linaro-tracking-$YYYYMM
 #UEFI_NEXT_GIT=uefi-next.git
