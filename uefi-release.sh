@@ -51,6 +51,6 @@ echo "Add all the files and commit them"
 echo "--------------------------------------------------------------------------------"
 # Add all the files and commit them with a sensible message
 git add *
-git commit -s -m "Merge branch 'armlt-tracking' of git://git.linaro.org/arm/uefi/uefi-next"
+git commit -s -m "Merge branch 'linaro-release' of git://git.linaro.org/arm/uefi/uefi-next"
 git tag $TAG
 
