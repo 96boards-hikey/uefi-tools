@@ -248,6 +248,57 @@ git branch -D armlt-tracking
 git branch armlt-tracking linaro-tracking
 
 
+################################################################################
+################################################################################
+# Now we move focus to the internal branches
+# these are the branches that live in the private GIT tree and shouldn't be
+# pushed to the public tree.
+################################################################################
+################################################################################
+INTERNAL_MONTH_BRANCH=linaro-internal-tracking-$YYYYMM
+
+# Create new internal monthly branch
+git branch $INTERNAL_MONTH_BRANCH $MASTER
+
+topics=(`git branch --list linaro-internal-topic-* | sed "s/*//"`)
+
+for topic in "${topics[@]}" ; do
+	# 1.5) Rebase all the topic branches
+	# One of these could fail because a patch made it upstream.
+	# Need some error trapping and fixing procedure here
+	echo "--------------------------------------------------------------------------------"
+	echo "Rebasing $topic"
+	git checkout $topic
+	git rebase --ignore-whitespace $MASTER
+
+	if [ "$?" != "0" ]
+	then
+		echo "********************************************************************************"
+		echo "Error rebasing $topic"
+		echo "********************************************************************************"
+		exit 1
+	fi
+
+	# 1.6) update monthly branch
+	# Now that we have the topic branches, we merge them all back to the tracking branch
+	echo "--------------------------------------------------------------------------------"
+	echo "Merging $topic into $INTERNAL_MONTH_BRANCH"
+	git checkout $INTERNAL_MONTH_BRANCH
+	git merge --no-commit $topic
+
+	if [ "$?" != "0" ]
+	then
+		echo "********************************************************************************"
+		echo "Error merging $topic back to $INTERNAL_MONTH_BRANCH"
+		echo "********************************************************************************"
+		exit 1
+	fi
+
+	# now commit
+	git commit -s -m "Merging $topic into $INTERNAL_MONTH_BRANCH" #--date "Mon Jan 7 13:00:00 GMT 2013"
+
+done
+
 echo "--------------------------------------------------------------------------------"
 echo "Finished rebasing and merging"
 echo "Tagging first release candidate"
