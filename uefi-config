@@ -8,7 +8,7 @@
 #   uefi-config --image=uImage > /dev/ttyUSB0
 
 UEFI_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-UEFI_CMDLINE="console=tty0 console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro androidboot.console=ttyAMA0 mmci.fmax=12000000"
+UEFI_CMDLINE="console=ttyAMA0,38400n8 root=/dev/mmcblk0p2 rootwait ro androidboot.console=ttyAMA0 mmci.fmax=12000000"
 
 # define defaults
 if [ "$UEFI_IMAGE" = "" ]
