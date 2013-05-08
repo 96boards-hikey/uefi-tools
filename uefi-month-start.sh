@@ -63,6 +63,7 @@ MASTER=master
 MONTH_BRANCH=linaro-tracking-$YYYYMM
 #UEFI_NEXT_GIT=uefi-next.git
 UEFI_NEXT_GIT=`pwd`
+TMP=/tmp/uefi-next.`date +%s`
 ################################################################################
 
 echo "--------------------------------------------------------------------------------"
@@ -75,6 +76,7 @@ echo "GIT_BASE_DIR  $GIT_BASE_DIR"
 echo "MASTER        $MASTER"
 echo "MONTH_BRANCH  $MONTH_BRANCH"
 echo "UEFI_NEXT_GIT $UEFI_NEXT_GIT"
+echo "TMP           $TMP"
 echo "--------------------------------------------------------------------------------"
 
 ################################################################################
@@ -215,6 +217,10 @@ echo "--------------------------------------------------------------------------
 git checkout $MONTH_BRANCH
 git tag linaro-uefi-$YYYYMM-rc1
 
+rm -rf $TMP
+mkdir -p $TMP
+cp -R * $TMP
+
 #--------------------------------------------------------------------------------
 # Now create a "latest" tracking branch
 # CI and other automated things need to be able to pull a specific, fixed, branch
@@ -222,15 +228,32 @@ git tag linaro-uefi-$YYYYMM-rc1
 #   armlt-tracking
 # Which we'll keep, but we should use something not ARMLT related for the future:
 #   linaro-tracking
+#
+# This merging often fails due to conflicts, so we merge it with --no-commit
+# then force the files to match the tracking branch contents before commiting
+# the results.
 #--------------------------------------------------------------------------------
 echo "--------------------------------------------------------------------------------"
 echo "Update global tracking branches"
 echo "--------------------------------------------------------------------------------"
 git checkout linaro-tracking
-git merge -Xtheirs linaro-tracking-$YYYYMM
-git checkout armlt-tracking
-git merge -Xtheirs linaro-tracking
+git merge --no-commit -Xtheirs $MONTH_BRANCH
+rm -rf *
+cp -R $TMP .
+git add -A
+git commit -s -m "Merging $MONTH_BRANCH into linaro-tracking"
 
+# Force armlt-tracking to match linaro-tracking exactly
+git branch -D armlt-tracking
+git branch armlt-tracking linaro-tracking
+
+
+echo "--------------------------------------------------------------------------------"
+echo "Finished rebasing and merging"
+echo "Tagging first release candidate"
+echo "--------------------------------------------------------------------------------"
+
+git checkout $MONTH_BRANCH
 
 exit
 ################################################################################
