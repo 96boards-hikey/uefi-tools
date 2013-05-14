@@ -31,15 +31,17 @@ fi
 MONTH_BRANCH=linaro-tracking-$YYYYMM
 #UEFI_NEXT_GIT=uefi-next.git
 UEFI_NEXT_GIT=`pwd`
+INTERNAL_MONTH_BRANCH=linaro-internal-tracking-$YYYYMM
 ################################################################################
 
 echo "--------------------------------------------------------------------------------"
 echo "CONFIG"
 echo "--------------------------------------------------------------------------------"
-echo "YYYYMM        $YYYYMM"
-echo "RC            $RC"
-echo "MONTH_BRANCH  $MONTH_BRANCH"
-echo "UEFI_NEXT_GIT $UEFI_NEXT_GIT"
+echo "YYYYMM                $YYYYMM"
+echo "RC                    $RC"
+echo "MONTH_BRANCH          $MONTH_BRANCH"
+echo "INTERNAL_MONTH_BRANCH $INTERNAL_MONTH_BRANCH"
+echo "UEFI_NEXT_GIT         $UEFI_NEXT_GIT"
 echo "--------------------------------------------------------------------------------"
 
 ################################################################################
@@ -57,11 +59,13 @@ for topic in "${topics[@]}" ; do
 	echo "Merging $topic into $MONTH_BRANCH"
 	git checkout $MONTH_BRANCH
 	git merge $topic
+	git checkout $INTERNAL_MONTH_BRANCH
+	git merge $topic
 
 done
 
 # Tag the latest merges
-git checkout linaro-tracking-$YYYYMM
+git checkout $MONTH_BRANCH
 git tag linaro-uefi-$YYYYMM-rc$RC
 
 # Update linaro-tracking
@@ -72,6 +76,25 @@ git merge -Xtheirs linaro-tracking-$YYYYMM
 git checkout armlt-tracking
 git merge -Xtheirs linaro-tracking
 
+################################################################################
+################################################################################
+# Now update the Private/Internal tree
+################################################################################
+################################################################################
+git checkout $INTERNAL_MONTH_BRANCH
+
+topics=(`git branch --list linaro-internal-topic-* | sed "s/*//"`)
+
+for topic in "${topics[@]}" ; do
+
+	# update monthly branch
+	# Now that we have the topic branches, we merge them all back to the tracking branch
+	echo "--------------------------------------------------------------------------------"
+	echo "Merging $topic into $INTERNAL_MONTH_BRANCH"
+	git checkout $INTERNAL_MONTH_BRANCH
+	git merge $topic
+
+done
 
 exit
 ################################################################################
