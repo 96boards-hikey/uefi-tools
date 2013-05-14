@@ -239,7 +239,7 @@ echo "--------------------------------------------------------------------------
 git checkout linaro-tracking
 git merge --no-commit -Xtheirs $MONTH_BRANCH
 rm -rf *
-cp -R $TMP .
+cp -R $TMP/* .
 git add -A
 git commit -s -m "Merging $MONTH_BRANCH into linaro-tracking"
 
