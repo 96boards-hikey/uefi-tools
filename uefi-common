@@ -15,3 +15,103 @@ then
 	cp $DEFAULT_CONFIG $CONFIG_FILE
 fi
 source $CONFIG_FILE
+
+function force_update_branch {
+	src=`git branch --list $1`
+	dest=`git branch --list $2`
+	if [ "$src" != "" ]
+	then
+		if [ "$dest" != "" ]
+		then
+			echo "Force updating \"$dest\" from \"$src\""
+			git checkout $src
+			git reset --hard HEAD && git clean -dfx
+			rm -rf $TMP_DIR
+			mkdir -p $TMP_DIR
+			cp -R * $TMP_DIR
+
+			git checkout $dest
+			git merge --no-commit -Xtheirs $src
+			rm -rf *
+			cp -R $TMP_DIR/* .
+			git add -A
+			git commit -s -m "Merging $src into $dest"
+		fi
+	fi
+}
+function uefi_next_current_month_branch {
+	echo `git branch --list linaro-tracking-????.?? | tail -1 | sed "s/*//"`
+}
+
+function uefi_next_internal_current_month_branch {
+	echo `git branch --list linaro-internal-tracking-????.?? | tail -1 | sed "s/*//"`
+}
+
+function uefi_next_next_month {
+	YYYY=`date +%Y`
+	MM=`date +%m`
+    MM=$(expr $MM + 1)
+	MM=$(printf "%.2d" "$MM")
+
+	if [ "$MM" == "13" ]
+    then
+    	YYYY=$(expr $YYYY + 1)
+		MM=01
+    fi
+	echo $YYYY.$MM
+}
+
+function uefi_next_next_month_branch {
+	echo linaro-tracking-$(uefi_next_next_month)
+}
+
+function uefi_next_internal_next_month_branch {
+	echo linaro-internal-tracking-$(uefi_next_next_month)
+}
+
+function uefi_next_current_rc {
+	version=`git tag --list linaro-uefi-????.??-rc* | tail -1`
+	echo $version
+}
+
+function uefi_next_release_tag {
+	tag=`git tag --list linaro-uefi-????.??-rc* | tail -1 | sed "s/-rc.*//"`
+	echo $tag
+}
+
+function uefi_next_internal_current_rc {
+	version=`git tag --list linaro-uefi-internal-????.??-rc* | tail -1`
+	echo $version
+}
+
+function uefi_next_next_rc {
+	version=`git tag --list linaro-uefi-????.??-rc* | tail -1`
+	[[ "$version" =~ (.*[^0-9])([0-9]+)$ ]] && version="${BASH_REMATCH[1]}$((${BASH_REMATCH[2]} + 1))";
+	RC=`echo $version | sed 's#linaro-uefi-.*-rc##g'`
+	YYYYMM=`echo $version | sed 's#linaro-uefi-##g' | sed 's#-rc.*##g'`
+	echo linaro-uefi-$YYYYMM-rc$RC
+}
+
+function uefi_next_internal_next_rc {
+    # the internal tags follow the numbering for the public tracking branch
+	version=`git tag --list linaro-uefi-????.??-rc* | tail -1`
+	[[ "$version" =~ (.*[^0-9])([0-9]+)$ ]] && version="${BASH_REMATCH[1]}$((${BASH_REMATCH[2]} + 1))";
+	RC=`echo $version | sed 's#linaro-uefi-.*-rc##g'`
+	YYYYMM=`echo $version | sed 's#linaro-uefi-##g' | sed 's#-rc.*##g'`
+	echo linaro-uefi-internal-$YYYYMM-rc$RC
+}
+
+function uefi_next_list_topics {
+	topics=(`git branch --list linaro-topic-* | sed "s/*//"`)
+
+	for topic in "${topics[@]}" ; do
+		echo "                          $topic"
+	done
+	}
+
+function uefi_next_list_internal_topics {
+	topics=(`git branch --list linaro-internal-topic-* | sed "s/*//"`)
+	for topic in "${topics[@]}" ; do
+		echo "                          $topic"
+	done
+}
