@@ -17,16 +17,15 @@ source uefi-common
 echo "--------------------------------------------------------------------------------"
 echo "Updating linaro-release"
 echo "--------------------------------------------------------------------------------"
-git checkout linaro-release
-git merge -Xtheirs $(uefi_next_current_month_branch)
+force_update_branch $(uefi_next_current_month_branch) linaro-release
 git tag $(uefi_next_release_tag)
 
 echo "--------------------------------------------------------------------------------"
 echo "Update global tracking branches"
 echo "--------------------------------------------------------------------------------"
-git checkout linaro-tracking
-git merge -Xtheirs $(uefi_next_release_tag)
-git checkout armlt-tracking
-git merge -Xtheirs $(uefi_next_release_tag)
+force_update_branch $(uefi_next_current_month_branch) linaro-tracking
 
+# Force armlt-tracking to match linaro-tracking exactly
+git branch -D armlt-tracking
+git branch armlt-tracking linaro-tracking
 
