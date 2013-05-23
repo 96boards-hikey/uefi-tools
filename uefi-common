@@ -1,0 +1,17 @@
+#!/bin/bash
+################################################################################
+#
+# uefi-setup
+#
+################################################################################
+
+MY_PATH="`dirname \"$0\"`"              # relative
+DEFAULT_CONFIG=$MY_PATH/uefi-tools.config $CONFIG_FILE
+CONFIG_FILE=~/.uefi-tools.config
+
+if [ ! -f "$CONFIG_FILE" ]
+then
+	echo "Config file does not exist, copying in default config from $DEFAULT_CONFIG to $CONFIG_FILE"
+	cp $DEFAULT_CONFIG $CONFIG_FILE
+fi
+source $CONFIG_FILE
