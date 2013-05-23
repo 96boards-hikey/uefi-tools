@@ -9,16 +9,20 @@
 #
 ################################################################################
 
+################################################################################
+source uefi-common
+################################################################################
+
 if [ "$1" = "" ]
 then
-	REPO="uefi-next"
+	REPO=$UEFI_NEXT_GIT_PUSH_REMOTE
 	echo "Using default repo: $REPO"
 else
 	REPO=$1
     echo "REPO is $REPO"
 fi
 
-INTERNAL_REPO=uefi-internal
+INTERNAL_REPO=$UEFI_INTERNAL_GIT_PUSH_REMOTE
 
 ################################################################################
 # Update core branches
@@ -50,17 +54,17 @@ done
 ################################################################################
 # Update tracking branches
 ################################################################################
-MONTH_BRANCH=`git branch --list linaro-tracking-* | tail -1 | sed "s/*//"`
 echo "Pushing out monthly branch $REPO $MONTH_BRANCH..."
-git push $REPO          $MONTH_BRANCH
-git push $INTERNAL_REPO $MONTH_BRANCH
+git push $REPO          $(uefi_next_current_month_branch)
+git push $INTERNAL_REPO $(uefi_next_current_month_branch)
 
 git push $REPO          armlt-tracking
 git push $INTERNAL_REPO armlt-tracking
 git push $REPO          linaro-tracking
 git push $INTERNAL_REPO linaro-tracking
-git push --tags $REPO
-git push --tags $INTERNAL_REPO
+
+git push $REPO `git tag -l linaro-uefi-????.??-rc*`
+git push $INTERNAL_REPO `git tag -l linaro-uefi-????.??-rc*`
 
 ################################################################################
 # Update internal topic and feature branches on the internal tree
@@ -93,7 +97,6 @@ done
 ################################################################################
 # Update tracking branch
 ################################################################################
-INTERNAL_MONTH_BRANCH=`git branch --list linaro-internal-tracking-* | tail -1 | sed "s/*//"`
-echo "Pushing out monthly branch $INTERNAL_REPO $INTERNAL_MONTH_BRANCH..."
-git push $INTERNAL_REPO $INTERNAL_MONTH_BRANCH
-
+echo "Pushing out monthly branch $INTERNAL_REPO $(uefi_next_internal_current_month_branch)..."
+git push $INTERNAL_REPO $(uefi_next_internal_current_month_branch)
+git push $INTERNAL_REPO `git tag -l linaro-uefi-internal-????.??-rc*`
