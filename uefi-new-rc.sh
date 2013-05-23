@@ -3,45 +3,26 @@
 # Setup the tree for a new month
 #
 # The general idea is to
-# 1) merge all the topic branches into the monthly tracking branch & tag it
-#    as with the latest -rc number
-# 2) update the linaro-tracking branch that follows the monthly tracking branch
+# 1) merge all the topic branches into the monthly tracking branch
+# 2) also merge them to the internal monthly tracking branch
+# 3) tag the monthly tracking branch with the latest -rc number
+# 4) update the linaro-tracking branch that follows the monthly tracking branch
+# 5) update the internal monthly tracking branch with all the internal topics.
 ################################################################################
 
 
 ################################################################################
-# Check all the parameters
-# we should pass in the YY.MM used for the release, eg. "13.01" for January 2013
-# and a number for the release candidate, eg, 2.
-
-version=`git tag --list linaro-uefi-*-rc* | tail -1`
-[[ "$version" =~ (.*[^0-9])([0-9]+)$ ]] && version="${BASH_REMATCH[1]}$((${BASH_REMATCH[2]} + 1))";
-RC=`echo $version | sed 's#linaro-uefi-.*-rc##g'`
-YYYYMM=`echo $version | sed 's#linaro-uefi-##g' | sed 's#-rc.*##g'`
-
-git tag --list linaro-uefi-$YYYYMM-rc$RC
-if [ "$?" = "0" ]
-then
-	echo "linaro-uefi-$YYYYMM-rc$RC already exists, you should use a new RC number"
-else
-	echo "YAY! you're using a new RC number"
-fi
-
-################################################################################
-MONTH_BRANCH=linaro-tracking-$YYYYMM
-#UEFI_NEXT_GIT=uefi-next.git
-UEFI_NEXT_GIT=`pwd`
-INTERNAL_MONTH_BRANCH=linaro-internal-tracking-$YYYYMM
+source uefi-common
 ################################################################################
 
 echo "--------------------------------------------------------------------------------"
 echo "CONFIG"
 echo "--------------------------------------------------------------------------------"
-echo "YYYYMM                $YYYYMM"
-echo "RC                    $RC"
-echo "MONTH_BRANCH          $MONTH_BRANCH"
-echo "INTERNAL_MONTH_BRANCH $INTERNAL_MONTH_BRANCH"
-echo "UEFI_NEXT_GIT         $UEFI_NEXT_GIT"
+echo "Current Month Branch  $(uefi_next_current_month)"
+echo "Internal Month Branch $(uefi_next_internal_current_month)"
+echo "uefi-next dir         $UEFI_NEXT_GIT"
+echo "Next RC tag           $(uefi_next_next_rc)"
+echo "Next internal RC tag  $(uefi_next_internal_next_rc)"
 echo "--------------------------------------------------------------------------------"
 
 ################################################################################
@@ -56,21 +37,21 @@ for topic in "${topics[@]}" ; do
 	# update monthly branch
 	# Now that we have the topic branches, we merge them all back to the tracking branch
 	echo "--------------------------------------------------------------------------------"
-	echo "Merging $topic into $MONTH_BRANCH"
-	git checkout $MONTH_BRANCH
+	echo "Merging $topic into $(uefi_next_current_month)$"
+	git checkout $(uefi_next_current_month)
 	git merge $topic
-	git checkout $INTERNAL_MONTH_BRANCH
+	git checkout $(uefi_next_internal_current_month)
 	git merge $topic
 
 done
 
 # Tag the latest merges
-git checkout $MONTH_BRANCH
-git tag linaro-uefi-$YYYYMM-rc$RC
+git checkout $(uefi_next_current_month)
+git tag $(uefi_next_next_rc)
 
 # Update linaro-tracking
 git checkout linaro-tracking
-git merge -Xtheirs linaro-tracking-$YYYYMM
+git merge -Xtheirs $(uefi_next_current_month)
 
 # re-create armlt-tracking to match linaro-tracking
 git checkout armlt-tracking
@@ -81,7 +62,7 @@ git merge -Xtheirs linaro-tracking
 # Now update the Private/Internal tree
 ################################################################################
 ################################################################################
-git checkout $INTERNAL_MONTH_BRANCH
+git checkout $(uefi_next_internal_current_month)
 
 topics=(`git branch --list linaro-internal-topic-* | sed "s/*//"`)
 
@@ -90,11 +71,13 @@ for topic in "${topics[@]}" ; do
 	# update monthly branch
 	# Now that we have the topic branches, we merge them all back to the tracking branch
 	echo "--------------------------------------------------------------------------------"
-	echo "Merging $topic into $INTERNAL_MONTH_BRANCH"
-	git checkout $INTERNAL_MONTH_BRANCH
+	echo "Merging $topic into $(uefi_next_internal_current_month)"
+	git checkout $(uefi_next_internal_current_month)
 	git merge $topic
 
 done
+
+git tag $(uefi_next_internal_next_rc)
 
 exit
 ################################################################################
