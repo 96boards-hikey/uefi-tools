@@ -18,7 +18,7 @@ else
     echo "REPO is $REPO"
 fi
 
-INTERNAL_REPO=linaro-internal
+INTERNAL_REPO=uefi-internal
 
 ################################################################################
 # Update core branches
