@@ -11,57 +11,22 @@
 
 
 ################################################################################
-function usage
-{
-	echo "Usage: $0"
-	echo "   YYYY.MM        where YYYY is the year and MM is the month"
-}
+source uefi-common
 ################################################################################
 
-$YYYYMM=`date +%Y.%m`
-
-# Check all parameters
-while [ "$1" != "" ]; do
-    case $1 in
-		[0-9][0-9][0-9][0-9].[0-9][0-9])
-			YYYYMM=$1
-			;;
-
-        /h | /? | -? | -h | --help )
-            usage
-            exit
-            ;;
-        -* )
-            usage
-			echo "unknown arg $1"
-            exit 1
-    esac
-    shift
-done
-
-
-if [ "$YYYYMM" = "" ]
-then
-	echo "You need to specify a month tag, eg. 2013.01"
-	exit
-fi
-
-
-
-################################################################################
 echo "--------------------------------------------------------------------------------"
 echo "Updating linaro-release"
 echo "--------------------------------------------------------------------------------"
 git checkout linaro-release
-git merge -Xtheirs linaro-tracking-$YYYYMM
-git tag linaro-uefi-$YYYYMM
+git merge -Xtheirs $(uefi_next_current_month_branch)
+git tag $(uefi_next_release_tag)
 
 echo "--------------------------------------------------------------------------------"
 echo "Update global tracking branches"
 echo "--------------------------------------------------------------------------------"
 git checkout linaro-tracking
-git merge -Xtheirs linaro-uefi-$YYYYMM
+git merge -Xtheirs $(uefi_next_release_tag)
 git checkout armlt-tracking
-git merge -Xtheirs linaro-uefi-$YYYYMM
+git merge -Xtheirs $(uefi_next_release_tag)
 
 
