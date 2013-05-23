@@ -7,8 +7,8 @@
 ################################################################################
 WORKSPACE=/linaro/uefi/master/uefi-next.git
 
-FLEXLM_TUNNEL="ssh -L 8224:localhost:8224 -L 18224:localhost:18224 -N portfwd@23.21.178.17"
-flexlm=`ps aux | grep $FLEXLM_TUNNEL`
+FLEXLM_TUNNEL="ssh -L 8224:localhost:8224 -L 18224:localhost:18224 -N ryan.harkin@flexlm.linaro.org -v"
+flexlm=`ps aux | grep "$FLEXLM_TUNNEL"`
 
 if [ "$flexlm" == "" ]
 then
@@ -16,8 +16,9 @@ then
 
 	# Run the license pass-through
 	#ssh -L 8224:localhost:8224 -L 18224:localhost:18224 -N portfwd@23.21.178.170 &
-    gnome-terminal --geometry=32x4 --title "flexlm tunnel" -e "ssh -L 8224:localhost:8224 -L 18224:localhost:18224 -N ryan.harkin@flexlm.linaro.org -v"
-
+    gnome-terminal --geometry=32x4 --title "flexlm tunnel" -e "$FLEXLM_TUNNEL"
+else
+	echo "FlexLm tunnel already running."
 fi
 
 # add RTSM stuff to your env
@@ -38,6 +39,10 @@ if [ "$RTSM_MMC" == "" ]
 then
 	RTSM_MMC=/linaro/releases/ubuntu-1304/vexpress-quantal_developer_20130423-299.img
 fi
+
+echo "RTSM_MODEL     $RTSM_MODEL"
+echo "RTSM_UEFI      $RTSM_UEFI"
+echo "RTSM_MMC       $RTSM_MMC"
 
 # Run the model
 $RTSM_MODEL \
