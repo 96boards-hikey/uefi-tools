@@ -1,31 +1,24 @@
 #!/bin/bash
 
-# I am doing this from my local copies of trees, I guess I should really do this from trees pulled from g.l.o each time
+################################################################################
+source uefi-common
+################################################################################
 
-# This is my working directory:
-# cd /linaro/g.l.o/arm/uefi/
+cd $UEFI_NEXT_GIT
+git reset --hard HEAD && git clean -dfx
+git checkout linaro-release
 
-# This is how I cloned the trees from g.l.o
-# git clone git://git.linaro.org/arm/uefi/uefi.git uefi.git
-# git clone git://git.linaro.org/arm/uefi/uefi.git uefi-next.git
-
-# These are my tree on my machine
-RELEASE_TREE=/linaro/uefi/master/uefi.git
-NEXT_TREE=/linaro/uefi/master/uefi-next.git
-
+RELEASE_TAG=$(uefi_next_release_tag)
 echo "--------------------------------------------------------------------------------"
-echo "Find release tag"
+echo "Release tag is '$RELEASE_TAG'"
 echo "--------------------------------------------------------------------------------"
-cd $NEXT_TREE
-TAG=`git tag --list linaro-uefi-* | grep -v rc | tail -1`
-echo "Release tag is '$TAG'"
 
 echo "--------------------------------------------------------------------------------"
 echo "Add uefi-next remote"
 echo "--------------------------------------------------------------------------------"
 # fetch the latest updates from uefi-next
-cd $RELEASE_TREE
-git remote add uefi-next $NEXT_TREE
+cd $UEFI_GIT
+git remote add uefi-next $UEFI_NEXT_GIT
 echo "--------------------------------------------------------------------------------"
 echo "Fetch latest content from uefi-next"
 echo "--------------------------------------------------------------------------------"
@@ -40,17 +33,17 @@ echo "--------------------------------------------------------------------------
 git merge -s ours --no-commit uefi-next/linaro-release
 
 echo "--------------------------------------------------------------------------------"
-echo "Force the contents or uefi-next into this tree"
+echo "Force the contents of uefi-next into this tree"
 echo "--------------------------------------------------------------------------------"
 # Now we should force update the release tree to match the next tree
 git rm -r *
-cp -R $NEXT_TREE/* .
+cp -R $UEFI_NEXT_GIT/* .
 
 echo "--------------------------------------------------------------------------------"
 echo "Add all the files and commit them"
 echo "--------------------------------------------------------------------------------"
 # Add all the files and commit them with a sensible message
 git add *
-git commit -s -m "Merge branch 'linaro-release' of git://git.linaro.org/arm/uefi/uefi-next"
-git tag $TAG
+git commit -s -m "Merge branch 'linaro-release' of $UEFI_NEXT_URL"
+git tag $RELEASE_TAG
 
