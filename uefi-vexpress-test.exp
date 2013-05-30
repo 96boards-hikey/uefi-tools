@@ -1,0 +1,136 @@
+#!/usr/bin/expect -f
+################################################################################
+# Trap various message output during boot of a Versatile Express and trigger
+# the next stage of the boot process.
+#
+# Currently, we interrupt the boot and select a boot option.  We do this because
+# it matches how LAVA works.
+#
+# The code path for booting after the countdown is
+# different and it would be worth adding a test for that in the future.
+#
+################################################################################
+
+
+################################################################################
+# Display the current stats
+#
+# PARAMS:
+#  string       The string used in the banner, eg, "success" or "failure"
+#
+################################################################################
+proc banner { string } {
+	global success
+	global failure
+	puts "\n\nRMH: ***************************************************************************"
+	puts "RMH: boot $string!"
+	puts "RMH:     #success=$success"
+	puts "RMH:     #failure=$failure"
+	puts "RMH: ***************************************************************************\n"
+}
+
+################################################################################
+# A catch-all function to report boot success, increment the counter and display
+# the banner.
+################################################################################
+proc report_success {} {
+	global success
+	incr success
+	banner "success"
+}
+
+################################################################################
+# A catch-all function to report boot success, increment the counter and display
+# the banner.
+################################################################################
+proc report_failure { action } {
+	global failure
+	incr failure
+	banner "failure"
+
+	if { $action == "reboot" } {
+		puts "RMH: sending reboot to stderr, you should have this redirected to the VE COM1 port\n"
+		puts stderr "reboot\n"
+		sleep 1
+	}
+	if { $action == "exit" } {
+		exit
+	}
+}
+
+
+################################################################################
+# Global Variables
+################################################################################
+set success 0
+set failure 0
+
+
+################################################################################
+# Set up the environment we are going to capture terminal output from
+################################################################################
+spawn telnet localhost 2322
+set timeout 1000
+
+################################################################################
+# Send a carriage return to trigger the board to output something if is is at
+# a prompt of some kind.  This will allow the expect script to proceed to the
+# next step
+################################################################################
+send "\n"
+
+################################################################################
+# The main expect loop...
+################################################################################
+while (1) {
+	expect {
+		"Cmd>"
+			{
+				send "reboot\n"
+				exp_continue
+			}
+		"The default boot selection will start in"
+			{
+				send "\n"
+				exp_continue
+			}
+		"Start:"
+			{
+				send "1\n"
+				exp_continue
+			}
+
+# Success indicators
+		"root@android:/ #"
+			{
+				# Eureka!  We booted successfully!
+				report_success
+				send "reboot\n"
+				exp_continue
+			}
+
+# Failure indicators
+		"ERROR: Did not find Linux kernel."
+			{
+				report_failure "reboot"
+				exp_continue
+			}
+		"TIMEOUT!"
+			{
+				report_failure "reboot"
+				exp_continue
+			}
+		"ASSERT"
+			{
+				report_failure "reboot"
+				exp_continue
+			}
+		"Data Abort Exception PC at"
+			{
+				report_failure "reboot"
+				exp_continue
+			}
+	}
+}
+
+
