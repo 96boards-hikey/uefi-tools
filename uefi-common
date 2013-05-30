@@ -115,3 +115,7 @@ function uefi_next_list_internal_topics {
 		echo "                          $topic"
 	done
 }
+
+function uefi_next_get_YYYYMM {
+	echo `git tag --list linaro-base-* | tail -1 | sed 's/linaro-base-//'`
+}
