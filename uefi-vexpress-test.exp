@@ -106,6 +106,10 @@ while (1) {
 				# Eureka!  We booted successfully!
 				report_success
 				send "reboot\n"
+
+				# prevent us from detect success more than once in a row
+				sleep 1
+
 				exp_continue
 			}
 
