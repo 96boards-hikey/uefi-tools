@@ -12,7 +12,7 @@ CONFIG_FILE=~/.uefi-tools.config
 if [ ! -f "$CONFIG_FILE" ]
 then
 	echo "Config file does not exist, copying in default config from $DEFAULT_CONFIG to $CONFIG_FILE"
-	cp $DEFAULT_CONFIG $CONFIG_FILE
+	CONFIG_FILE=$DEFAULT_CONFIG
 fi
 source $CONFIG_FILE
 
