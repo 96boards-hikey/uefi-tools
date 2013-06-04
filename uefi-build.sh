@@ -85,8 +85,6 @@ beagle_ARCH="ARM"
 # No need to edit below unless you are changing script functionality.
 #
 
-BUILD=DEBUG
-
 RESULT_BUF=`echo -e --------------------------------------------`
 PASS_COUNT=0
 FAIL_COUNT=0
@@ -123,13 +121,19 @@ function build_platform
 	echo "Building ${!PLATFORM_NAME}"
 	echo "$board"_BUILDFLAGS="'${!PLATFORM_BUILDFLAGS}'"
 
-	if [ X"${!PLATFORM_BUILDCMD}" == X"" ]; then
-		build -a "${!PLATFORM_ARCH}" -t ARMLINUXGCC -p "${!PLATFORM_DSC}" -b "$BUILD" \
-			${!PLATFORM_BUILDFLAGS}
-	else
-		${!PLATFORM_BUILDCMD} -b "$BUILD" ${!PLATFORM_BUILDFLAGS}
+	if [ "$TARGETS" == "" ]; then
+		TARGETS=( DEBUG )
 	fi
-	log_result $? "${!PLATFORM_NAME}"
+
+	for target in "${TARGETS[@]}" ; do
+		if [ X"${!PLATFORM_BUILDCMD}" == X"" ]; then
+			build -a "${!PLATFORM_ARCH}" -t ARMLINUXGCC -p "${!PLATFORM_DSC}" -b "$target" \
+				${!PLATFORM_BUILDFLAGS}
+		else
+			${!PLATFORM_BUILDCMD} -b "$target" ${!PLATFORM_BUILDFLAGS}
+		fi
+		log_result $? "${!PLATFORM_NAME} ${target}"
+	done
 }
 
 
@@ -219,8 +223,8 @@ else
 				;;
 			"-b" )
 				shift
-				echo "Build profile: $1"
-				BUILD="$1"
+				echo "Adding Build profile: $1"
+				TARGETS=( ${TARGETS[@]} $1 )
 				;;
 			* )
 				MATCH=0
