@@ -61,6 +61,12 @@ function uefi_next_next_month {
 	echo $YYYY.$MM
 }
 
+function uefi_next_get_YYYYMM {
+	YYYY=`date +%Y`
+	MM=`date +%m`
+	echo $YYYY.$MM
+}
+
 function uefi_next_next_month_branch {
 	echo linaro-tracking-$(uefi_next_next_month)
 }
@@ -116,6 +122,3 @@ function uefi_next_list_internal_topics {
 	done
 }
 
-function uefi_next_get_YYYYMM {
-	echo `git tag --list linaro-base-* | tail -1 | sed 's/linaro-base-//'`
-}

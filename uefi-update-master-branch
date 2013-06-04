@@ -1,0 +1,100 @@
+#!/bin/bash
+################################################################################
+################################################################################
+source uefi-common
+################################################################################
+# Defaults
+################################################################################
+PULL=yes
+MASTER=master
+
+################################################################################
+function usage
+{
+	echo "Usage: $0"
+}
+
+while [ "$1" != "" ]; do
+    case $1 in
+        -p | --pull )
+			shift
+            PULL="$1"
+            ;;
+
+        /h | /? | -? | -h | --help )
+            usage
+            exit
+            ;;
+        -* )
+            usage
+			echo "unknown arg $1"
+            exit 1
+    esac
+    shift
+done
+
+cd $UEFI_NEXT_GIT
+
+################################################################################
+# 1) update the master branch
+# 1.1) update the trees that act as our inputs
+
+if [ "$PULL" = "yes" ]
+then
+	## update the branches on the local uefi-next.git to the local Tianocore clones
+	echo "--------------------------------------------------------------------------------"
+	echo "Updating local branches from local mirrors"
+	echo "--------------------------------------------------------------------------------"
+	echo "edk2"
+	cd $UEFI_NEXT_GIT
+	git checkout tianocore-edk2
+	git pull tianocore-edk2 $UEFI_TIANOCORE_EDK2_MAIN_BRANCH
+
+	echo "--------------------------------------------------------------------------------"
+	echo "FatDriver2"
+	git checkout tianocore-edk2-fatdriver2
+	git pull tianocore-edk2-fatdriver2 $UEFI_TIANOCORE_EDK2_FATDRIVER2_MAIN_BRANCH
+
+	echo "--------------------------------------------------------------------------------"
+	echo "BaseTools"
+	git checkout tianocore-edk2-basetools
+	git pull tianocore-edk2-basetools $UEFI_TIANOCORE_EDK2_BASETOOLS_MAIN_BRANCH
+else
+	echo "********************************************************************************"
+	echo "WARNING: using existing local mirrors and $MASTER branch"
+	echo "********************************************************************************"
+fi
+
+# 1.2) update core branch
+echo "--------------------------------------------------------------------------------"
+echo "Updating $MASTER branch from local branches"
+git checkout $MASTER
+
+TREE=tianocore-edk2
+echo "--------------------------------------------------------------------------------"
+echo "Merge $TREE into $MASTER"
+git merge $TREE
+
+TREE=tianocore-edk2-fatdriver2
+echo "--------------------------------------------------------------------------------"
+echo "Pull $TREE into $MASTER"
+git pull $TREE $UEFI_TIANOCORE_EDK2_FATDRIVER2_MAIN_BRANCH
+
+TREE=tianocore-edk2-basetools
+echo "--------------------------------------------------------------------------------"
+echo "Merge $TREE into $MASTER"
+git merge -s subtree tianocore-edk2-basetools
+
+echo "--------------------------------------------------------------------------------"
+echo "Updated local branches from local mirrors and merged to $MASTER"
+echo "--------------------------------------------------------------------------------"
+
+# 1.3) tag it
+git checkout $MASTER
+echo "--------------------------------------------------------------------------------"
+TAG=linaro-base-$(uefi_next_get_YYYYMM)
+echo "Tagging monthly base as $TAG"
+git tag $TAG
+
+exit
+################################################################################
