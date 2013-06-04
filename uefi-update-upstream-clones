@@ -1,0 +1,80 @@
+#!/bin/bash
+################################################################################
+# Update the local clones of the upstream Tianocore repos
+################################################################################
+source uefi-common
+################################################################################
+
+function usage {
+	echo "Usage: $0"
+    echo "    --pull  <yes|no>    pull from upstream repos [default=y]"
+	echo "    --build <yes|no>    do a test build [default=y]"
+	echo "    --clean <yes|no>    clean the repos [default=y]"
+}
+function update {
+
+	echo "Updating upstream local clone:"
+	echo "repo       $1"
+	echo "branch     $2"
+	cd $1
+	if [ "$clean" == "yes" ]; then
+		echo "Cleaning the repo..."
+		git reset --hard HEAD && git clean -dfx
+	fi
+	git checkout $1
+	echo "Pulling the latest changes"
+	git pull
+}
+################################################################################
+# Defaults
+################################################################################
+pull="yes"
+build="yes"
+clean="yes"
+################################################################################
+# Parse command line parameters
+################################################################################
+while [ "$1" != "" ]; do
+	case $1 in
+		"/h" | "/?" | "-?" | "-h" | "--help" )
+			usage
+			exit
+			;;
+		"-p" | "--pull" )
+			shift
+			pull="$1"
+			;;
+		"-b" | "--build" )
+			shift
+			build="$1"
+			;;
+		"-c" | "--clean" )
+			shift
+			clean="$1"
+			;;
+	esac
+	shift
+done
+################################################################################
+
+if [ "$pull" == "yes" ]
+then
+	update $UEFI_TIANOCORE_EDK2               $UEFI_TIANOCORE_EDK2_MAIN_BRANCH
+	update $UEFI_TIANOCORE_EDK2_FATDRIVER2    $UEFI_TIANOCORE_EDK2_FATDRIVER2_MAIN_BRANCH
+	update $UEFI_TIANOCORE_EDK2_BASETOOLS     $UEFI_TIANOCORE_EDK2_BASETOOLS_MAIN_BRANCH
+fi
+
+rm -rf $UEFI_TIANOCORE_TEST_DIR
+mkdir -p $UEFI_TIANOCORE_TEST_DIR
+cd $UEFI_TIANOCORE_TEST_DIR
+
+cp -R $UEFI_TIANOCORE_EDK2/* .
+cp -R $UEFI_TIANOCORE_EDK2_FATDRIVER2/FatPkg .
+rm -rf BaseTools
+cp -R $UEFI_TIANOCORE_EDK2_BASETOOLS BaseTools
+
+if [ "$build" == "yes" ]
+then
+	uefi-build.sh -b DEBUG -b RELEASE a9 tc2 rtsm_a9x4 rtsm_a15x1 rtsm_a15mpcore
+fi
+
