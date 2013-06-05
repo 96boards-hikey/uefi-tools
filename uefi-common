@@ -91,20 +91,25 @@ function uefi_next_internal_current_rc {
 }
 
 function uefi_next_next_rc {
-	version=`git tag --list linaro-uefi-????.??-rc* | tail -1`
-	[[ "$version" =~ (.*[^0-9])([0-9]+)$ ]] && version="${BASH_REMATCH[1]}$((${BASH_REMATCH[2]} + 1))";
-	RC=`echo $version | sed 's#linaro-uefi-.*-rc##g'`
-	YYYYMM=`echo $version | sed 's#linaro-uefi-##g' | sed 's#-rc.*##g'`
-	echo linaro-uefi-$YYYYMM-rc$RC
+	version=`git tag --list linaro-uefi-$(uefi_next_get_YYYYMM)-rc* | tail -1`
+	if [ "$version" == "" ]; then
+		RC=1
+	else
+		[[ "$version" =~ (.*[^0-9])([0-9]+)$ ]] && version="${BASH_REMATCH[1]}$((${BASH_REMATCH[2]} + 1))";
+		RC=`echo $version | sed 's#linaro-uefi-.*-rc##g'`
+	fi
+	echo linaro-uefi-$(uefi_next_get_YYYYMM)-rc$RC
 }
 
 function uefi_next_internal_next_rc {
-    # the internal tags follow the numbering for the public tracking branch
-	version=`git tag --list linaro-uefi-????.??-rc* | tail -1`
-	[[ "$version" =~ (.*[^0-9])([0-9]+)$ ]] && version="${BASH_REMATCH[1]}$((${BASH_REMATCH[2]} + 1))";
-	RC=`echo $version | sed 's#linaro-uefi-.*-rc##g'`
-	YYYYMM=`echo $version | sed 's#linaro-uefi-##g' | sed 's#-rc.*##g'`
-	echo linaro-uefi-internal-$YYYYMM-rc$RC
+	version=`git tag --list linaro-uefi-$(uefi_next_get_YYYYMM)-rc* | tail -1`
+	if [ "$version" == "" ]; then
+		RC=1
+	else
+		[[ "$version" =~ (.*[^0-9])([0-9]+)$ ]] && version="${BASH_REMATCH[1]}$((${BASH_REMATCH[2]} + 1))";
+		RC=`echo $version | sed 's#linaro-uefi-.*-rc##g'`
+	fi
+	echo linaro-uefi-internal-$(uefi_next_get_YYYYMM)-rc$RC
 }
 
 function uefi_next_list_topics {
