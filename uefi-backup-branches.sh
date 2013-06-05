@@ -6,6 +6,8 @@
 # - master
 # - tianocore-edk2* upstreams
 ################################################################################
+source uefi-common
+################################################################################
 
 
 ################################################################################
@@ -24,7 +26,7 @@ else
     echo "PREFIX is $PREFIX"
 fi
 
-
+cd $UEFI_NEXT_GIT
 
 current_branch=`git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
 branches=(
@@ -40,6 +42,9 @@ branches=(
 for branch in "${branches[@]}" ; do
 	echo "--------------------------------------------------------------------------------"
 	echo "Backing up $branch to $PREFIX-$branch"
+
+	# the only reason for checking out $branch is to make sure we aren't currently checking
+	# out "$PREFIX-branch"
 	git checkout $branch
 	git branch -D $PREFIX-$branch
 	git branch $PREFIX-$branch $branch
