@@ -90,8 +90,8 @@ git checkout linaro-tracking
 git merge -Xtheirs $(uefi_next_current_month_branch)
 
 # re-create armlt-tracking to match linaro-tracking
-git checkout armlt-tracking
-git merge -Xtheirs linaro-tracking
+git branch -D armlt-tracking
+git branch armlt-tracking linaro-tracking
 
 exit
 ################################################################################
