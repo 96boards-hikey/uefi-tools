@@ -86,8 +86,26 @@ git checkout $(uefi_next_current_month_branch)
 git tag $(uefi_next_next_rc)
 
 # Update linaro-tracking
+# Do a force merge to make sure there are no conflicts
+# linaro-tracking should usually be identical to the latest monthly branch at the point of an -rc
+
+# save a copy of the current month branch in a tmp dir
+rm -rf $TMP_DIR
+mkdir -p $TMP_DIR
+cp -R * $TMP_DIR
+
 git checkout linaro-tracking
-git merge -Xtheirs $(uefi_next_current_month_branch)
+
+# don't commit the merge so we can force the contents to match
+git merge --no-commit -Xtheirs $(uefi_next_current_month_branch)
+
+# force the contents to match
+rm -rf *
+cp -R $TMP_DIR/* .
+
+# add it all to GIT
+git add -A
+git commit -s -m "Merging $(uefi_next_current_month_branch) into linaro-tracking"
 
 # re-create armlt-tracking to match linaro-tracking
 git branch -D armlt-tracking
