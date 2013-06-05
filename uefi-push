@@ -13,16 +13,16 @@
 source uefi-common
 ################################################################################
 
-if [ "$1" = "" ]
+if [ $# -eq 2]
 then
-	REPO=$UEFI_NEXT_GIT_PUSH_REMOTE
-	echo "Using default repo: $REPO"
-else
 	REPO=$1
-    echo "REPO is $REPO"
+	INTERNAL_REPO=$2
+    echo "Using remotes $REPO and $INTERNAL_REPO"
+else
+	REPO=$UEFI_NEXT_GIT_PUSH_REMOTE
+	INTERNAL_REPO=$UEFI_INTERNAL_GIT_PUSH_REMOTE
+	echo "Using default remotes: $REPO $INTERNAL_REPO"
 fi
-
-INTERNAL_REPO=$UEFI_INTERNAL_GIT_PUSH_REMOTE
 
 ################################################################################
 # Update core branches
