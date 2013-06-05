@@ -26,18 +26,32 @@ else
     echo "PREFIX is $PREFIX"
 fi
 
+shift
+echo "num args = $#"
+if [ $# -eq 0 ]
+then
+	branches=( 
+		`git branch --list linaro-topic-* linaro-internal-feature-* linaro-internal-topic-* | sed "s/*//"`
+		master
+		armlt-tracking
+		linaro-tracking
+		tianocore-edk2
+		tianocore-edk2-fatdriver2
+		tianocore-edk2-basetools
+	)
+else
+	while [ "$1" != "" ]; do
+		branches=(${branches[@]} "$1")
+		shift
+	done
+fi
+
+echo "prefix  = $PREFIX"
+echo "branches = ${branches[@]}"
+
 cd $UEFI_NEXT_GIT
 
 current_branch=`git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
-branches=(
-	`git branch --list linaro-topic-* linaro-internal-feature-* linaro-internal-topic-* | sed "s/*//"`
-	master
-	armlt-tracking
-	linaro-tracking
-	tianocore-edk2
-	tianocore-edk2-fatdriver2
-	tianocore-edk2-basetools
-)
 
 for branch in "${branches[@]}" ; do
 	echo "--------------------------------------------------------------------------------"
