@@ -122,3 +122,28 @@ function uefi_next_list_internal_topics {
 	done
 }
 
+RESULT_BUF=`echo -e --------------------------------------------`
+PASS_COUNT=0
+FAIL_COUNT=0
+
+function log_result
+{
+	if [ $1 -eq 0 ]; then
+		RESULT_BUF="`printf \"%s\n%32s\tpass\" \"$RESULT_BUF\" \"$2\"`"
+		PASS_COUNT=$(($PASS_COUNT + 1))
+	else
+		RESULT_BUF="`printf \"%s\n%32s\tfail\" \"$RESULT_BUF\" \"$2\"`"
+		FAIL_COUNT=$(($FAIL_COUNT + 1))
+	fi
+}
+
+function print_result
+{
+	printf "%s" "$RESULT_BUF"
+	echo -e "\n--------------------------------------------"
+	printf "pass\t$PASS_COUNT\n"
+	printf "fail\t$FAIL_COUNT\n"
+
+	return $FAIL_COUNT
+}
+

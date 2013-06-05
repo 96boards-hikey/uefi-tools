@@ -1,0 +1,79 @@
+#!/bin/bash
+################################################################################
+# This will iterate over all the topic branches and rebase them to the latest
+# master branch
+################################################################################
+source uefi-common
+################################################################################
+# Defaults
+################################################################################
+
+################################################################################
+function usage {
+	echo "Usage:"
+	echo "    `basename $0`"
+	echo "        -h    show this message"
+    echo "        -e    exit on error"
+	echo "              the rebase will not be aborted, so the user may"
+	echo "              continue to investigate the problem"
+}
+################################################################################
+# Parse Command Line Parameters
+################################################################################
+cmdline=( $@ )
+
+while [ "$1" != "" ]; do
+	case $1 in
+		"/h" | "/?" | "-?" | "-h" | "--help" )
+			usage
+			exit
+			;;
+		"-e" | "--exit" )
+			EXIT_ON_ERROR="yes"
+			;;
+		* )
+			echo "Unknown parameter: $1"
+			exit
+			;;
+	esac
+	shift
+done
+################################################################################
+
+cd $UEFI_NEXT_GIT
+# abort any previous rebases
+git rebase --abort
+
+topics=(`git branch --list linaro-topic-* linaro-internal-topic-* | sed "s/*//"`)
+
+for topic in "${topics[@]}" ; do
+	# One of these could fail, eg. because a patch made it upstream.
+	# Need some error trapping and fixing procedure here
+	echo "--------------------------------------------------------------------------------"
+
+	echo "Rebasing $topic"
+	git rebase --ignore-whitespace master $topic
+	result=$?
+	log_result $result "$topic"
+
+	if [ "$result" != "0" ]
+	then
+		echo "********************************************************************************"
+		echo "ERROR: failed to rebase $topic"
+		echo "********************************************************************************"
+		if [ "$EXIT_ON_ERROR" == "yes" ]; then
+			echo "Once you have resolved the problems, re-run this command:"
+			echo "    `basename $0` $cmdline"
+			echo "********************************************************************************"
+			exit
+		else
+			echo "To re-run this rebase, use:"
+			echo "    git rebase --ignore-whitespace master $topic"
+			echo "********************************************************************************"
+			git rebase --abort
+		fi
+	fi
+done
+
+print_result
+
