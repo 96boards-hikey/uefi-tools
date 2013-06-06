@@ -13,6 +13,15 @@ source uefi-common
 ################################################################################
 cd $UEFI_NEXT_GIT
 
+function merge_error {
+	echo "********************************************************************************"
+	echo "ERROR: Merge failed when merging $topic onto branch $branch"
+	echo "       fix the merge problems, then 'git add' any files"
+	echo "       before running "git commit -s" to complete the merge"
+	echo "       Then, re-run this script."
+	echo "********************************************************************************"
+}
+
 # First check if the current month's tracking branch exists
 branch=linaro-tracking-$(uefi_next_get_YYYYMM)
 curr=`git branch --list $branch`
@@ -56,7 +65,12 @@ for topic in "${topics[@]}" ; do
 	echo "Merging $topic into $(uefi_next_internal_current_month_branch)"
 	git checkout $(uefi_next_internal_current_month_branch)
 	git merge $topic
-
+	if [ "$?" == "0" ]; then
+		echo "Merge succeeded"
+	else
+		merge_error
+		exit
+	fi
 done
 
 git tag $(uefi_next_internal_next_rc)
@@ -74,10 +88,23 @@ for topic in "${topics[@]}" ; do
 	# Now that we have the topic branches, we merge them all back to the tracking branch
 	echo "--------------------------------------------------------------------------------"
 	echo "Merging $topic into $(uefi_next_current_month_branch)"
+	branch=$(uefi_next_current_month_branch)
 	git checkout $(uefi_next_current_month_branch)
 	git merge $topic
+	if [ "$?" == "0" ]; then
+		echo "Merge succeeded"
+	else
+		merge_error
+		exit
+	fi
 	git checkout $(uefi_next_internal_current_month_branch)
 	git merge $topic
+	if [ "$?" == "0" ]; then
+		echo "Merge succeeded"
+	else
+		merge_error
+		exit
+	fi
 
 done
 
