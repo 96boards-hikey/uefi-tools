@@ -21,7 +21,7 @@ function update {
 		echo "Cleaning the repo..."
 		git reset --hard HEAD && git clean -dfx
 	fi
-	git checkout $1
+	git checkout $2
 	echo "Pulling the latest changes"
 	git pull
 }
