@@ -6,15 +6,15 @@
 ################################################################################
 
 MY_PATH="`dirname \"$0\"`"              # relative
-DEFAULT_CONFIG=$MY_PATH/uefi-tools.config $CONFIG_FILE
+DEFAULT_CONFIG=$MY_PATH/uefi-tools.config
 CONFIG_FILE=~/.uefi-tools.config
 
-if [ ! -f "$CONFIG_FILE" ]
+source $DEFAULT_CONFIG
+if [ -f "$CONFIG_FILE" ]
 then
-	echo "Config file does not exist, copying in default config from $DEFAULT_CONFIG to $CONFIG_FILE"
-	CONFIG_FILE=$DEFAULT_CONFIG
+	echo "Over-riding global config with $CONFIG_FILE"
+	source $CONFIG_FILE
 fi
-source $CONFIG_FILE
 
 function force_update_branch {
 	src=`git branch --list $1`
