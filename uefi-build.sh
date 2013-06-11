@@ -221,7 +221,7 @@ else
 				usage
 				exit
 				;;
-			"-b" )
+			"-b" | "--build" )
 				shift
 				echo "Adding Build profile: $1"
 				TARGETS=( ${TARGETS[@]} $1 )
