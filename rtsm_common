@@ -1,0 +1,369 @@
+#!/bin/bash
+################################################################################
+# Common RTSM functions / setup / config
+################################################################################
+
+################################################################################
+# FlexLM Tunnel Stuff
+################################################################################
+export ARMLMD_LICENSE_FILE="8224@127.0.0.1"
+
+function setup_flexlm_tunnel
+{
+	# TODO - username needs to be generic
+	#        perhaps the shh config can take care of it?
+	gnome-terminal --geometry=32x4 --title "flexlm tunnel" -e "ssh -L 8224:localhost:8224 -L 18224:localhost:18224 -N ryan.harkin@flexlm.linaro.org -v"
+}
+
+TITLE_select_model="Select RTSM model"
+PRE_ACTION_select_model="rtsm_show_config"
+POST_ACTION_select_model="break"
+select_model=( 
+	"rtsm_select_model a15x1"
+	"rtsm_select_model a15x2"
+	"rtsm_select_model a15x4"
+	"rtsm_select_model a15x1-a7x1"
+	"rtsm_select_model a15x4-a7x4"
+	separator
+	"rtsm_select_model foundation"
+	"rtsm_select_model aemv8"
+	"rtsm_select_model aemv8_ve"
+	"rtsm_select_model aemv8_ve_r0p3-46rel05"
+	"rtsm_select_model aemv8_ve_r0p4-47rel02"
+	separator
+	"rtsm_select_model v7.1_a9x4"
+	"rtsm_select_model v7.1_a15x1"
+	"rtsm_select_model v7.1_a15x2"
+	"rtsm_select_model v7.1_a15x4"
+	"rtsm_select_model v7.1_a15x1-a7x1"
+	"rtsm_select_model v7.1_a15x4-a7x4"
+)
+
+################################################################################
+# Select Model
+################################################################################
+function rtsm_select_model {
+	if [ "$1" == "" ]; then
+		submenu select_model
+	else
+		case $1 in
+			"v7.1_A9x4" | "v7.1_a9x4" )
+				echo "Selecting the A9x4 model (v7.1)"
+				RTSM_MODEL_VERSION="7.1"
+				RTSM_MODEL="/usr/local/DS-5/bin/RTSM_VE_Cortex-A9_MPx4"
+				RTSM_UEFI_VARS=$HOME/uefi-vars-a9.fd
+				rtsm_set_uefi_image rtsm_a9x4
+				;;
+			"v7.1_A15x1" | "v7.1_a15x1" )
+				echo "Selecting the A15x1 model (v7.1)"
+				RTSM_MODEL_VERSION="7.1"
+				RTSM_MODEL="$HOME/ARM/RTSM/Linux64_RTSM_VE_Cortex-A15x1/RTSM_VE_Cortex-A15x1"
+				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x1.fd
+				rtsm_set_uefi_image rtsm_a15x1
+				;;
+			"v7.1_A15x2" | "v7.1_a15x2" )
+				echo "Selecting the A15x2 model (v7.1)"
+				RTSM_MODEL_VERSION="7.1"
+				RTSM_MODEL="$HOME/ARM/RTSM/Linux64_RTSM_VE_Cortex-A15x2/RTSM_VE_Cortex-A15x2"
+				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x2.fd
+				rtsm_set_uefi_image rtsm_a15mpcore
+				;;
+			"v7.1_A15x4" | "v7.1_a15x4" )
+				echo "Selecting the A15x4 model (v7.1)"
+				RTSM_MODEL_VERSION="7.1"
+				RTSM_MODEL="$HOME/ARM/RTSM/Linux64_RTSM_VE_Cortex-A15x4/RTSM_VE_Cortex-A15x4"
+				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x4.fd
+				rtsm_set_uefi_image rtsm_a15mpcore
+				;;
+			"v7.1_A15x1-A7x1" | "v7.1_A15x1-A7x1" )
+				echo "Selecting the big.LITTLE model (v7.1)"
+				RTSM_MODEL_VERSION="7.1"
+				RTSM_MODEL=$HOME/ARM/RTSM/Linux64_RTSM_VE_Cortex-A15x1-A7x1/RTSM_VE_Cortex-A15x1-A7x1
+				rtsm_set_uefi_image rtsm_a15mpcore
+				;;
+			"v7.1_A15x4-A7x4" | "v7.1_A15x4-A7x4" )
+				echo "Selecting the big.LITTLE model (v7.1)"
+				RTSM_MODEL_VERSION="7.1"
+				RTSM_MODEL=$HOME/ARM/RTSM/Linux64_RTSM_VE_Cortex-A15x4-A7x4/RTSM_VE_Cortex-A15x4-A7x4
+				rtsm_set_uefi_image rtsm_a15mpcore
+				;;
+			"A15x1" | "a15x1" )
+				echo "Selecting the A15x1 model (v8.0.1)"
+				RTSM_MODEL_VERSION="8.0.1"
+				RTSM_MODEL="$HOME/ARM/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x1"
+				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x1.fd
+				rtsm_set_uefi_image rtsm_a15x1
+				;;
+			"A15x2" | "a15x2" )
+				echo "Selecting the A15x2 model (v8.0.1)"
+				RTSM_MODEL_VERSION="8.0.1"
+				RTSM_MODEL="$HOME/ARM/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x2"
+				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x2.fd
+				rtsm_set_uefi_image rtsm_a15mpcore
+				;;
+			"A15x4" | "a15x4" )
+				echo "Selecting the A15x4 model (v8.0.1)"
+				RTSM_MODEL_VERSION="8.0.1"
+				RTSM_MODEL="$HOME/ARM/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x4"
+				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x4.fd
+				rtsm_set_uefi_image rtsm_a15mpcore
+				;;
+			"A15x1-A7x1" | "A15x1-A7x1" )
+				echo "Selecting the big.LITTLE model (v8.0.1)"
+				RTSM_MODEL_VERSION="8.0.1"
+				RTSM_MODEL="$HOME/ARM/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x1-A7x1"
+				rtsm_set_uefi_image rtsm_a15mpcore
+				;;
+			"A15x4-A7x4" | "A15x4-A7x4" )
+				echo "Selecting the big.LITTLE model (v8.0.1)"
+				RTSM_MODEL_VERSION="8.0.1"
+				RTSM_MODEL="$HOME/ARM/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x4-A7x4"
+				rtsm_set_uefi_image rtsm_a15mpcore
+				;;
+			"Foundation" | "foundation" | "Foundation_v8" | "foundation_v8" )
+				echo "Selecting the Foundation v8 model"
+				RTSM_MODEL_VERSION="foundation"
+				RTSM_MODEL="$WORKSPACE/Foundation_v8pkg/Foundation_v8"		
+				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
+				rtsm_set_uefi_image rtsm_aarch64
+				;;
+			"AEMv8" | "aemv8" )
+				basedir=$WORKSPACE/RTSM_AEMv8
+				RTSM_MODEL_VERSION="7.1"
+				RTSM_MODEL="$basedir/ModelDebugger_7.1/bin/model_shell64 $basedir/lib/Linux64/RTSM_VE_AEMv8A.so "
+				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
+				rtsm_set_uefi_image rtsm_aarch64
+				;;
+			"AEMv8_VE"  | "aemv8_ve")
+				basedir=$WORKSPACE/RTSM_AEMv8_VE
+				RTSM_MODEL_VERSION="8"
+				RTSM_MODEL="$basedir/bin/model_shell64 $basedir/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so "
+				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
+				rtsm_set_uefi_image rtsm_aarch64
+				;;
+			"AEMv8_VE_r0p3-46rel05" | "aemv8_ve_r0p3-46rel05" )
+				basedir=$WORKSPACE/RTSM_AEMv8_VE_r0p3-46rel05
+				RTSM_MODEL_VERSION="8"
+				RTSM_MODEL="$basedir/bin/model_shell64 $basedir/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so "
+				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
+				rtsm_set_uefi_image rtsm_aarch64
+				;;
+			"AEMv8_VE_r0p4-47rel02" | "aemv8_ve_r0p4-47rel02" )
+				basedir=$WORKSPACE/RTSM_AEMv8_VE_r0p4-47rel02
+				RTSM_MODEL_VERSION="8"
+				RTSM_MODEL="$basedir/bin/model_shell64 $basedir/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so "
+				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
+				rtsm_set_uefi_image rtsm_aarch64
+				;;
+		esac
+		RTSM_MODEL_NAME=$1
+	fi
+}
+
+
+#	case $1 in
+#		"A9x4" | "a9x4" )
+#		"A15x1" | "a15x1" )
+#		"A15x2" | "a15x2" )
+#		"A15x4" | "a15x4" )
+#		"bl" | "bL" | "big.LITTLE" )
+#		"Foundation" | "foundation" | "Foundation_v8" | "foundation_v8" )
+#		"AEMv8" | "aemv8" )
+#		"AEMv8_VE"  | "aemv8_ve")
+#		"AEMv8_VE_r0p3-46rel05" | "aemv8_ve_r0p3-46rel05" )
+#		"AEMv8_VE_r0p4-47rel02" | "aemv8_ve_r0p4-47rel02" )
+#			;;
+#	esac
+
+################################################################################
+# Set binary image used to boot the model
+################################################################################
+TITLE_select_uefi="Select UEFI binary to boot"
+PRE_ACTION_select_uefi="rtsm_show_config"
+POST_ACTION_select_uefi="break"
+select_uefi=( 
+	"rtsm_set_uefi_image rtsm_a9x4"
+	"rtsm_set_uefi_image rtsm_a15x1"
+	"rtsm_set_uefi_image rtsm_a15mpcore"
+	"rtsm_set_uefi_image rtsm_aarch64"
+	separator
+	"rtsm_set_uefi_image /linaro/snapshots/uefi-next/latest/uefi_rtsm_ve-ca9x4.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/uefi-next/latest/uefi_rtsm_ve-ca15.bin"
+)
+
+################################################################################
+# Configure which UEFI image we will boot on the model
+################################################################################
+function rtsm_set_uefi_image {
+	if [ "$1" == "" ]; then
+		submenu select_uefi
+	else
+		case $1 in
+			"rtsm_a9x4" )
+				RTSM_UEFI=/linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A9x4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A9_EFI.fd
+				;;
+			"rtsm_a15x1" )
+				RTSM_UEFI=/linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_EFI.fd
+				;;
+			"rtsm_a15mpcore" )
+				RTSM_UEFI=/linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15_MPCore/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd
+				;;
+			"rtsm_aarch64" )
+				RTSM_UEFI=/linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_AEMV8_EFI.fd
+				;;
+			* )
+				RTSM_UEFI=$1
+			;;
+		esac
+		RTSM_UEFI_NAME=$1
+	fi
+}
+
+
+
+
+################################################################################
+TITLE_build_uefi="Build UEFI binary"
+PRE_ACTION_build_uefi="rtsm_show_config"
+POST_ACTION_build_uefi="break"
+build_uefi=( 
+	"rtsm_build_uefi rtsm_a9x4"
+	"rtsm_build_uefi rtsm_a15x1"
+	"rtsm_build_uefi rtsm_a15mpcore"
+	"rtsm_build_uefi rtsm_aarch64"
+)
+
+################################################################################
+function rtsm_build_uefi {
+	if [ "$1" == "" ]; then
+		if [ "$RTSM_UEFI_NAME" != "" ]; then
+			rtsm_build_uefi $RTSM_UEFI_NAME
+		else
+			submenu build_uefi
+		fi
+	else
+		cd $UEFI_WORKSPACE
+		uefi-build.sh -b RELEASE $1
+	fi
+}
+
+################################################################################
+################################################################################
+TITLE_select_mmc="Select MMC image"
+PRE_ACTION_select_mmc="rtsm_show_config"
+POST_ACTION_select_mmc="break"
+select_mmc=( 
+	'rtsm_set_mmc /linaro/releases/ubuntu-1303/vexpress-quantal_developer_20130324-276.img'
+	'rtsm_set_mmc /linaro/releases/ubuntu-1304/vexpress-quantal_developer_20130423-299.img'
+	'rtsm_set_mmc /linaro/releases/ubuntu-1305/vexpress-raring_developer_20130526-344.img'
+	separator
+	'rtsm_set_mmc /linaro/releases/android-1303/vexpress.img'
+	'rtsm_set_mmc /linaro/releases/android-1304/vexpress.img'
+	'rtsm_set_mmc /linaro/releases/android-1305/vexpress.img'
+	separator
+	'rtsm_set_mmc /linaro/aarch64/juice/juice-release-13.03.1/mmc.bin'
+	'rtsm_set_mmc /linaro/aarch64/juice/juice-aosp-132/mmc.bin'
+	'rtsm_set_mmc /linaro/aarch64/juice/juice-base-aosp-027/mmc.bin'
+	separator
+	'rtsm_set_mmc /linaro/aarch64/oe/13.05/vexpress64-openembedded_minimal-armv8_20130526-344.img'
+)
+################################################################################
+# Network enable/disable
+################################################################################
+function rtsm_set_mmc {
+	if [ "$1" == "" ]; then
+		submenu select_mmc
+	else
+		if [ ! -f $1 ]; then
+			echo "MMC image $1 does not exist"
+		else
+			echo "Set MMC image to $1"
+			RTSM_MMC=$1
+		fi
+	fi
+}
+
+################################################################################
+# Network enable/disable
+################################################################################
+function rtsm_enable_networking
+{
+    NETWORK_ARGS="\
+        -C motherboard.hostbridge.interfaceName=ARM$USER \
+        -C motherboard.smsc_91c111.enabled=true \
+        -C motherboard.smsc_91c111.mac_address=00:02:f7:ef:67:e6"
+
+	rtsm_show_config
+}
+
+function rtsm_disable_networking
+{
+    NETWORK_ARGS=""
+	rtsm_show_config
+}
+
+
+################################################################################
+# Show the config we're currently using
+################################################################################
+function rtsm_show_config {
+	echo "RTSM_MODEL_NAME    = $RTSM_MODEL_NAME"
+	echo "RTSM_MODEL_VERSION = $RTSM_MODEL_VERSION"
+	echo "RTSM_MODEL         = $RTSM_MODEL"
+	echo "RTSM_UEFI_NAME     = $RTSM_UEFI_NAME"
+	echo "RTSM_UEFI          = $RTSM_UEFI"
+	echo "RTSM_MMC           = $RTSM_MMC"
+	echo "RTSM_UEFI_VARS     = $RTSM_UEFI_VARS"
+    echo "NETWORK_ARGS       = $NETWORK_ARGS"
+}
+
+
+################################################################################
+# Run the model with the parameters specified in the environment vars
+################################################################################
+function rtsm_run
+{
+# RMH - I don't think we need to do this, we just need ARMLMD_LICENSE_FILE set
+#	if [ "$RTSM_MODEL_VERSION" == "7.1" ]; then
+#		# 7.1 models are individual binaries.  From 8.0.1 onwards, we have model_shell
+#		# so we only really check for 7.1 vs anything else
+#		source ~/ARM/FastModelsTools_7.1/source_all.sh
+#	else
+#		echo "WARNING: not sourcing config for model_shell stuff"
+#	fi
+
+	# Now validate our parameters
+	if [ ! -f $RTSM_MODEL ]; then
+		echo "The model binary $RTSM_MODEL does not exist"
+		return
+	fi
+	if [ ! -f "$RTSM_UEFI" ]; then
+		echo "The UEFI binary $RTSM_UEFI does not exist"
+		return
+	fi
+	if [ "$RTSM_MMC" != "" ]; then
+		if [ ! -f "$RTSM_MMC" ]; then
+			echo "The MMC card image $RTSM_MMC does not exist"
+			return
+		fi
+	else
+		echo "***********************************************"
+		echo "**** WARNING: running without an MMC image ****"
+		echo "***********************************************"
+	fi
+
+	cmd="$RTSM_MODEL \
+		-C motherboard.flashloader0.fname=$RTSM_UEFI \
+		-C motherboard.flashloader1.fname=$RTSM_UEFI_VARS \
+		-C motherboard.flashloader1.fnameWrite=$RTSM_UEFI_VARS \
+		-C motherboard.mmc.p_mmc_file=$RTSM_MMC \
+		-C motherboard.pl011_uart0.unbuffered_output=true \
+		$NETWORK_ARGS"
+
+	if [ "$RTSM_QUIET" != "yes" ]; then
+		rtsm_show_config
+		echo "RTSM command       = $cmd"
+	fi
+
+	$cmd
+}
