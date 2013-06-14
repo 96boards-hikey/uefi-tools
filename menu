@@ -131,7 +131,9 @@ function submenu
 ################################################################################
 declare -A top_level
 
-menu_files=( `  ls ~/bin/menus  ` )
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+menu_files=( `  ls $BASEDIR/menus  ` )
 
 for i in "${!menu_files[@]}"
 do
@@ -178,9 +180,9 @@ done
 ################################################################################
 function run_menu
 {
-	if [ -f ~/bin/menus/$1 ]
+	if [ -f $BASEDIR/menus/$1 ]
 	then
-		source ~/bin/menus/$1
+		source $BASEDIR/menus/$1
 	fi
 	menu_handler $1[@] $1
 }
