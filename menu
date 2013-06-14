@@ -1,0 +1,191 @@
+#!/bin/bash
+################################################################################
+################################################################################
+function usage
+{
+	echo "Usage:"
+	echo "    $0 --menu {armv8|uefi}"
+}
+
+
+################################################################################
+# Generic menu handling code
+################################################################################
+function menu_handler
+{
+	options=("${!1}")
+	shift
+	x=TITLE_$1
+	title=${!x}
+	y=PRE_ACTION_$1
+	pre_action=${!y}
+	z=POST_ACTION_$1
+	post_action=${!z}
+
+	while true
+	do
+		if [ "$pre_action" != "" ]; then
+			$pre_action
+		fi
+		echo "--------------------------------------------------------------------------------"
+		echo "$title"
+		echo "--------------------------------------------------------------------------------"
+		read -p "$(
+				f=1
+				for option in "${options[@]}" ; do
+					if [ "$option" = "separator" ]
+					then
+						#echo "$((f++)):"
+						printf "\n" $((f++))
+					else
+						#echo "$((f++)): $option"
+						printf "%2d: %s\n"  $((f++)) "$option"
+					fi
+				done
+
+				echo ""
+				echo "0: back"
+				echo "q: quit"
+		if [ ! "$selection" = "" ]
+		then
+			echo "previous selection was $selection"
+		fi
+				echo -ne '> '
+		)" selection
+
+		selected_option="${options[$((selection-1))]}"
+
+		case $selection in
+			Quit) exit
+				;;
+			"0" )
+				break
+				;;
+			"q" ) echo "quitting without doing anything..."
+				exit
+				;;
+			"" )
+				;;
+			*) $selected_option
+				;;
+		esac
+
+		if [ "$post_action" != "" ]; then
+			$post_action
+		fi
+	done
+}
+
+################################################################################
+################################################################################
+function submenu
+{
+	# implement a crude stack
+	l4_options=("${l3_options[@]}")
+	l4_title=$l3_title
+	l4_pre_action=$l3_pre_action
+	l4_post_action=$l3_post_action
+
+	l3_options=("${l2_options[@]}")
+	l3_title=$l2_title
+	l3_pre_action=$l2_pre_action
+	l3_post_action=$l2_post_action
+
+	l2_options=("${l1_options[@]}")
+	l2_title=$l1_title
+	l2_pre_action=$l1_pre_action
+	l2_post_action=$l1_post_action
+
+	l1_options=("${options[@]}")
+	l1_title="$title"
+	l1_pre_action="$pre_action"
+	l1_post_action="$post_action"
+
+	run_menu $1
+
+	options=("${l1_options[@]}")
+	title="$l1_title"
+	pre_action="$l1_pre_action"
+	post_action="$l1_post_action"
+
+	l1_options=("${l2_options[@]}")
+	l1_title=$l2_title
+	l1_pre_action=$l2_pre_action
+	l1_post_action=$l2_post_action
+
+	l2_options=("${l3_options[@]}")
+	l2_title=$l3_title
+	l2_pre_action=$l3_pre_action
+	l2_post_action=$l3_post_action
+
+	l3_options=("${l4_options[@]}")
+	l3_title=$l4_title
+	l3_pre_action=$l4_pre_action
+	l3_post_action=$l4_post_action
+}
+
+
+
+################################################################################
+# Set defaults here
+################################################################################
+declare -A top_level
+
+menu_files=( `  ls ~/bin/menus  ` )
+
+for i in "${!menu_files[@]}"
+do
+	#echo "  element $i=${menu_files[$i]}"
+	top_level[$i]="submenu ${menu_files[$i]}"
+	#echo "  element $i=${top_level[$i]}"
+done
+
+MENU=top_level
+TITLE_top_level="Set working menu system"
+
+WORKSPACE=/linaro/aarch64
+source rtsm_common
+################################################################################
+# Command line parameter handling
+################################################################################
+while [ "$1" != "" ]; do
+    case $1 in
+        -m | --menu )
+            shift
+			case $1 in
+				uefi | armv8 )
+					MENU=$1
+					;;
+				* )
+					usage
+					exit 1
+			esac	
+            ;;
+        /h | /? | -? | -h | --help )
+            usage
+            exit
+            ;;
+        * )
+            usage
+            echo "unknown arg $1"
+            exit 1
+    esac
+    shift
+done
+
+################################################################################
+# Setup based on current environment
+################################################################################
+function run_menu
+{
+	if [ -f ~/bin/menus/$1 ]
+	then
+		source ~/bin/menus/$1
+	fi
+	menu_handler $1[@] $1
+}
+
+menu_handler $MENU[@]  top_level
+
+
+
