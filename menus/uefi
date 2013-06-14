@@ -3,7 +3,7 @@ MENU=uefi
 TITLE_uefi="UEFI hacking"
 uefi=(
 	'submenu manage_tree'
-	'submenu uefi_rtsm'
+	'submenu build'
 )
 
 
@@ -40,60 +40,6 @@ manage_tree=(
 TITLE_manage_tree="Manage Tree"
 
 ################################################################################
-# RTSM
-################################################################################
-
-function run_rtsm_a9x4
-{
-	rtsm_select_model a9x4
-	RTSM_UEFI=$UEFI_WORKSPACE/Build/ArmVExpress-RTSM-A9x4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A9_EFI.fd
-	rtsm_run
-}
-
-function run_rtsm_a15x1
-{
-	rtsm_select_model a15x1
-	RTSM_UEFI=$UEFI_WORKSPACE/Build/ArmVExpress-RTSM-A15/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_EFI.fd
-	RTSM_UEFI_VARS=$HOME/uefi-vars-a15x1.fd
-	rtsm_run
-}
-
-function run_rtsm_a15mpcore
-{
-	echo "Number of cores = $1"
-	rtsm_select_model a15x$1
-	RTSM_UEFI=$UEFI_WORKSPACE/Build/ArmVExpress-RTSM-A15_MPCore/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd
-	RTSM_UEFI_VARS=$HOME/uefi-vars-a15x$1.fd
-	rtsm_run
-}
-
-function run_rtsm_bl
-{
-	RTSM_MODEL=$HOME/ARM/RTSM/Linux_RTSM_VE_Cortex-A15x4-A7x4/RTSM_VE_Cortex-A15x4-A7x4
-	RTSM_MODEL_VERSION="7.1"
-	RTSM_UEFI=$UEFI_WORKSPACE/Build/ArmVExpress-RTSM-A15_MPCore/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd
-	RTSM_UEFI_VARS=$HOME/uefi-vars-bl.fd
-	rtsm_run
-}
-
-function run_rtsm_aarch64
-{
-	rtsm_select_model foundation
-	RTSM_UEFI="$UEFI_WORKSPACE/Build/ArmVExpress-RTSM-AEMv8Ax4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_AEMV8_EFI.fd"
-	RTSM_UEFI_VARS=$HOME/uefi-vars-foundationv8.fd
-	rtsm_run
-}
-
-
-################################################################################
-################################################################################
-function build_and_run
-{
-	echo "Build and Run platform $1"
-	build -b RELEASE $1
-	run_$1 $2
-}
-################################################################################
 # Build
 ################################################################################
 UEFI_WORKSPACE=/linaro/uefi/master/uefi-next.git
@@ -104,29 +50,49 @@ function build
 	uefi-build.sh $*
 }
 
-uefi_rtsm=(
+build=(
 
-	'rtsm_select_model'
-	'rtsm_set_mmc'
-	'rtsm_set_uefi_image'
+	'rtsm_show_config'
 	'rtsm_build_uefi'
-
-    separator
-
 	'rtsm_run'
-
-    separator
-
-    rtsm_enable_networking
-    rtsm_disable_networking
 
 	separator
 
-	'sudo service FMNetwork start'
-	'sudo service FMNetwork stop'
-	'setup_flexlm_tunnel'
+	'build a5'
+	'build a9'
+	'build tc1'
+	'build tc2'
+	'build panda'
+	'build origen'
+	'build arndale'
+	'build rtsm_a9x4'
+	'build rtsm_a15x1'
+	'build rtsm_a15mpcore'
+	'build rtsm_aarch64'
+	'build beagle'
+	'build all'
+
+	separator
+
+	'build -b RELEASE a5'
+	'build -b RELEASE a9'
+	'build -b RELEASE tc1'
+	'build -b RELEASE tc2'
+	'build -b RELEASE panda'
+	'build -b RELEASE origen'
+	'build -b RELEASE arndale'
+	'build -b RELEASE rtsm_a9x4'
+	'build -b RELEASE rtsm_a15x1'
+	'build -b RELEASE rtsm_a15mpcore'
+	'build -b RELEASE rtsm_aarch64'
+	'build -b RELEASE beagle'
+	'build -b RELEASE all'
+
+	separator
+
+	'build -b DEBUG -b RELEASE all'
+
 )
 
-TITLE_uefi_rtsm="UEFI RTSM"
-PRE_ACTION_uefi_rtsm="rtsm_enable_networking"
+TITLE_build="UEFI Building"
 
