@@ -17,8 +17,8 @@ then
 fi
 
 function force_update_branch {
-	src=`git branch --list $1`
-	dest=`git branch --list $2`
+	src=`git branch --list $1 | sed "s/*//"`
+	dest=`git branch --list $2 | sed "s/*//"`
 	if [ "$src" != "" ]
 	then
 		if [ "$dest" != "" ]
@@ -102,6 +102,10 @@ function uefi_next_next_rc {
 }
 
 function uefi_next_internal_next_rc {
+	# TODO: this should return a tag matching the latest uefi-next -rc
+	#       but currently, if we've just tagged uefi-next as, eg, -rc4
+	#       this function will tag the internal tree as -rc5, even though
+	#       the internal tree doesn't have an -rc4.
 	version=`git tag --list linaro-uefi-$(uefi_next_get_YYYYMM)-rc* | tail -1`
 	if [ "$version" == "" ]; then
 		RC=1
