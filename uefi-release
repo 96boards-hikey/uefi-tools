@@ -18,6 +18,7 @@ echo "Add uefi-next remote"
 echo "--------------------------------------------------------------------------------"
 # fetch the latest updates from uefi-next
 cd $UEFI_GIT
+git checkout master
 git remote add uefi-next $UEFI_NEXT_GIT
 echo "--------------------------------------------------------------------------------"
 echo "Fetch latest content from uefi-next"
