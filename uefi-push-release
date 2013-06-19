@@ -1,0 +1,21 @@
+#!/bin/bash
+################################################################################
+# Push all updates/tags/branches from uefi/uefi-next for release.
+#
+################################################################################
+
+################################################################################
+source "`dirname $0`"/uefi-common
+################################################################################
+
+cd "$UEFI_NEXT_GIT"
+echo "Pushing linaro-release to $UEFI_NEXT_GIT_PUSH_REMOTE:"
+git push "$UEFI_NEXT_GIT_PUSH_REMOTE" linaro-release
+
+TAG=`uefi_next_release_tag`
+echo "Pushing $TAG to $UEFI_NEXT_GIT_PUSH_REMOTE:"
+git push "$UEFI_NEXT_GIT_PUSH_REMOTE" $TAG
+
+cd "$UEFI_GIT"
+echo "Pushing $TAG to $UEFI_GIT_PUSH_REMOTE:"
+git push $UEFI_GIT_PUSH_REMOTE $TAG
