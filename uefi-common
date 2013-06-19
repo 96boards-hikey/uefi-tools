@@ -16,12 +16,25 @@ then
 	source $CONFIG_FILE
 fi
 
+function validate_branch {
+	log=`git branch --list $1`
+	if [ X"$log" != X"" ]; then
+		return 0
+	fi
+	log=`git branch -r --list $1`
+	if [ X"$log" != X"" ]; then
+		return 0
+	fi
+	return 1
+}
+
 function force_update_branch {
-	src=`git branch --list $1 | sed "s/*//"`
-	dest=`git branch --list $2 | sed "s/*//"`
-	if [ "$src" != "" ]
+	src=$1
+	dest=$2
+
+	if validate_branch "$src"
 	then
-		if [ "$dest" != "" ]
+		if validate_branch "$dest"
 		then
 			echo "Force updating \"$dest\" from \"$src\""
 			git checkout $src
