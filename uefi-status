@@ -15,11 +15,11 @@ cd $UEFI_NEXT_GIT
 echo "REPO            PUSH REMOTE     LOCATION"
 echo "--------------  --------------- ------------------------------------"
 printf "%-15s %-15s %-20s\n" "uefi.git" $UEFI_GIT_PUSH_REMOTE $UEFI_GIT
-printf "%-15s %-15s %-20s\n" "" "" $UEFI_NEXT_URL
-printf "%-15s %-15s %-20s\n" "" "" $UEFI_NEXT_PUSH_URL
-printf "%-15s %-15s %-20s\n" "uefi-next.git" $UEFI_NEXT_GIT_PUSH_REMOTE $UEFI_NEXT_GIT
 printf "%-15s %-15s %-20s\n" "" "" $UEFI_GIT_URL
 printf "%-15s %-15s %-20s\n" "" "" $UEFI_GIT_PUSH_URL
+printf "%-15s %-15s %-20s\n" "uefi-next.git" $UEFI_NEXT_GIT_PUSH_REMOTE $UEFI_NEXT_GIT
+printf "%-15s %-15s %-20s\n" "" "" $UEFI_NEXT_URL
+printf "%-15s %-15s %-20s\n" "" "" $UEFI_NEXT_PUSH_URL
 printf "%-15s %-15s %-20s\n" "" $UEFI_INTERNAL_GIT_PUSH_REMOTE $UEFI_NEXT_GIT
 printf "%-15s %-15s %-20s\n" "" "" $UEFI_INTERNAL_GIT_URL
 printf "%-15s %-15s %-20s\n" "" "" $UEFI_INTERNAL_GIT_PUSH_URL
