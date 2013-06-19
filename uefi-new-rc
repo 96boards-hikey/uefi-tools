@@ -9,7 +9,7 @@
 # 4) update the linaro-tracking branch that follows the monthly tracking branch
 # 5) update the internal monthly tracking branch with all the internal topics.
 ################################################################################
-source uefi-common
+source "`dirname $0`"/uefi-common
 ################################################################################
 cd $UEFI_NEXT_GIT
 

@@ -3,7 +3,7 @@
 # This will iterate over all the topic branches and rebase them to the latest
 # master branch
 ################################################################################
-source uefi-common
+source "`dirname $0`"/uefi-common
 ################################################################################
 # Defaults
 ################################################################################
