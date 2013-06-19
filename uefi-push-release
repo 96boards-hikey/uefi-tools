@@ -19,3 +19,6 @@ git push "$UEFI_NEXT_GIT_PUSH_REMOTE" $TAG
 cd "$UEFI_GIT"
 echo "Pushing $TAG to $UEFI_GIT_PUSH_REMOTE:"
 git push $UEFI_GIT_PUSH_REMOTE $TAG
+
+echo "Pushing master to $UEFI_GIT_PUSH_REMOTE:"
+git push $UEFI_GIT_PUSH_REMOTE master
