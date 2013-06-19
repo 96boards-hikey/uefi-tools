@@ -32,6 +32,9 @@ function force_update_branch {
 
 			git checkout $dest
 			git merge --no-commit -Xtheirs $src
+			echo "########################################################################"
+			echo "### Any above error messages about 'Automatic merge failed' are expected"
+			echo "########################################################################"
 			rm -rf *
 			cp -R $TMP_DIR/* .
 			git add -A
