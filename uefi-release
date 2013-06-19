@@ -28,23 +28,7 @@ git fetch --no-tags -f uefi-next
 echo "--------------------------------------------------------------------------------"
 echo "Merge uefi-next/linaro-release"
 echo "--------------------------------------------------------------------------------"
-# Merge them in.
-# Using "-s ours" stops conflicts.
-# Using "--no-commit" stops it attmepting to commmit because it will a) fail and b) produce the wrong output!
-git merge -s ours --no-commit uefi-next/linaro-release
+force_update_branch uefi-next/linaro-release master
 
-echo "--------------------------------------------------------------------------------"
-echo "Force the contents of uefi-next into this tree"
-echo "--------------------------------------------------------------------------------"
-# Now we should force update the release tree to match the next tree
-git rm -r *
-cp -R $UEFI_NEXT_GIT/* .
-
-echo "--------------------------------------------------------------------------------"
-echo "Add all the files and commit them"
-echo "--------------------------------------------------------------------------------"
-# Add all the files and commit them with a sensible message
-git add *
-git commit -s -m "Merge branch 'linaro-release' of $UEFI_NEXT_URL"
 git tag $RELEASE_TAG
 
