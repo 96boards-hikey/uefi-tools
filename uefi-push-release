@@ -7,12 +7,39 @@
 ################################################################################
 source "`dirname $0`"/uefi-common
 ################################################################################
-
 cd "$UEFI_NEXT_GIT"
+TAG=$(uefi_next_release_tag)
+
+################################################################################
+# Parse command line parameters
+################################################################################
+while [ "$1" != "" ]; do
+    case $1 in
+        -t | --tag )
+            shift
+			echo "Over-riding release tag to $1"
+            TAG=$1
+            ;;
+
+
+        /h | /? | -? | -h | --help )
+			echo "$0"
+			echo "  optional parameters:"
+			echo "    --tag <release tag>"
+            exit
+            ;;
+        * )
+            usage
+			echo "unknown arg $1"
+            exit 1
+    esac
+    shift
+done
+################################################################################
+
 echo "Pushing linaro-release to $UEFI_NEXT_GIT_PUSH_REMOTE:"
 git push "$UEFI_NEXT_GIT_PUSH_REMOTE" linaro-release
 
-TAG=`uefi_next_release_tag`
 echo "Pushing $TAG to $UEFI_NEXT_GIT_PUSH_REMOTE:"
 git push "$UEFI_NEXT_GIT_PUSH_REMOTE" $TAG
 

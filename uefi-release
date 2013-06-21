@@ -3,14 +3,41 @@
 ################################################################################
 source "`dirname $0`"/uefi-common
 ################################################################################
-
 cd $UEFI_NEXT_GIT
+TAG=$(uefi_next_release_tag)
+
+################################################################################
+# Parse command line parameters
+################################################################################
+while [ "$1" != "" ]; do
+    case $1 in
+        -t | --tag )
+            shift
+			echo "Over-riding release tag to $1"
+            TAG=$1
+            ;;
+
+
+        /h | /? | -? | -h | --help )
+			echo "$0"
+			echo "  optional parameters:"
+			echo "    --tag <release tag>"
+            exit
+            ;;
+        * )
+            usage
+			echo "unknown arg $1"
+            exit 1
+    esac
+    shift
+done
+################################################################################
+
 git reset --hard HEAD && git clean -dfx
 git checkout linaro-release
 
-RELEASE_TAG=$(uefi_next_release_tag)
 echo "--------------------------------------------------------------------------------"
-echo "Release tag is '$RELEASE_TAG'"
+echo "Release tag is '$TAG'"
 echo "--------------------------------------------------------------------------------"
 
 echo "--------------------------------------------------------------------------------"
@@ -30,5 +57,5 @@ echo "Merge uefi-next/linaro-release"
 echo "--------------------------------------------------------------------------------"
 force_update_branch uefi-next/linaro-release master
 
-git tag $RELEASE_TAG
+git tag $TAG
 
