@@ -12,6 +12,8 @@ rtsm=(
 	'rtsm_select_model'
 	'rtsm_set_mmc'
 	'rtsm_set_uefi_image'
+	'rtsm_set_axf_image'
+	'rtsm_set_boot_method'
 	'rtsm_build_uefi'
 
     separator

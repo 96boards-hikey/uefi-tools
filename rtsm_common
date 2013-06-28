@@ -31,6 +31,8 @@ select_model=(
 	"rtsm_select_model aemv8_ve_r0p3-46rel05"
 	"rtsm_select_model aemv8_ve_r0p4-47rel02"
 	separator
+	"rtsm_select_model fvp_base_aemv8a_r0p4-50rel13"
+	separator
 	"rtsm_select_model v7.1_a9x4"
 	"rtsm_select_model v7.1_a15x1"
 	"rtsm_select_model v7.1_a15x2"
@@ -57,67 +59,67 @@ function rtsm_select_model {
 			"v7.1_A15x1" | "v7.1_a15x1" )
 				echo "Selecting the A15x1 model (v7.1)"
 				RTSM_MODEL_VERSION="7.1"
-				RTSM_MODEL="$HOME/ARM/RTSM/Linux64_RTSM_VE_Cortex-A15x1/RTSM_VE_Cortex-A15x1"
+				RTSM_MODEL="/linaro/fastmodels/RTSM/Linux64_RTSM_VE_Cortex-A15x1/RTSM_VE_Cortex-A15x1"
 				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x1.fd
 				rtsm_set_uefi_image rtsm_a15x1
 				;;
 			"v7.1_A15x2" | "v7.1_a15x2" )
 				echo "Selecting the A15x2 model (v7.1)"
 				RTSM_MODEL_VERSION="7.1"
-				RTSM_MODEL="$HOME/ARM/RTSM/Linux64_RTSM_VE_Cortex-A15x2/RTSM_VE_Cortex-A15x2"
+				RTSM_MODEL="/linaro/fastmodels/RTSM/Linux64_RTSM_VE_Cortex-A15x2/RTSM_VE_Cortex-A15x2"
 				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x2.fd
 				rtsm_set_uefi_image rtsm_a15mpcore
 				;;
 			"v7.1_A15x4" | "v7.1_a15x4" )
 				echo "Selecting the A15x4 model (v7.1)"
 				RTSM_MODEL_VERSION="7.1"
-				RTSM_MODEL="$HOME/ARM/RTSM/Linux64_RTSM_VE_Cortex-A15x4/RTSM_VE_Cortex-A15x4"
+				RTSM_MODEL="/linaro/fastmodels/RTSM/Linux64_RTSM_VE_Cortex-A15x4/RTSM_VE_Cortex-A15x4"
 				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x4.fd
 				rtsm_set_uefi_image rtsm_a15mpcore
 				;;
 			"v7.1_A15x1-A7x1" | "v7.1_A15x1-A7x1" )
 				echo "Selecting the big.LITTLE model (v7.1)"
 				RTSM_MODEL_VERSION="7.1"
-				RTSM_MODEL=$HOME/ARM/RTSM/Linux64_RTSM_VE_Cortex-A15x1-A7x1/RTSM_VE_Cortex-A15x1-A7x1
+				RTSM_MODEL=/linaro/fastmodels/RTSM/Linux64_RTSM_VE_Cortex-A15x1-A7x1/RTSM_VE_Cortex-A15x1-A7x1
 				rtsm_set_uefi_image rtsm_a15mpcore
 				;;
 			"v7.1_A15x4-A7x4" | "v7.1_A15x4-A7x4" )
 				echo "Selecting the big.LITTLE model (v7.1)"
 				RTSM_MODEL_VERSION="7.1"
-				RTSM_MODEL=$HOME/ARM/RTSM/Linux64_RTSM_VE_Cortex-A15x4-A7x4/RTSM_VE_Cortex-A15x4-A7x4
+				RTSM_MODEL=/linaro/fastmodels/RTSM/Linux64_RTSM_VE_Cortex-A15x4-A7x4/RTSM_VE_Cortex-A15x4-A7x4
 				rtsm_set_uefi_image rtsm_a15mpcore
 				;;
 			"A15x1" | "a15x1" )
 				echo "Selecting the A15x1 model (v8.0.1)"
 				RTSM_MODEL_VERSION="8.0.1"
-				RTSM_MODEL="$HOME/ARM/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x1"
+				RTSM_MODEL="/linaro/fastmodels/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x1"
 				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x1.fd
 				rtsm_set_uefi_image rtsm_a15x1
 				;;
 			"A15x2" | "a15x2" )
 				echo "Selecting the A15x2 model (v8.0.1)"
 				RTSM_MODEL_VERSION="8.0.1"
-				RTSM_MODEL="$HOME/ARM/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x2"
+				RTSM_MODEL="/linaro/fastmodels/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x2"
 				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x2.fd
 				rtsm_set_uefi_image rtsm_a15mpcore
 				;;
 			"A15x4" | "a15x4" )
 				echo "Selecting the A15x4 model (v8.0.1)"
 				RTSM_MODEL_VERSION="8.0.1"
-				RTSM_MODEL="$HOME/ARM/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x4"
+				RTSM_MODEL="/linaro/fastmodels/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x4"
 				RTSM_UEFI_VARS=$HOME/uefi-vars-a15x4.fd
 				rtsm_set_uefi_image rtsm_a15mpcore
 				;;
 			"A15x1-A7x1" | "A15x1-A7x1" )
 				echo "Selecting the big.LITTLE model (v8.0.1)"
 				RTSM_MODEL_VERSION="8.0.1"
-				RTSM_MODEL="$HOME/ARM/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x1-A7x1"
+				RTSM_MODEL="/linaro/fastmodels/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x1-A7x1"
 				rtsm_set_uefi_image rtsm_a15mpcore
 				;;
 			"A15x4-A7x4" | "A15x4-A7x4" )
 				echo "Selecting the big.LITTLE model (v8.0.1)"
 				RTSM_MODEL_VERSION="8.0.1"
-				RTSM_MODEL="$HOME/ARM/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x4-A7x4"
+				RTSM_MODEL="/linaro/fastmodels/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x4-A7x4"
 				rtsm_set_uefi_image rtsm_a15mpcore
 				;;
 			"Foundation" | "foundation" | "Foundation_v8" | "foundation_v8" )
@@ -128,30 +130,37 @@ function rtsm_select_model {
 				rtsm_set_uefi_image rtsm_aarch64
 				;;
 			"AEMv8" | "aemv8" )
-				basedir=$WORKSPACE/RTSM_AEMv8
+				basedir=/linaro/fastmodels/RTSM_AEMv8
 				RTSM_MODEL_VERSION="7.1"
 				RTSM_MODEL="$basedir/ModelDebugger_7.1/bin/model_shell64 $basedir/lib/Linux64/RTSM_VE_AEMv8A.so "
 				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
 				rtsm_set_uefi_image rtsm_aarch64
 				;;
 			"AEMv8_VE"  | "aemv8_ve")
-				basedir=$WORKSPACE/RTSM_AEMv8_VE
+				basedir=/linaro/fastmodels/RTSM_AEMv8_VE
 				RTSM_MODEL_VERSION="8"
 				RTSM_MODEL="$basedir/bin/model_shell64 $basedir/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so "
 				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
 				rtsm_set_uefi_image rtsm_aarch64
 				;;
 			"AEMv8_VE_r0p3-46rel05" | "aemv8_ve_r0p3-46rel05" )
-				basedir=$WORKSPACE/RTSM_AEMv8_VE_r0p3-46rel05
+				basedir=/linaro/fastmodels/RTSM_AEMv8_VE_r0p3-46rel05
 				RTSM_MODEL_VERSION="8"
 				RTSM_MODEL="$basedir/bin/model_shell64 $basedir/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so "
 				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
 				rtsm_set_uefi_image rtsm_aarch64
 				;;
 			"AEMv8_VE_r0p4-47rel02" | "aemv8_ve_r0p4-47rel02" )
-				basedir=$WORKSPACE/RTSM_AEMv8_VE_r0p4-47rel02
+				basedir=/linaro/fastmodels/RTSM_AEMv8_VE_r0p4-47rel02
 				RTSM_MODEL_VERSION="8"
 				RTSM_MODEL="$basedir/bin/model_shell64 $basedir/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so "
+				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
+				rtsm_set_uefi_image rtsm_aarch64
+				;;
+			"fvp_base_aemv8a_r0p4-50rel13" )
+				basedir=/linaro/fastmodels/FVP_Base_AEMv8A-AEMv8A
+				RTSM_MODEL_VERSION="8"
+				RTSM_MODEL="$basedir/models/Linux64_GCC-4.1/FVP_Base_AEMv8A-AEMv8A"
 				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
 				rtsm_set_uefi_image rtsm_aarch64
 				;;
@@ -176,6 +185,98 @@ function rtsm_select_model {
 #	esac
 
 ################################################################################
+# Set method boot the model
+################################################################################
+TITLE_select_boot_method="Select boot method"
+PRE_ACTION_select_boot_method="rtsm_show_config"
+POST_ACTION_select_boot_method="break"
+select_boot_method=( 
+	"rtsm_set_boot_method UEFI"
+	"rtsm_set_boot_method AXFv7"
+	"rtsm_set_boot_method AXFv8"
+)
+
+################################################################################
+# Configure which UEFI image we will boot on the model
+################################################################################
+function rtsm_set_boot_method {
+	if [ "$1" == "" ]; then
+		submenu select_boot_method
+	else
+		case $1 in
+			"UEFI")
+				RTSM_BOOT_METHOD="UEFI"
+				;;
+			"AXFv7")
+				RTSM_BOOT_METHOD="AXFv7"
+				;;
+			"AXFv8")
+				RTSM_BOOT_METHOD="AXFv8"
+				;;
+
+			* )
+				echo "ERROR: boot method $1 is not valid"
+				;;
+		esac
+	fi
+}
+
+
+################################################################################
+# Set binary AXF image used to boot the model
+################################################################################
+TITLE_select_axf="Select AXF binary to boot"
+PRE_ACTION_select_axf="rtsm_show_config"
+POST_ACTION_select_axf="break"
+select_axf=( 
+	"rtsm_set_axf_image android"
+	"rtsm_set_axf_image ubuntu"
+	"rtsm_set_axf_image alip"
+	"rtsm_set_axf_image openembedded"
+)
+
+################################################################################
+# Configure which UEFI image we will boot on the model
+################################################################################
+function rtsm_set_axf_image {
+	if [ "$1" == "" ]; then
+		submenu select_axf
+	else
+		case $1 in
+			"android")
+				rtsm_set_axf_image /linaro/snapshots/latest/android/boot/rtsm/linux-system-semi.axf
+				;;
+			"ubuntu")
+				rtsm_set_axf_image /linaro/snapshots/latest/ubuntu/boot/rtsm/linux-system-semi.axf
+				;;
+			"alip")
+				rtsm_set_axf_image /linaro/snapshots/latest/alip/boot/rtsm/linux-system-semi.axf
+				;;
+			"openembedded" | "oe")
+				rtsm_set_axf_image /linaro/snapshots/latest/oe/boot/rtsm/linux-system-semi.axf
+				;;
+			"juice")
+				rtsm_set_axf_image /linaro/snapshots/latest/juice/boot/linux-system-semi.axf
+				;;
+
+			* )
+				if [ -f "$1" ]; then
+					RTSM_AXF=$1
+				else
+					echo "ERROR: AXF image $1 does not exist"
+					return
+				fi
+				;;
+		esac
+		RTSM_AXF_NAME=$1
+		RTSM_BOOT_METHOD="AXFv8"
+	fi
+}
+
+
+
+
+################################################################################
 # Set binary image used to boot the model
 ################################################################################
 TITLE_select_uefi="Select UEFI binary to boot"
@@ -187,8 +288,23 @@ select_uefi=(
 	"rtsm_set_uefi_image rtsm_a15mpcore"
 	"rtsm_set_uefi_image rtsm_aarch64"
 	separator
+	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A9x4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A9_EFI.fd"
+	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_EFI.fd"
+	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15_MPCore/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd"
+	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_AEMV8_EFI.fd"
+	separator
+	"rtsm_set_uefi_image /linaro/snapshots/uefi/latest/uefi_rtsm_ve-ca9x4.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/uefi/latest/uefi_rtsm_ve-ca15.bin"
+	separator
 	"rtsm_set_uefi_image /linaro/snapshots/uefi-next/latest/uefi_rtsm_ve-ca9x4.bin"
 	"rtsm_set_uefi_image /linaro/snapshots/uefi-next/latest/uefi_rtsm_ve-ca15.bin"
+	separator
+	"rtsm_set_uefi_image /linaro/snapshots/android/latest/boot/rtsm/uefi_rtsm_ve-ca9x4.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/android/latest/boot/rtsm/uefi_rtsm_ve-ca15.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/ubuntu/latest/boot/rtsm/uefi_rtsm_ve-ca9x4.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/ubuntu/latest/boot/rtsm/uefi_rtsm_ve-ca15.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/alip/latest/boot/rtsm/uefi_rtsm_ve-ca9x4.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/alip/latest/boot/rtsm/uefi_rtsm_ve-ca15.bin"
 )
 
 ################################################################################
@@ -200,22 +316,23 @@ function rtsm_set_uefi_image {
 	else
 		case $1 in
 			"rtsm_a9x4" )
-				RTSM_UEFI=/linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A9x4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A9_EFI.fd
+				RTSM_UEFI=/linaro/snapshots/uefi-next/latest/uefi_rtsm_ve-ca9x4.bin
 				;;
 			"rtsm_a15x1" )
-				RTSM_UEFI=/linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_EFI.fd
+				RTSM_UEFI=/linaro/snapshots/uefi-next/latest/uefi_rtsm_ve-ca15.bin
 				;;
 			"rtsm_a15mpcore" )
-				RTSM_UEFI=/linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15_MPCore/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd
+				RTSM_UEFI=/linaro/snapshots/uefi-next/latest/uefi_rtsm_ve-ca15.bin
 				;;
 			"rtsm_aarch64" )
-				RTSM_UEFI=/linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_AEMV8_EFI.fd
+				RTSM_UEFI=/linaro/snapshots/uefi-next/aarch64/uefi_rtsm_aarch64.bin
 				;;
 			* )
 				RTSM_UEFI=$1
 			;;
 		esac
 		RTSM_UEFI_NAME=$1
+		RTSM_BOOT_METHOD=UEFI
 	fi
 }
 
@@ -253,19 +370,19 @@ TITLE_select_mmc="Select MMC image"
 PRE_ACTION_select_mmc="rtsm_show_config"
 POST_ACTION_select_mmc="break"
 select_mmc=( 
-	'rtsm_set_mmc /linaro/releases/ubuntu-1303/vexpress-quantal_developer_20130324-276.img'
-	'rtsm_set_mmc /linaro/releases/ubuntu-1304/vexpress-quantal_developer_20130423-299.img'
-	'rtsm_set_mmc /linaro/releases/ubuntu-1305/vexpress-raring_developer_20130526-344.img'
+	'rtsm_set_mmc /linaro/releases/android/latest/vexpress*.img'
+	'rtsm_set_mmc /linaro/releases/ubuntu/latest/vexpress*.img'
+	'rtsm_set_mmc /linaro/releases/alip/latest/vexpress*.img'
+	'rtsm_set_mmc /linaro/releases/oe/latest/vexpress*.img'
 	separator
-	'rtsm_set_mmc /linaro/releases/android-1303/vexpress.img'
-	'rtsm_set_mmc /linaro/releases/android-1304/vexpress.img'
-	'rtsm_set_mmc /linaro/releases/android-1305/vexpress.img'
+	'rtsm_set_mmc /linaro/snapshots/android/latest/android.img'
+	'rtsm_set_mmc /linaro/snapshots/ubuntu/latest/linaro.img'
+	'rtsm_set_mmc /linaro/snapshots/alip/latest/alip.img'
+	'rtsm_set_mmc /linaro/snapshots/oe/latest/oe/oe.img'
 	separator
 	'rtsm_set_mmc /linaro/aarch64/juice/juice-release-13.03.1/mmc.bin'
 	'rtsm_set_mmc /linaro/aarch64/juice/juice-aosp-132/mmc.bin'
 	'rtsm_set_mmc /linaro/aarch64/juice/juice-base-aosp-027/mmc.bin'
-	separator
-	'rtsm_set_mmc /linaro/aarch64/oe/13.05/vexpress64-openembedded_minimal-armv8_20130526-344.img'
 )
 ################################################################################
 # Network enable/disable
@@ -310,8 +427,11 @@ function rtsm_show_config {
 	echo "RTSM_MODEL_NAME    = $RTSM_MODEL_NAME"
 	echo "RTSM_MODEL_VERSION = $RTSM_MODEL_VERSION"
 	echo "RTSM_MODEL         = $RTSM_MODEL"
+	echo "RTSM_BOOT_METHOD   = $RTSM_BOOT_METHOD"
 	echo "RTSM_UEFI_NAME     = $RTSM_UEFI_NAME"
 	echo "RTSM_UEFI          = $RTSM_UEFI"
+	echo "RTSM_AXF_NAME      = $RTSM_AXF_NAME"
+	echo "RTSM_AXF           = $RTSM_AXF"
 	echo "RTSM_MMC           = $RTSM_MMC"
 	echo "RTSM_UEFI_VARS     = $RTSM_UEFI_VARS"
     echo "NETWORK_ARGS       = $NETWORK_ARGS"
@@ -333,12 +453,9 @@ function rtsm_run
 #	fi
 
 	# Now validate our parameters
-	if [ ! -f $RTSM_MODEL ]; then
+	##if [ ! -f "$RTSM_MODEL" ]; then
+	if [ "`which $RTSM_MODEL`" == "" ]; then
 		echo "The model binary $RTSM_MODEL does not exist"
-		return
-	fi
-	if [ ! -f "$RTSM_UEFI" ]; then
-		echo "The UEFI binary $RTSM_UEFI does not exist"
 		return
 	fi
 	if [ "$RTSM_MMC" != "" ]; then
@@ -352,13 +469,50 @@ function rtsm_run
 		echo "***********************************************"
 	fi
 
-	cmd="$RTSM_MODEL \
-		-C motherboard.flashloader0.fname=$RTSM_UEFI \
-		-C motherboard.flashloader1.fname=$RTSM_UEFI_VARS \
-		-C motherboard.flashloader1.fnameWrite=$RTSM_UEFI_VARS \
-		-C motherboard.mmc.p_mmc_file=$RTSM_MMC \
-		-C motherboard.pl011_uart0.unbuffered_output=true \
-		$NETWORK_ARGS"
+	# TODO - check $RTSM_AXF also
+	case $RTSM_BOOT_METHOD in
+		"UEFI" | "uefi")
+			if [ -f "$RTSM_UEFI" ]; then
+			echo "Configuring RTSM to run with UEFI..."
+			cmd="$RTSM_MODEL \
+				-C motherboard.flashloader0.fname=$RTSM_UEFI \
+				-C motherboard.flashloader1.fname=$RTSM_UEFI_VARS \
+				-C motherboard.flashloader1.fnameWrite=$RTSM_UEFI_VARS \
+				-C motherboard.mmc.p_mmc_file=$RTSM_MMC \
+				-C motherboard.pl011_uart0.unbuffered_output=true \
+				$NETWORK_ARGS"
+			else
+				echo "err"
+				return
+			fi
+			;;
+		"AXFv7" | "axfv7")
+# TODO - $RTSM_KERNEL
+# TODO - $RTSM_DTB
+# TODO - $RTSM_INITRD
+# the kernel, dtb, initrd and boot wrapper are normally in the boot partition of the image being tested....
+# perhaps use kpartx to extract them?
+#			extra_args=-C cluster.cpu0.semihosting-cmd_line="--kernel $RTSM_KERNEL --dtb $RTSM_DTB --initrd $RTSM_INITRD -- $RTSM_CMDLINE"
+			;;	
+		"AXFv8" | "axfv8")
+			if [ -f "$RTSM_AXF" ]; then
+				echo "Configuring RTSM to run an AXF using ARMv7 method..."
+				cmd="$RTSM_MODEL \
+					-a $RTSM_AXF
+					-C motherboard.mmc.p_mmc_file=$RTSM_MMC \
+					-C motherboard.pl011_uart0.unbuffered_output=true \
+					$NETWORK_ARGS" \
+					$extra_args
+			else
+				echo "err"
+				return
+			fi
+			;;
+		*)
+			echo "RTSM_BOOT_METHOD $RTSM_BOOT_METHOD is not valid"
+			return
+			;;
+	esac
 
 	if [ "$RTSM_QUIET" != "yes" ]; then
 		rtsm_show_config

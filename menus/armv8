@@ -5,7 +5,7 @@ KERNEL_PATH=$WORKSPACE/kernel.git
 KERNEL_BRANCH=linux-linaro
 BOOTWRAPPER_PATH=$WORKSPACE/boot-wrapper-aarch64.git
 IMAGE_PATH_JUICE=$WORKSPACE/juice/`ls $WORKSPACE/juice | tail -1`
-IMAGE_PATH_OE=$WORKSPACE/oe/`ls $WORKSPACE/oe | tail -1`
+IMAGE_PATH_OE=/linaro/releases/oe/`ls linaro/releases/oe | tail -1`
 
 # enable networking by default
 
@@ -147,28 +147,26 @@ function oe_build_everything
 
 function juice_run_model_generic
 {
-	export PATH=$PATH:$WORKSPACE/RTSM_AEMv8/ModelDebugger_7.1/bin/
+	export PATH=$PATH:/linaro/fastmodels/RTSM_AEMv8/ModelDebugger_7.1/bin/
 	model_shell64 \
 		-a $BOOTWRAPPER_PATH/linux-system.axf \
-		$WORKSPACE/RTSM_AEMv8/lib/Linux64/RTSM_VE_AEMv8A.so \
+		/linar/fastmodels/RTSM_AEMv8/lib/Linux64/RTSM_VE_AEMv8A.so \
 		-C motherboard.mmc.p_mmc_file=$IMAGE_PATH_JUICE/mmc.bin
 }
 
 function juice_run_model_7_1_old
 {
-	#export PATH=$PATH:$WORKSPACE/RTSM_AEMv8/ModelDebugger_7.1/bin/
-	#model_shell64 \
-	$WORKSPACE/RTSM_AEMv8/ModelDebugger_7.1/bin/model_shell64 \
+	/linaro/fastmodels/RTSM_AEMv8/ModelDebugger_7.1/bin/model_shell64 \
 		-a $BOOTWRAPPER_PATH/linux-system.axf \
-		$WORKSPACE/RTSM_AEMv8/lib/Linux64/RTSM_VE_AEMv8A.so \
+		/linaro/fastmodels/RTSM_AEMv8/lib/Linux64/RTSM_VE_AEMv8A.so \
 		-C motherboard.mmc.p_mmc_file=$IMAGE_PATH_JUICE/mmc.bin
 }
 
 function juice_run_model_7_1
 {
-	RTSM_MODEL="$WORKSPACE/RTSM_AEMv8/ModelDebugger_7.1/bin/model_shell64 \
+	RTSM_MODEL="/linaro/fastmodels/RTSM_AEMv8/ModelDebugger_7.1/bin/model_shell64 \
 		-a $BOOTWRAPPER_PATH/linux-system.axf \
-		$WORKSPACE/RTSM_AEMv8/lib/Linux64/RTSM_VE_AEMv8A.so"
+		/linaro/fastmodels/RTSM_AEMv8/lib/Linux64/RTSM_VE_AEMv8A.so"
 	RTSM_UEFI=""
 	RTSM_MODEL_VERSION="7.1"
 	RTSM_MMC=$IMAGE_PATH_JUICE/mmc.bin
@@ -178,30 +176,30 @@ function juice_run_model_7_1
 
 function juice_run_ve_model
 {
-	export PATH=$PATH:$WORKSPACE/RTSM_AEMv8_VE/bin
+	export PATH=$PATH:/linaro/fastmodels/RTSM_AEMv8_VE/bin
 	model_shell64 \
 		-a $BOOTWRAPPER_PATH/linux-system.axf \
-		$WORKSPACE/RTSM_AEMv8_VE/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so \
+		/linaro/fastmodels/RTSM_AEMv8_VE/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so \
 		-C motherboard.mmc.p_mmc_file=$IMAGE_PATH_JUICE/mmc.bin \
 		$NETWORK_ARGS
 }
 
 function juice_run_ve_model_r0p3-46rel05
 {
-	export PATH=$PATH:$WORKSPACE/RTSM_AEMv8_VE_r0p3-46rel05/bin
+	export PATH=$PATH:/linaro/fastmodels/RTSM_AEMv8_VE_r0p3-46rel05/bin
 	model_shell64 \
 		-a $BOOTWRAPPER_PATH/linux-system.axf \
-		$WORKSPACE/RTSM_AEMv8_VE_r0p3-46rel05/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so \
+		/linaro/fastmodels/RTSM_AEMv8_VE_r0p3-46rel05/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so \
 		-C motherboard.mmc.p_mmc_file=$IMAGE_PATH_JUICE/mmc.bin \
 		$NETWORK_ARGS
 }
 
 function juice_run_ve_model_r0p4-47rel02
 {
-	export PATH=$PATH:$WORKSPACE/RTSM_AEMv8_VE_r0p4-47rel02/bin
+	export PATH=$PATH:/linaro/fastmodels/RTSM_AEMv8_VE_r0p4-47rel02/bin
 	model_shell64 \
 		-a $BOOTWRAPPER_PATH/linux-system.axf \
-		$WORKSPACE/RTSM_AEMv8_VE_r0p4-47rel02/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so \
+		/linaro/fastmodels/RTSM_AEMv8_VE_r0p4-47rel02/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so \
 		-C motherboard.mmc.p_mmc_file=$IMAGE_PATH_JUICE/mmc.bin \
 		$NETWORK_ARGS
 }
@@ -223,9 +221,9 @@ function enable_networking
 function juice_run_ve_model_with_kernel_from_image
 {
 	# run the VE model with the kernel from the image
-	RTSM_MODEL="$WORKSPACE/RTSM_AEMv8_VE/bin/model_shell64 \
+	RTSM_MODEL="/linaro/fastmodels/RTSM_AEMv8_VE/bin/model_shell64 \
 		-a $IMAGE_PATH_JUICE/boot/linux-system.axf \
-		$WORKSPACE/RTSM_AEMv8_VE/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so"
+		/linaro/fastmodels/RTSM_AEMv8_VE/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so"
 	RTSM_MMC=$IMAGE_PATH_JUICE/mmc.bin \
 
 	run_rtsm
@@ -233,18 +231,18 @@ function juice_run_ve_model_with_kernel_from_image
 
 function catalin_run_ve_model
 {
-	export PATH=$PATH:$WORKSPACE/RTSM_AEMv8_VE/bin
+	export PATH=$PATH:/linaro/fastmodels/RTSM_AEMv8_VE/bin
 
 	model_shell64 \
 		-a $BOOTWRAPPER_PATH/linux-system.axf \
-		$WORKSPACE/RTSM_AEMv8_VE/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so \
+		/linaro/fastmodels/RTSM_AEMv8_VE/models/Linux64_GCC-4.1/RTSM_VE_AEMv8A.so \
 		-C motherboard.mmc.p_mmc_file=$IMAGE_PATH_OE \
 		$NETWORK_ARGS
 }
 
 function oe_run_foundation
 {
-	$WORKSPACE/Foundation_v8pkg/Foundation_v8 \
+	/linaro/fastmodels/Foundation_v8pkg/Foundation_v8 \
 		--image $BOOTWRAPPER_PATH/linux-system-foundation.axf \
 		--block-device $IMAGE_PATH_OE \
 		--network=nat
@@ -280,7 +278,7 @@ function oe_change_image_path
 {
 	echo "Change OpenEmbedded image path..."
 	images=(
-		`find $WORKSPACE/oe -name *.img -type f`
+		`find /linaro/releases/oe -name *.img -type f`
 	)
 	read -p "$(
 			f=0
