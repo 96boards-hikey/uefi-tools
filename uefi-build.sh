@@ -174,7 +174,7 @@ function uefishell
 function usage
 {
 	echo "usage:"
-	echo -n "uefibuild.sh [ all "
+	echo -n "uefi-build.sh [ all "
 	for board in "${boards[@]}" ; do
 	    echo -n "| $board "
 	done
@@ -185,15 +185,6 @@ function usage
 		printf "%8s\tbuild %s\n" "$board" "${!PLATFORM_NAME}"
 	done
 }
-
-# Check to see if we are in a UEFI repository
-# refuse to continue if we aren't
-if [ ! -e BaseTools ]
-then
-	echo "ERROR: we aren't in the UEFI directory."
-	echo "       I can tell because I can't see the BaseTools directory"
-	exit 1
-fi
 
 builds=()
 
@@ -250,6 +241,15 @@ else
 		esac
 		shift
 	done
+fi
+
+# Check to see if we are in a UEFI repository
+# refuse to continue if we aren't
+if [ ! -e BaseTools ]
+then
+	echo "ERROR: we aren't in the UEFI directory."
+	echo "       I can tell because I can't see the BaseTools directory"
+	exit 1
 fi
 
 uefishell
