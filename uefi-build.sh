@@ -17,7 +17,12 @@
 #   build command to use.
 #
 
-boards=( a5 a9 tc1 tc2 panda origen arndale rtsm_a9x4 rtsm_a15x1 rtsm_a15mpcore rtsm_aarch64 beagle )
+boards=( a5 a9 tc1 tc2 panda origen arndale rtsm_a9x4 rtsm_a15x1 rtsm_a15mpcore rtsm_aarch64 beagle fvp )
+
+fvp_LONGNAME="aarch64 FVP RTSM"
+fvp_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.dsc"
+fvp_BUILDFLAGS=""
+fvp_ARCH="AARCH64"
 
 rtsm_aarch64_LONGNAME="aarch64 RTSM"
 rtsm_aarch64_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-AEMv8Ax4.dsc"
