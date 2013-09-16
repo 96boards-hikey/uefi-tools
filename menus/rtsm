@@ -22,6 +22,11 @@ rtsm=(
 
     separator
 
+	'rtsm_load_config'
+	'rtsm_save_config'
+
+    separator
+
     rtsm_enable_networking
     rtsm_disable_networking
 

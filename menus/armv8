@@ -58,7 +58,8 @@ function build_generic_aarch64_kernel
 		linaro/configs/linaro-base.conf \
 		linaro/configs/ubuntu-minimal.conf \
 		linaro/configs/vexpress64.conf
-	make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j8 Image O=out/$KERNEL_BRANCH
+	make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j8 O=out/$KERNEL_BRANCH Image 
+	make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j8 O=out/$KERNEL_BRANCH dtbs
 }
 
 function oe_build_kernel {
