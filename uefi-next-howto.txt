@@ -1,3 +1,48 @@
+2013.09 Updating the tree
+
+- FatDriver2 git mirror is no longer valid
+- BaseTools git mirror is no longer valid
+- The latest edk2 code tree has recent content that works well for aarch64 and other platforms.
+- Therefore, remove usage of the other two trees for now
+- Start using the edk2 GIT mirror directly, not an upstream clone
+
+Steps required
+
+- Delete the existing master branch and create a new one checked out from the edk2 branch
+
+git checkout linaro-tracking
+git branch -D master
+git branch master tianocore-edk2
+
+- Remove the remotes associated with the local clones
+
+git remote rm tianocore-edk2
+git remote rm tianocore-edk2-fatdriver2 
+git remote rm tianocore-edk2-basetools 
+
+- Add a new remote for the upstream EDK2 tree
+git remote add tianocore-edk2 git://git.code.sf.net/p/tianocore/edk2
+
+
+- update all the scripts, removing the "uefi-update-upstream-clones" script, to remove references to the upstream clones
+See commit:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 2013 - Linaro UEFI Maintainer process
 
 1) Creating uefi-next

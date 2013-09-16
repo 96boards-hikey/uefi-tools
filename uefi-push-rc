@@ -32,10 +32,6 @@ git push $REPO          master
 git push $INTERNAL_REPO master
 git push $REPO          tianocore-edk2
 git push $INTERNAL_REPO tianocore-edk2
-git push $REPO          tianocore-edk2-fatdriver2
-git push $INTERNAL_REPO tianocore-edk2-fatdriver2
-git push $REPO          tianocore-edk2-basetools
-git push $INTERNAL_REPO tianocore-edk2-basetools
 
 ################################################################################
 # Update topic branches

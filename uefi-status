@@ -27,12 +27,7 @@ echo ""
 
 echo "UPSTREAM                  LOCATION                                                     BRANCH"
 echo "------------------------  ------------------------------------------------------------ ------"
-printf "%-25s %-60s %-20s\n" "tianocore-edk2" $UEFI_TIANOCORE_EDK2 $UEFI_TIANOCORE_EDK2_MAIN_BRANCH
-printf "%-25s %-60s %-20s\n" "" $UEFI_TIANOCORE_EDK2_URL ""
-printf "%-25s %-60s %-20s\n" "tianocore-edk2-fatdriver2" $UEFI_TIANOCORE_EDK2_FATDRIVER2 $UEFI_TIANOCORE_EDK2_FATDRIVER2_MAIN_BRANCH
-printf "%-25s %-60s %-20s\n" "" $UEFI_TIANOCORE_EDK2_FATDRIVER2_URL ""
-printf "%-25s %-60s %-20s\n" "tianocore-edk2-basetools" $UEFI_TIANOCORE_EDK2_BASETOOLS $UEFI_TIANOCORE_EDK2_BASETOOLS_MAIN_BRANCH
-printf "%-25s %-60s %-20s\n" "" $UEFI_TIANOCORE_EDK2_BASETOOLS_URL ""
+printf "%-25s %-60s %-20s\n" $UEFI_TIANOCORE_EDK2_REMOTE $UEFI_TIANOCORE_EDK2_URL $UEFI_TIANOCORE_EDK2_MAIN_BRANCH
 
 echo ""
 echo "PUBLIC BRANCHES"

@@ -36,8 +36,6 @@ then
 		armlt-tracking
 		linaro-tracking
 		tianocore-edk2
-		tianocore-edk2-fatdriver2
-		tianocore-edk2-basetools
 	)
 else
 	while [ "$1" != "" ]; do
