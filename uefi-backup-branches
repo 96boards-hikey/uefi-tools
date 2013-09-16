@@ -4,7 +4,6 @@
 # - topic branches
 # - tracking branches, eg armlt-tracking and linaro-tracking
 # - master
-# - tianocore-edk2* upstreams
 ################################################################################
 source "`dirname $0`"/uefi-common
 ################################################################################
@@ -35,7 +34,6 @@ then
 		master
 		armlt-tracking
 		linaro-tracking
-		tianocore-edk2
 	)
 else
 	while [ "$1" != "" ]; do
