@@ -68,4 +68,6 @@ for branch in "${branches[@]}" ; do
 	fi
 done
 
+echo "--------------------------------------------------------------------------------"
+echo "Checkout out $current_branch"
 git checkout $current_branch
