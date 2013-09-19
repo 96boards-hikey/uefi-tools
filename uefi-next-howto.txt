@@ -8,11 +8,15 @@
 
 Steps required
 
+- back everything up!
+	- tar up the whole tree - just to be extra safe
+	- run uefi-backup-branches to create immediate backups
+
 - Delete the existing master branch and create a new one checked out from the edk2 branch
 
 git checkout linaro-tracking
 git branch -D master
-git branch master tianocore-edk2
+
 
 - Remove the remotes associated with the local clones
 
@@ -23,24 +27,488 @@ git remote rm tianocore-edk2-basetools
 - Add a new remote for the upstream EDK2 tree
 git remote add tianocore-edk2 git://git.code.sf.net/p/tianocore/edk2
 
+- Make sure it's up-to-date
+git fetch tianocore-edk2
+
+- Create a new master branch
+
+git branch master tianocore-edk2/master
+
+In this case, the head of the master branch is now this commit:
+	c683aa9  2013-09-04  ArmPlatformPkg/patches: Updated BaseTools-Pending-Patches.patch    [Olivier Martin]
+
+
+
+- in future, to update the master branch, we simply have to:
+
+	git checkout master
+	git pull tianocore-edk2
+
+OR, better:
+
+	git checkout linaro-tracking  # check out an branch that we aren't using for the update
+	git remote update tianocore-edk2
+	git branch -f --track master tianocore-edk2/master
+
 
 - update all the scripts, removing the "uefi-update-upstream-clones" script, to remove references to the upstream clones
-See commit:
+Also, make sure to update the uefi-update-master-branch script to update from the upstream repo directly
+
+See commit in uefi-tools.git:
+
+cde8073  2013-09-16  Remove fatdriver2 and basetool subtrees    [Ryan Harkin]
+
+
+
+- Now to deal with the topic branches
+- delete any unwanted topic branches
+I actually move them, even though I've backed them all up... eg, I may be needing some of the patches from them later.  They cannot be rebased to master any more, so the patches will have to be cherrypicked manually.  I'll delete them at the end of the update process
+
+	uefi-backup-branches x
+
+Then, "git branch | grep topic" to get a list of topics and then delete them all:
+
+git branch -D linaro-topic-arndale linaro-topic-a5 linaro-topic-a9 linaro-topic-bds linaro-topic-misc linaro-topic-origen linaro-topic-panda linaro-topic-pxeboot-base linaro-topic-pxeboot-lan9118 linaro-topic-pxeboot-lan91x linaro-topic-tc1 linaro-topic-tc2
+
+- do not run "uefi-rebase-topics"
+- recreate the "essential" topics manually
+
+	git branch linaro-topic-XXX master
+	git checkout XXX
+	<add any patches for topic XXX>
+
+At this point, the head of the master branch and the base for any topic branch will be this commit:
+	c683aa9  2013-09-04  ArmPlatformPkg/patches: Updated BaseTools-Pending-Patches.patch    [Olivier Martin]
+
+
+First, I decided to create my aarch64 platform topic.
+I copied the DSC and FDF files from Olivier's latest aarch64 download and added them to the topic branch:
+http://sourceforge.net/projects/edk2/files/ARM/aarch64-uefi-rev14505.tgz/download
+
+	git branch linaro-topic-fvp master
+	cp /linaro/uefi/aarch64/aarch64-uefi-rev14582/ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.* ./ArmPlatformPkg/ArmVExpressPkg
+	git add ./ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.*
+	git commit -s
+
+Then, I updated the default config in the DSC file and created a new commit.  Now, my topic branch looks like this:
+	d04e1a3  2013-09-10  FVP: change default BDS config to mount the rootfs over virtio     [Ryan Harkin]
+	f524e4d  2013-09-06  FVP: Add DSC and FDF files for the FVP platform    [Ryan Harkin]
+	c683aa9  2013-09-04  ArmPlatformPkg/patches: Updated BaseTools-Pending-Patches.patch    [Olivier Martin]
+
+I built and tested the code for the FVP platform only at this point.
+
+
+Next, I move on to linaro-topic-bds, which I've already moved to x-linaro-topic-bds.  To rebase this I did:
+
+	git checkout x-linaro-topic-bds
+
+Use git log to determine that the old 13.06 base of the topic branches was commit 72e1cbf
+	72e1cbf  2013-06-06  Merge branch 'tianocore-edk2-basetools'    [Ryan Harkin]
+
+Pop off all the BDS patches:
+
+	git format-patch 72e1cbf
+
+	git branch linaro-topic-bds master
+	git checkout linaro-topic-bds
+	git am --ignore-whitespace --ignore-space-change 00*.patch
+
+This fails to apply the last patch because BdsHelper.c changes don't apply
+I edited BdsHelper.c manually and fixed it by comparing the text in the patch
+with the text in the code:
+
+	vi 0009* ArmPlatformPkg/Bds/BdsHelper.c
+
+	git add ArmPlatformPkg/Bds/BdsHelper.c
+	git am --resolved
+
+Testing this showed up a crash in BDS when the default config for a platform has no initrd; something I'd never tested before.  I realised that my changes to ArmPlatformPkg/Bds/Bds.c caused FreePool() to be called with a NULL pointer, thus crashing the board.  I made a few changes, eg:
+
+--------------------------------------------------------------------------------
+@@ -286,8 +292,12 @@ DefineDefaultBootEntries (
+           CopyMem ((VOID*)((UINTN)(BootArguments + 1) + CmdLineSize), InitrdPath, InitrdSize);
+           CopyMem ((VOID*)((UINTN)(BootArguments + 1) + CmdLineSize + InitrdSize), FdtLocalPath, FdtLocalSize);
+         }
+-        FreePool (FdtLocalPath);
+-        FreePool (InitrdPath);
++        if (FdtLocalPath != NULL ) {
++          FreePool (FdtLocalPath);
++        }
++        if (InitrdPath != NULL ) {
++          FreePool (InitrdPath);
++        }
+       } else {
+         BootArguments = NULL;
+       }
+--------------------------------------------------------------------------------
+
+Then I commited the change and squashed it down into this commit
+	f21033f  2012-11-24  ArmPlatformPkg/Bds: add local FDT config   [Ryan Harkin]
+
+git add ArmPlatformPkg/Bds/Bds.c
+git commit -s -m "fix bds"
+git rebase -i f21033f^
+
+
+Once I had created these two test topic branches, I decided to do a test integration:
+
+	git checkout x-integ master
+	git checkout x-integ
+	git merge linaro-topic-bds
+	git merge linaro-topic-fvp
+
+Then I built and tested it all on the FVP platform.  I considered making this -rc1, but decided to soldier on and see what other topics I could rebase easily first.
+
+
+	git checkout x-linaro-topic-misc
+	git format-patch 72e1cbf
+	git branch linaro-topic-misc
+
+However, I also need to drop these patches from linaro-topic-misc as no longer needed:
+
+	BaseTools: Apply ARM GenFv patch
+	MdeModulePkg: fix compilation errors
+
+So delete the .patch files for these two commits and then merge the rest in:
+
+	git am --ignore-whitespace --ignore-space-change 00*.patch
+
+I "git am --skip"ped the following patches as they were already applied:
+
+	0005-Make-.EFI-files-recognizable-as-EFI-applications.patch
+	0010-ArmPlatformPkg-add-Shutdown-support.patch
+
+I also had to had edit the files as this patch would not cleanly rebase:
+
+	0009-MMC-Fixes-from-ARM.patch
+
+I isolated the changes to the code only, removing other debug changes, etc.  Some of the changes had already applied, so only the TPL changes remained.  So, I renamed the patch using "git rebase -i":
+
+From:
+	MMC Fixes from ARM
+To:
+	"Raise Tpl to protect MMC against Timer events"
+
+Next, on to linaro-topic-tc2:
+
+	git checkout  x-linaro-topic-tc2
+	git format-patch 72e1cbf
+	git branch linaro-topic-tc2 master
+	git checkout linaro-topic-tc2
+	git amm *.patch
+
+That one "just worked".  Exactly the same steps worked for the -tc1 branch:
+
+	git checkout  x-linaro-topic-tc1
+	git format-patch 72e1cbf
+	git branch linaro-topic-tc1 master
+	git checkout linaro-topic-tc1
+	git amm *.patch
+
+A9 was a little trickier as it failed to do the trivial merges for these patches, so I did them by hand:
+	0002-VEA9-allow-custom-output-directory.patch
+	0004-VEA9-default-to-EDK2_ARMVE_SINGLE_BINARY-1.patch
+
+I skipped this patch as was already applied upstream:
+	0003-VEA9-default-to-EDK2_ARMVE_STANDALONE-1.patch
+
+	git checkout  x-linaro-topic-a9
+	git format-patch 72e1cbf
+	git branch linaro-topic-a9 master
+	git checkout linaro-topic-a9
+	git amm *.patch
+
+Then the A5 topic branch reapplied cleanly:
+
+	git checkout  x-linaro-topic-a5
+	git format-patch 72e1cbf
+	git branch linaro-topic-a5 master
+	git checkout linaro-topic-a5
+	git amm *.patch
+
+Next the LAN topics.
+
+linaro-topic-pxeboot-base applied OK:
+
+	git checkout  x-linaro-topic-pxeboot-base
+	git format-patch 72e1cbf
+	git branch linaro-topic-pxeboot-base master
+	git checkout linaro-topic-pxeboot-base
+	git amm *.patch
+
+The LAN9118, not so clean even though there is only 1 patch and the hand merge was exceptionally trivial:
+
+	git checkout  x-linaro-topic-pxeboot-lan9118
+	git format-patch 72e1cbf
+	git branch linaro-topic-pxeboot-lan9118 master
+	git checkout linaro-topic-pxeboot-lan9118
+	git amm *.patch
+
+LAN91x had the same trivial problem with ArmPlatformPkg/ArmPlatformPkg.dec:
+
+	git checkout  x-linaro-topic-pxeboot-lan91x
+	git format-patch 72e1cbf
+	git branch linaro-topic-pxeboot-lan91x master
+	git checkout linaro-topic-pxeboot-lan91x
+	git amm *.patch
+
+Now to try Arndale, Panda and Origen, which all applied clean!  Shocking...
+
+	git checkout  x-linaro-topic-arndale
+	git format-patch 72e1cbf
+	git branch linaro-topic-arndale master
+	git checkout linaro-topic-arndale
+	git amm *.patch
+
+	git checkout  x-linaro-topic-panda
+	git format-patch 72e1cbf
+	git branch linaro-topic-panda master
+	git checkout linaro-topic-panda
+	git amm *.patch
+
+Dave Long also posted a patch to the mailing list to add the helper functions for panda, I applied this here too.
+
+	git checkout  x-linaro-topic-origen
+	git format-patch 72e1cbf
+	git branch linaro-topic-origen master
+	git checkout linaro-topic-origen
+	git amm *.patch
+
+
+Now, the big thing is, do they build??  Create a test integration and try to build it...
+
+git branch x-integ master
+git checkout x-integ master
+git merge linaro-topic-a5
+git merge linaro-topic-a9
+git merge linaro-topic-arndale
+git merge linaro-topic-bds
+git merge linaro-topic-fvp
+git merge linaro-topic-misc
+git merge linaro-topic-origen
+git merge linaro-topic-panda
+git merge linaro-topic-pxeboot-base
+git merge linaro-topic-pxeboot-lan9118
+git merge linaro-topic-pxeboot-lan91x # this one causes a merge conflict
+git merge linaro-topic-tc1
+git merge linaro-topic-tc2
+uefi-build.sh -b RELEASE -b DEBUG all
+
+
+Here is the table of disastrous build results:
+
+--------------------------------------------
+      Versatile Express A5 DEBUG	fail
+    Versatile Express A5 RELEASE	fail
+      Versatile Express A9 DEBUG	fail
+    Versatile Express A9 RELEASE	fail
+     Versatile Express TC1 DEBUG	fail
+   Versatile Express TC1 RELEASE	fail
+     Versatile Express TC2 DEBUG	pass
+   Versatile Express TC2 RELEASE	pass
+             TI Pandaboard DEBUG	fail
+           TI Pandaboard RELEASE	fail
+            Samsung Origen DEBUG	fail
+          Samsung Origen RELEASE	fail
+           Samsung Arndale DEBUG	fail
+         Samsung Arndale RELEASE	fail
+Versatile Express RTSM A9x4 DEBUG	fail
+Versatile Express RTSM A9x4 RELEASE	fail
+Versatile Express RTSM A15 single core DEBUG	fail
+Versatile Express RTSM A15 single core RELEASE	fail
+Versatile Express RTSM A15 MPCore DEBUG	fail
+Versatile Express RTSM A15 MPCore RELEASE	fail
+              aarch64 RTSM DEBUG	pass
+            aarch64 RTSM RELEASE	pass
+               BeagleBoard DEBUG	pass
+             BeagleBoard RELEASE	pass
+          aarch64 FVP RTSM DEBUG	pass
+        aarch64 FVP RTSM RELEASE	pass
+--------------------------------------------
+pass	8
+fail	18
+
+So why are they failing?
+
+1) ROM size issues - A5, A9, TC1:
+ : error F003: FD ARMVEXPRESS_EFI size too small to fit region with offset 0x80000 and size 0x280000
+
+This is because the ROM size has changed, but it's impossible to understand... I realised this change was needed in all three BSPs:
+
+-0x00080000|0x00280000
++0x00080000|0x00200000
+
+
+
+2) LAN91x issues: rtsm_a9x4, rtsm_a15mpcore, rtsm_a15x1:
+Module ArmPlatformPkg/Drivers/LAN91xDxe/LAN91xDxe.inf NOT found in DSC file; Is it really a binary module?(...): warning: 61443
+
+This is because the topic x-linaro-topic-pxeboot-lan9118 reapplied incorrectly and the other pxeboot topics are probably broken too.
+
+3) FatPkg removal issues: arndale, panda, origen:
+ : error 000E: File/directory not found in workspace
+	/linaro/uefi/master/uefi-next.git/FatPkg/EnhancedFatDxe/Fat.inf
+
+This is because I've removed FatPkg from our tree, so they need to be updated to use the binary package.  This involves removing Fat.inf from the .DSC file, changing it in the FDF file from FatPkg -> FatBinPkg.  For Arndale, I also had to add a section to the FDF file to add rules for binary drivers.
+
+
+At this point, I fix all the problems on my x-integ branch, commit patches for them, then, after I've fixed a batch, I cherry-pick the patches over to the correct topic branches.
+
+Once I think I have a new set of topic branches, I move the x-integ branch to x-integ-001 (or some other backup name) and start the test integration again.
+
+For the LAN patches, I was unable to fix them after a couple of attempts, so I delete the linaro-topic-pxeboot-* branches and continued without them.
+
+To fix Panda, Arndale and Origen build, the Fat.inf is removed from it's DSC file and in the FDF file, you replace:
+
+	-  INF FatPkg/EnhancedFatDxe/Fat.inf
+	+  INF FatBinPkg/EnhancedFatDxe/Fat.inf
+
+For reference, the two commits that Olivier made to change this were:
+
+67fb865  2013-01-25  ArmPlatformPkg: Replaced FatPkg source package by the pre-built FatPkg binary      [oliviermartin]
+e1772ad  2012-09-27  ARM Packages: Replaced the build of Fat driver and EBL by the binaries of Fat driver and UEFI Shell        [oliviermartin]
+
+Now Origen fails due to the missing helper functions and Panda builds OK.  I didn't boot test Panda.
+
+After fixing Fat.inf, Arndale reports ROM size problems, which I fixed and added a patch to the topic.
+
+Latest build status (debug builds only:
+uefi-build.sh all
+--------------------------------------------
+      Versatile Express A9 DEBUG	pass
+      Versatile Express A5 DEBUG	pass
+      Versatile Express A9 DEBUG	pass
+     Versatile Express TC1 DEBUG	pass
+     Versatile Express TC2 DEBUG	pass
+             TI Pandaboard DEBUG	pass
+            Samsung Origen DEBUG	fail
+           Samsung Arndale DEBUG	pass
+Versatile Express RTSM A9x4 DEBUG	pass
+Versatile Express RTSM A15 single core DEBUG	pass
+Versatile Express RTSM A15 MPCore DEBUG	pass
+              aarch64 RTSM DEBUG	pass
+               BeagleBoard DEBUG	pass
+          aarch64 FVP RTSM DEBUG	pass
+--------------------------------------------
+
+I also built release binaries for the RTSM targets for boot testing.
+
+I boot tested Arndale, A9, TC2, RTSM A15x1, RTSM A15 MPCORE, RTSM A9x4, FVP AEMv8 model, FVP Cortex Model
+
+
+GENERATING RELEASE CANDIDATE 1 -rc1
+
+Now that I think I've sorted out the topic branches as much as I can, it's time to generate -rc1 for pushing to uefi-next.git.  Following the process here:
+
+https://wiki.linaro.org/LEG/Engineering/Kernel/UEFI/Process#Start_Of_Month
+
+says I should simply run "uefi-new-rc".  That worked.
+
+Now do a rebuild of all targets to make sure... (takes about 12 mins)
+
+	uefi-build.sh -b RELEASE -b DEBUG all
+
+--------------------------------------------
+    Versatile Express A5 RELEASE	pass
+      Versatile Express A5 DEBUG	pass
+    Versatile Express A9 RELEASE	pass
+      Versatile Express A9 DEBUG	pass
+   Versatile Express TC1 RELEASE	pass
+     Versatile Express TC1 DEBUG	pass
+   Versatile Express TC2 RELEASE	pass
+     Versatile Express TC2 DEBUG	pass
+           TI Pandaboard RELEASE	pass
+             TI Pandaboard DEBUG	pass
+          Samsung Origen RELEASE	fail
+            Samsung Origen DEBUG	fail
+         Samsung Arndale RELEASE	pass
+           Samsung Arndale DEBUG	pass
+Versatile Express RTSM A9x4 RELEASE	pass
+Versatile Express RTSM A9x4 DEBUG	pass
+Versatile Express RTSM A15 single core RELEASE	pass
+Versatile Express RTSM A15 single core DEBUG	pass
+Versatile Express RTSM A15 MPCore RELEASE	pass
+Versatile Express RTSM A15 MPCore DEBUG	pass
+            aarch64 RTSM RELEASE	pass
+              aarch64 RTSM DEBUG	pass
+             BeagleBoard RELEASE	pass
+               BeagleBoard DEBUG	pass
+        aarch64 FVP RTSM RELEASE	pass
+          aarch64 FVP RTSM DEBUG	pass
+--------------------------------------------
+pass	24
+fail	2
+
+
+Next up, push the -rc1 out.  The wiki page says to call "uefi-push-rc".  However, this fails because the master branch has lost it's history due to the move to upstream edk2 and dropping fatdriver2 and basetools.  So these branches will have to be force pushed as a one-off:
+
+	uefi-push-rc
+	git push -f uefi-next master
+	git push -f uefi-internal master
+
+
+After all that, the "last" job is to trigger a CI job, as per the wiki page instructions.
+
+Before that, the CI job needs to add support for the aarch64 FVP models.
+
+Go here for more info:
+	https://wiki.linaro.org/LEG/Engineering/Kernel/UEFI/CI
+
+The simple version:
+	git clone git://git.linaro.org/ci/uefi.git
+	cd uefi
+
+Edit uefi.sh and debian/rules to add build commands for the AARCH64 platforms:
+
+	vi uefi.sh debian/rules
+
+Then run a local CI job:
+
+	JOB_NAME=uefi-next ./uefi.sh
+
+note: to save having to clone uefi-next.git every time, you can hack uefi.sh to set BUILD_NUMBER=1 circa line 22.
+
+Lots of faffing around with CI jobs.  Fathi put on his superman outfit again and fixed them for me.
+
+Basic problems:
+- CI jobs weren't cloning correctly due to git/ref setup in the job config
+- the AARCH64 binaries weren't building due to missing toolchain
+
+After fixing these, build 152 was successful and boots on the FVP model, Vexpress A9 and TC2.
+
+So, needing the release tree update asap, I decided to update the release tree immediately.  We can always do a .1 release if needed.
+
+The wiki says we should run:
+
+	uefi-update-release-branch
+	uefi-release
+
+After that, I compare uefi-next.git and uefi.git to make sure they were identical.  They were.
+
+So, I pushed the release:
+
+	uefi-push-release
+
+After that, I triggered the CI job for the release builds, here:
+
+	https://ci.linaro.org/jenkins/view/components/job/uefi
+
+This generated binaries here:
+
+	https://snapshots.linaro.org/components/kernel/uefi
+
+I boot tested those on A9, TC2, FVP and, happy it was all OK, I re-triggered the packaging job, here:
+
+	https://launchpad.net/~linaro-maintainers/+archive/staging-overlay/+build/5030324
+
+This generates the package that hwpacks pull in and the the final piece in the UEFI puzzle I needed for my FVP models release...  It's likely also to fail due to a missing aarch64 toolchain.  At which point, I'll ping Fathi again to ask for an update.
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 
 2013 - Linaro UEFI Maintainer process
@@ -1491,56 +1959,6 @@ BeagleEdk2 >devicepath
   gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|10
   gArmPlatformTokenSpaceGuid.PcdFdtDevicePath|L"VenHw(100C2CFA-B586-4198-9B4C-1683D195B1DA)/HD(1,MBR,0x00059C1B,0x3F,0x19FC0)/board.dtb"
 
-
-
-
-
---------------------------------------------------------------------------------
-vexpress: booting UEFI from u-boot
---------------------------------------------------------------------------------
-1) copy 
-cp edk2/Build/ArmVExpress-CTA9x4-Standalone/DEBUG_ARMGCC/FV/ARMVEXPRESS_EFI.fd /media/boot/uefi.bin
-cp edk2/Build/ArmVExpress-CTA9x4-Standalone/DEBUG_ARMGCC/FV/SEC_ARMVEXPRESS_EFI.fd /media/boot/sec_uefi.bin
-sync ; eject /media/boot ; eject /media/rootfs
-
-2) boot the board with u-boot and interrupt the boot cycle
-
-3) Load uefi.bin from the mmc card and run it
-mmc rescan
-fatload mmc ${mmcdev} ${loadaddr} sec_uefi.bin
-go ${loadaddr}
-
-or load the regular uefi binary:
-fatload mmc ${mmcdev} ${loadaddr} uefi.bin
-go ${loadaddr}
-
-
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-
-
-
-
-
---------------------------------------------------------------------------------
-1. create the debian package
---------------------------------------------------------------------------------
-cd /linaro/lt/lmc-hacking/packaging-test/minimal
-vi uefi-linaro-vexpress-ca9x4
-equivs-build uefi-linaro-vexpress-ca9x4 
-
-
---------------------------------------------------------------------------------
-2. create the hwpack, using the local debian package
---------------------------------------------------------------------------------
-cd ryan@vaio:/linaro/lt/lmc-hacking/hwpack-creation/bzr/hwpack.oneiric.linaro-lt-vexpress-a9/hwpacks
-cp /linaro/lt/lmc-hacking/packaging-test/minimal/*.deb .
-vi linaro-lt-vexpress-a9
 linaro-hwpack-create --local-deb uefi-linaro-vexpress-ca9x4_1.0_all.deb linaro-lt-vexpress-a9 1
 
 --------------------------------------------------------------------------------
