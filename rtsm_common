@@ -328,17 +328,26 @@ select_uefi=(
 	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_EFI.fd"
 	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15_MPCore/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd"
 	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_AEMV8_EFI.fd"
+	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-FVP-AArch64/RELEASE_ARMLINUXGCC/FV/FVP_AARCH64_EFI.fd"
+	separator
+	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A9x4/DEBUG_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A9_EFI.fd"
+	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15/DEBUG_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_EFI.fd"
+	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15_MPCore/DEBUG_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd"
+	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4/DEBUG_ARMLINUXGCC/FV/RTSM_VE_AEMV8_EFI.fd"
+	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-FVP-AArch64/DEBUG_ARMLINUXGCC/FV/FVP_AARCH64_EFI.fd"
 	separator
 	"rtsm_set_uefi_image /linaro/snapshots/uefi/latest/uefi_rtsm_ve-ca9x4.bin"
 	"rtsm_set_uefi_image /linaro/snapshots/uefi/latest/uefi_rtsm_ve-ca15.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/uefi/latest/uefi_rtsm_ve-aemv8.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/uefi/latest/uefi_fvp-base.bin"
 	separator
 	"rtsm_set_uefi_image /linaro/snapshots/uefi-next/latest/uefi_rtsm_ve-ca9x4.bin"
 	"rtsm_set_uefi_image /linaro/snapshots/uefi-next/latest/uefi_rtsm_ve-ca15.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/uefi-next/latest/uefi_rtsm_ve-aemv8.bin"
+	"rtsm_set_uefi_image /linaro/snapshots/uefi-next/latest/uefi_fvp-base.bin"
 	separator
 	"rtsm_set_uefi_image /linaro/snapshots/uefi-lce-2013/latest/uefi_rtsm_ve-ca9x4.bin"
 	"rtsm_set_uefi_image /linaro/snapshots/uefi-lce-2013/latest/uefi_rtsm_ve-ca15.bin"
-	separator
-	"rtsm_set_uefi_image /linaro/snapshots/uefi-next/aarch64/uefi_rtsm_aarch64.bin"
 	separator
 	"rtsm_set_uefi_image /linaro/snapshots/android/latest/boot/rtsm/uefi_rtsm_ve-ca9x4.bin"
 	"rtsm_set_uefi_image /linaro/snapshots/android/latest/boot/rtsm/uefi_rtsm_ve-ca15.bin"
