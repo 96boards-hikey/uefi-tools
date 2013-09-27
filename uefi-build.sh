@@ -127,7 +127,7 @@ function build_platform
 	echo "$board"_BUILDFLAGS="'${!PLATFORM_BUILDFLAGS}'"
 
 	if [ "$TARGETS" == "" ]; then
-		TARGETS=( DEBUG )
+		TARGETS=( RELEASE )
 	fi
 
 	for target in "${TARGETS[@]}" ; do
@@ -174,7 +174,7 @@ function uefishell
 function usage
 {
 	echo "usage:"
-	echo -n "uefi-build.sh [ all "
+	echo -n "uefi-build.sh [-b DEBUG | RELEASE] [ all "
 	for board in "${boards[@]}" ; do
 	    echo -n "| $board "
 	done
