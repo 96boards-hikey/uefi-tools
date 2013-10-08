@@ -30,8 +30,6 @@ fi
 ################################################################################
 git push $REPO          master
 git push $INTERNAL_REPO master
-git push $REPO          tianocore-edk2
-git push $INTERNAL_REPO tianocore-edk2
 
 ################################################################################
 # Update topic branches
