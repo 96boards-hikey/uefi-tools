@@ -13,6 +13,14 @@ source "`dirname $0`"/uefi-common
 ################################################################################
 cd $UEFI_NEXT_GIT
 
+function usage {
+	echo "usage:"
+	echo "    uefi-new-rc [--tag <value>] --no-new-branch"
+	echo "        --tag <value>     Use this to over-ride the default tagging strategy"
+	echo "                          The tag provided will be prefixed with \"linaro-uefi\""
+	echo "        --no-new-branch   Use this to prevent from creating a new monthly tracking branch"
+}
+
 function merge_error {
 	echo "********************************************************************************"
 	echo "ERROR: Merge failed when merging $topic onto branch $branch"
@@ -22,19 +30,49 @@ function merge_error {
 	echo "********************************************************************************"
 }
 
-# First check if the current month's tracking branch exists
-branch=linaro-tracking-$(uefi_next_get_YYYYMM)
-curr=`git branch --list $branch`
-if [ "$curr" == "" ]; then
-	echo "tracking branch $branch doesn't exist, so create it"
-	git branch $branch master
-fi
+uefi_next_tag=$(uefi_next_next_rc)
+uefi_next_internal_tag=$(uefi_next_internal_next_rc)
 
-branch=linaro-internal-tracking-$(uefi_next_get_YYYYMM)
-curr=`git branch --list $branch`
-if [ "$curr" == "" ]; then
-	echo "tracking branch $branch doesn't exist, so create it"
-	git branch $branch master
+while [ "$1" != "" ]; do
+	case $1 in
+		"/h" | "/?" | "-?" | "-h" | "--help" )
+			usage
+			exit
+			;;
+		"-t" | "--tag" )
+			shift
+			echo "Using tag postfix: $1"
+			uefi_next_tag="linaro-uefi-$1"
+			uefi_next_internal_tag="linaro-uefi-internal-$1"
+			;;
+		"-n" | "--no-new-branch" )
+			no_new_branch=true
+			;;
+		* )
+			echo "unknown arg $1"
+			usage
+			exit 1
+			;;
+	esac
+	shift
+done
+
+if [ "$no_new_branch" != "true" ];
+then
+	# First check if the current month's tracking branch exists
+	branch=linaro-tracking-$(uefi_next_get_YYYYMM)
+	curr=`git branch --list $branch`
+	if [ "$curr" == "" ]; then
+		echo "tracking branch $branch doesn't exist, so create it"
+		git branch $branch master
+	fi
+
+	branch=linaro-internal-tracking-$(uefi_next_get_YYYYMM)
+	curr=`git branch --list $branch`
+	if [ "$curr" == "" ]; then
+		echo "tracking branch $branch doesn't exist, so create it"
+		git branch $branch master
+	fi
 fi
 
 ################################################################################
@@ -44,8 +82,8 @@ echo "--------------------------------------------------------------------------
 echo "Current Month Branch  $(uefi_next_current_month_branch)"
 echo "Internal Month Branch $(uefi_next_internal_current_month_branch)"
 echo "uefi-next dir         $UEFI_NEXT_GIT"
-echo "Next RC tag           $(uefi_next_next_rc)"
-echo "Next internal RC tag  $(uefi_next_internal_next_rc)"
+echo "Next RC tag           $uefi_next_tag"
+echo "Next internal RC tag  $uefi_next_internal_tag"
 echo "--------------------------------------------------------------------------------"
 
 ################################################################################
@@ -109,12 +147,12 @@ done
 # We *must* tag the internal tree first because of the way that the tag function
 # reports the next -rc number.  That's a bug and should be fixed some time...
 git checkout $(uefi_next_internal_current_month_branch)
-git tag $(uefi_next_internal_next_rc)
+git tag $uefi_next_internal_tag
 force_update_branch $(uefi_next_internal_current_month_branch) linaro-internal-tracking
 
 # Tag the latest merges
 git checkout $(uefi_next_current_month_branch)
-git tag $(uefi_next_next_rc)
+git tag $uefi_next_tag
 
 # Update linaro-tracking
 # Do a force merge to make sure there are no conflicts
