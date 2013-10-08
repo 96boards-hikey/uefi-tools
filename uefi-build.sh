@@ -119,12 +119,13 @@ function build_platform
 {
 	PLATFORM_NAME="$board"_LONGNAME
 	PLATFORM_BUILDFLAGS="$board"_BUILDFLAGS
+	PLATFORM_BUILDFLAGS="${!PLATFORM_BUILDFLAGS} ${EXTRA_OPTIONS[@]}"
 	PLATFORM_BUILDCMD="$board"_BUILDCMD
 	PLATFORM_DSC="$board"_DSC
 	PLATFORM_ARCH="$board"_ARCH
 
 	echo "Building ${!PLATFORM_NAME}"
-	echo "$board"_BUILDFLAGS="'${!PLATFORM_BUILDFLAGS}'"
+	echo "$board"_BUILDFLAGS="'${PLATFORM_BUILDFLAGS}'"
 
 	if [ "$TARGETS" == "" ]; then
 		TARGETS=( RELEASE )
@@ -133,9 +134,9 @@ function build_platform
 	for target in "${TARGETS[@]}" ; do
 		if [ X"${!PLATFORM_BUILDCMD}" == X"" ]; then
 			build -a "${!PLATFORM_ARCH}" -t ARMLINUXGCC -p "${!PLATFORM_DSC}" -b "$target" \
-				${!PLATFORM_BUILDFLAGS}
+				${PLATFORM_BUILDFLAGS}
 		else
-			${!PLATFORM_BUILDCMD} -b "$target" ${!PLATFORM_BUILDFLAGS}
+			${!PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
 		fi
 		log_result $? "${!PLATFORM_NAME} ${target}"
 	done
@@ -221,6 +222,11 @@ else
 				shift
 				echo "Adding Build profile: $1"
 				TARGETS=( ${TARGETS[@]} $1 )
+				;;
+			"-D" )
+				shift
+				echo "Adding option: -D $1"
+				EXTRA_OPTIONS=( ${EXTRA_OPTIONS[@]} "-D" $1 )
 				;;
 			* )
 				MATCH=0
