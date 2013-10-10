@@ -124,7 +124,28 @@ function build_platform
 	PLATFORM_DSC="$board"_DSC
 	PLATFORM_ARCH="$board"_ARCH
 
+	BUILD_ARCH=`uname -m`
+	case $BUILD_ARCH in
+		arm*)
+			TEMP_CROSS_COMPILE=
+			;;
+		aarch64)
+			TEMP_CROSS_COMPILE=
+			;;
+		*)
+			if [ "${!PLATFORM_ARCH}" == "AARCH64" ]; then
+				TEMP_CROSS_COMPILE=aarch64-linux-gnu-
+			else
+				TEMP_CROSS_COMPILE=arm-linux-gnueabi-
+			fi
+			;;
+	esac
+	if [ "$CROSS_COMPILE" != "" ]; then
+		TEMP_CROSS_COMPILE="$CROSS_COMPILE"
+	fi
+
 	echo "Building ${!PLATFORM_NAME}"
+	echo "CROSS_COMPILE=\"$TEMP_CROSS_COMPILE\""
 	echo "$board"_BUILDFLAGS="'${PLATFORM_BUILDFLAGS}'"
 
 	if [ "$TARGETS" == "" ]; then
@@ -133,7 +154,7 @@ function build_platform
 
 	for target in "${TARGETS[@]}" ; do
 		if [ X"${!PLATFORM_BUILDCMD}" == X"" ]; then
-			build -a "${!PLATFORM_ARCH}" -t ARMLINUXGCC -p "${!PLATFORM_DSC}" -b "$target" \
+			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "${!PLATFORM_ARCH}" -t ARMLINUXGCC -p "${!PLATFORM_DSC}" -b "$target" \
 				${PLATFORM_BUILDFLAGS}
 		else
 			${!PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
@@ -149,17 +170,15 @@ function uefishell
 	case $BUILD_ARCH in
 		arm*)
 			ARCH=ARM
-			DEFAULT_CROSS_COMPILE=
+			;;
+		aarch64)
+			ARCH=AARCH64
 			;;
 		*)
 			unset ARCH
-			DEFAULT_CROSS_COMPILE=arm-linux-gnueabi-
 			;;
 	esac
-	if [ -z "$CROSS_COMPILE" ]; then
-		CROSS_COMPILE="$DEFAULT_CROSS_COMPILE"
-	fi
-	export CROSS_COMPILE ARCH
+	export ARCH
 	echo "Setting up shell for building UEFI"
 	export TOOLCHAIN=ARMLINUXGCC
 	export EDK_TOOLS_PATH=`pwd`/BaseTools
