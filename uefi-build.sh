@@ -17,7 +17,7 @@
 #   build command to use.
 #
 
-boards=( a5 a9 tc1 tc2 panda origen arndale rtsm_a9x4 rtsm_a15x1 rtsm_a15mpcore rtsm_aarch64 beagle fvp )
+boards=( a5 a9 tc1 tc2 panda origen arndale rtsm_a9x4 rtsm_a15x1 rtsm_a15mpcore rtsm_aarch64 beagle fvp foundation )
 
 fvp_LONGNAME="aarch64 FVP RTSM"
 fvp_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.dsc"
@@ -28,6 +28,12 @@ rtsm_aarch64_LONGNAME="aarch64 RTSM"
 rtsm_aarch64_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-AEMv8Ax4.dsc"
 rtsm_aarch64_BUILDFLAGS=""
 rtsm_aarch64_ARCH="AARCH64"
+
+foundation_LONGNAME="Foundation Model RTSM"
+foundation_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-AEMv8Ax4-foundation.dsc"
+foundation_BUILDFLAGS=""
+foundation_PREBUILD_CMDS="pushd ArmPlatformPkg/ArmVExpressPkg/Scripts/uefi-aarch64-bootstrap/ ; CROSS_COMPILE=aarch64-linux-gnu- make uefi-bootstrap-el3-foundation.axf; popd"
+foundation_ARCH="AARCH64"
 
 a5_LONGNAME="Versatile Express A5"
 a5_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
@@ -118,6 +124,7 @@ function print_result
 function build_platform
 {
 	PLATFORM_NAME="$board"_LONGNAME
+	PLATFORM_PREBUILD_CMDS="$board"_PREBUILD_CMDS
 	PLATFORM_BUILDFLAGS="$board"_BUILDFLAGS
 	PLATFORM_BUILDFLAGS="${!PLATFORM_BUILDFLAGS} ${EXTRA_OPTIONS[@]}"
 	PLATFORM_BUILDCMD="$board"_BUILDCMD
@@ -153,6 +160,10 @@ function build_platform
 	fi
 
 	for target in "${TARGETS[@]}" ; do
+		if [ X"${!PLATFORM_PREBUILD_CMDS}" != X"" ]; then
+			echo "Run pre build commands"
+			eval ${!PLATFORM_PREBUILD_CMDS}
+		fi
 		if [ X"${!PLATFORM_BUILDCMD}" == X"" ]; then
 			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "${!PLATFORM_ARCH}" -t ARMLINUXGCC -p "${!PLATFORM_DSC}" -b "$target" \
 				${PLATFORM_BUILDFLAGS}
