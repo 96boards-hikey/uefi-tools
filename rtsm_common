@@ -129,7 +129,7 @@ function rtsm_select_model {
 					rtsm_set_uefi_image rtsm_a15mpcore
 				fi 
 				;;
-			"A15x1-A7x1" | "A15x1-A7x1" )
+			"A15x1-A7x1" | "a15x1-a7x1" )
 				echo "Selecting the big.LITTLE model (v8.0.1)"
 				RTSM_MODEL_TYPE="8.0.1"
 				RTSM_MODEL="/linaro/fastmodels/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x1-A7x1"
@@ -137,7 +137,7 @@ function rtsm_select_model {
 					rtsm_set_uefi_image rtsm_a15mpcore
 				fi 
 				;;
-			"A15x4-A7x4" | "A15x4-A7x4" )
+			"A15x4-A7x4" | "a15x4-a7x4" )
 				echo "Selecting the big.LITTLE model (v8.0.1)"
 				RTSM_MODEL_TYPE="8.0.1"
 				RTSM_MODEL="/linaro/fastmodels/RTSM_8_0_1/models/Linux64_GCC-4.1/RTSM_VE_Cortex-A15x4-A7x4"
@@ -149,9 +149,9 @@ function rtsm_select_model {
 				echo "Selecting the Foundation v8 model"
 				RTSM_MODEL_TYPE="foundation"
 				RTSM_MODEL="/linaro/fastmodels/Foundation_v8pkg/Foundation_v8"		
-				RTSM_UEFI_VARS=$HOME/uefi-vars-aarch64.fd
+				RTSM_UEFI_VARS=$HOME/uefi-vars-foundation.fd
 				if [ "$RTSM_UEFI" == "" ]; then
-					rtsm_set_uefi_image rtsm_aarch64
+					rtsm_set_uefi_image rtsm_foundation
 				fi 
 				;;
 			"AEMv8" | "aemv8" )
@@ -269,6 +269,10 @@ select_axf=(
 
 	"rtsm_set_axf_image /linaro/releases/oe/latest/img-foundation.axf"
 	"rtsm_set_axf_image /linaro/releases/oe/latest/img.axf"
+
+	separator
+
+	"rtsm_set_axf_image /linaro/g.l.o/arm/uefi/uefi-next.git/ArmPlatformPkg/ArmVExpressPkg/Scripts/uefi-aarch64-bootstrap/uefi-bootstrap-el3-foundation.axf"
 )
 
 ################################################################################
@@ -324,17 +328,24 @@ select_uefi=(
 	"rtsm_set_uefi_image rtsm_a15mpcore"
 	"rtsm_set_uefi_image rtsm_aarch64"
 	separator
-	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A9x4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A9_EFI.fd"
-	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_EFI.fd"
-	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15_MPCore/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd"
-	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_AEMV8_EFI.fd"
-	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-FVP-AArch64/RELEASE_ARMLINUXGCC/FV/FVP_AARCH64_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-RTSM-A9x4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A9_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-RTSM-A15/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-RTSM-A15_MPCore/RELEASE_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4/RELEASE_ARMLINUXGCC/FV/RTSM_VE_AEMV8_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-FVP-AArch64/RELEASE_ARMLINUXGCC/FV/FVP_AARCH64_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4-foundation/RELEASE_ARMLINUXGCC/FV/RTSM_VE_FOUNDATIONV8_EFI.fd"
 	separator
-	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A9x4/DEBUG_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A9_EFI.fd"
-	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15/DEBUG_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_EFI.fd"
-	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-A15_MPCore/DEBUG_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd"
-	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4/DEBUG_ARMLINUXGCC/FV/RTSM_VE_AEMV8_EFI.fd"
-	"rtsm_set_uefi_image /linaro/uefi/master/uefi-next.git/Build/ArmVExpress-FVP-AArch64/DEBUG_ARMLINUXGCC/FV/FVP_AARCH64_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-RTSM-A9x4/DEBUG_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A9_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-RTSM-A15/DEBUG_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-RTSM-A15_MPCore/DEBUG_ARMLINUXGCC/FV/RTSM_VE_CORTEX-A15_MPCORE_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4/DEBUG_ARMLINUXGCC/FV/RTSM_VE_AEMV8_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-FVP-AArch64/DEBUG_ARMLINUXGCC/FV/FVP_AARCH64_EFI.fd"
+	"rtsm_set_uefi_image /linaro/g.l.o/arm/uefi/uefi-next.git/Build/ArmVExpress-RTSM-AEMv8Ax4-foundation/DEBUG_ARMLINUXGCC/FV/RTSM_VE_FOUNDATIONV8_EFI.fd"
+	separator
+	"rtsm_set_uefi_image /linaro/releases/uefi/latest/uefi_rtsm_ve-ca9x4.bin"
+	"rtsm_set_uefi_image /linaro/releases/uefi/latest/uefi_rtsm_ve-ca15.bin"
+	"rtsm_set_uefi_image /linaro/releases/uefi/latest/uefi_rtsm_ve-aemv8.bin"
+	"rtsm_set_uefi_image /linaro/releases/uefi/latest/uefi_fvp-base.bin"
 	separator
 	"rtsm_set_uefi_image /linaro/snapshots/uefi/latest/uefi_rtsm_ve-ca9x4.bin"
 	"rtsm_set_uefi_image /linaro/snapshots/uefi/latest/uefi_rtsm_ve-ca15.bin"
@@ -379,6 +390,10 @@ function rtsm_set_uefi_image {
 				;;
 			"rtsm_aarch64" )
 				RTSM_UEFI=/linaro/snapshots/uefi-next/aarch64/uefi_rtsm_aarch64.bin
+				;;
+			"rtsm_foundation" )
+				RTSM_AXF=/linaro/snapshots/uefi-next/aarch64/uefi-bootstrap-el3-foundation.axf
+				RTSM_UEFI=/linaro/snapshots/uefi-next/aarch64/uefi_rtsm_foundation.bin
 				;;
 			* )
 				RTSM_UEFI=$1
