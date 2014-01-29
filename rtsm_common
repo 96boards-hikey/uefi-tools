@@ -25,6 +25,8 @@ select_model=(
 	"rtsm_select_model a15x1-a7x1"
 	"rtsm_select_model a15x4-a7x4"
 	separator
+	"rtsm_select_model a9x4"
+	separator
 	"rtsm_select_model foundation"
 	"rtsm_select_model aemv8"
 	"rtsm_select_model aemv8_ve"
@@ -36,7 +38,6 @@ select_model=(
 	separator
 	"# old models"
 	separator
-	"rtsm_select_model v7.1_a9x4"
 	"rtsm_select_model v7.1_a15x1"
 	"rtsm_select_model v7.1_a15x2"
 	"rtsm_select_model v7.1_a15x4"
@@ -58,10 +59,10 @@ function rtsm_select_model {
 		submenu select_model
 	else
 		case $1 in
-			"v7.1_A9x4" | "v7.1_a9x4" )
-				echo "Selecting the A9x4 model (v7.1)"
-				RTSM_MODEL_TYPE="7.1"
-				RTSM_MODEL="/usr/local/DS-5/bin/RTSM_VE_Cortex-A9_MPx4"
+			"A9x4" | "a9x4" )
+				echo "Selecting the A9x4 model"
+				RTSM_MODEL_TYPE="8.2"
+				RTSM_MODEL="/usr/local/DS-5/bin/FVP_VE_Cortex-A9x4"
 				RTSM_UEFI_VARS=$HOME/uefi-vars-a9.fd
 				if [ "$RTSM_UEFI" == "" ]; then
 					rtsm_set_uefi_image rtsm_a9x4
@@ -489,14 +490,18 @@ TITLE_select_mmc="Select MMC image"
 PRE_ACTION_select_mmc="rtsm_show_config"
 POST_ACTION_select_mmc="break"
 select_mmc=( 
+	'rtsm_set_mmc /linaro/releases/android-lsk/latest/vexpress*.img'
 	'rtsm_set_mmc /linaro/releases/android/latest/vexpress*.img'
 	'rtsm_set_mmc /linaro/releases/ubuntu/latest/vexpress*.img'
 	'rtsm_set_mmc /linaro/releases/alip/latest/vexpress*.img'
+	'rtsm_set_mmc /linaro/releases/oe-lsk/latest/vexpress*.img'
 	'rtsm_set_mmc /linaro/releases/oe/latest/vexpress*.img'
 	separator
+	'rtsm_set_mmc /linaro/snapshots/android-lsk/latest/mmc.img'
 	'rtsm_set_mmc /linaro/snapshots/android/latest/mmc.img'
 	'rtsm_set_mmc /linaro/snapshots/ubuntu/latest/mmc.img'
 	'rtsm_set_mmc /linaro/snapshots/alip/latest/mmc.img'
+	'rtsm_set_mmc /linaro/snapshots/oe-lsk/latest/mmc.img'
 	'rtsm_set_mmc /linaro/snapshots/oe/latest/mmc.img'
 	separator
 	'rtsm_set_mmc /linaro/aarch64/juice/juice-release-13.03.1/mmc.bin'
@@ -585,7 +590,7 @@ function rtsm_run
 			if [ -f "$RTSM_UEFI" ]; then
 				echo "Configuring RTSM to run with UEFI..."
 				case $RTSM_MODEL_TYPE in
-					"7.1" | "8.0.1" | "AARCH64_VE" )
+					"7.1" | "8.0.1" | "8.2" | "AARCH64_VE" )
 						echo "Running VE model"
 						cmd="$RTSM_MODEL \
 							-C motherboard.flashloader0.fname=$RTSM_UEFI \
@@ -689,6 +694,7 @@ function rtsm_run
 		echo "RTSM command       = $cmd"
 	fi
 
+	touch $RTSM_UEFI_VARS
 	$cmd
 }
 
@@ -709,6 +715,11 @@ function rtsm_load_config {
 			"rtsm_load_config 3 `grep TITLE $HOME/uefi-tools/menus/.3.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
 			"rtsm_load_config 4 `grep TITLE $HOME/uefi-tools/menus/.4.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
 			"rtsm_load_config 5 `grep TITLE $HOME/uefi-tools/menus/.5.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
+			"rtsm_load_config 6 `grep TITLE $HOME/uefi-tools/menus/.6.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
+			"rtsm_load_config 7 `grep TITLE $HOME/uefi-tools/menus/.7.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
+			"rtsm_load_config 8 `grep TITLE $HOME/uefi-tools/menus/.8.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
+			"rtsm_load_config 9 `grep TITLE $HOME/uefi-tools/menus/.9.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
+			"rtsm_load_config 0 `grep TITLE $HOME/uefi-tools/menus/.0.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
 		)
 		submenu load_config
 	else
@@ -728,11 +739,16 @@ function rtsm_save_config {
 		PRE_ACTION_save_config="rtsm_show_config"
 		POST_ACTION_save_config="break"
 		save_config=( 
+			"rtsm_save_config 0 `grep TITLE $HOME/uefi-tools/menus/.0.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
 			"rtsm_save_config 1 `grep TITLE $HOME/uefi-tools/menus/.1.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
 			"rtsm_save_config 2 `grep TITLE $HOME/uefi-tools/menus/.2.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
 			"rtsm_save_config 3 `grep TITLE $HOME/uefi-tools/menus/.3.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
 			"rtsm_save_config 4 `grep TITLE $HOME/uefi-tools/menus/.4.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
 			"rtsm_save_config 5 `grep TITLE $HOME/uefi-tools/menus/.5.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
+			"rtsm_save_config 6 `grep TITLE $HOME/uefi-tools/menus/.6.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
+			"rtsm_save_config 7 `grep TITLE $HOME/uefi-tools/menus/.7.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
+			"rtsm_save_config 8 `grep TITLE $HOME/uefi-tools/menus/.8.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
+			"rtsm_save_config 9 `grep TITLE $HOME/uefi-tools/menus/.9.config  | sed 's/export RTSM_TITLE=//' 2> /dev/null`"
 		)
 		submenu save_config
 	else
