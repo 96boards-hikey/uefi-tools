@@ -198,7 +198,7 @@ function uefishell
 	echo "Setting up shell for building UEFI"
 	export TOOLCHAIN=ARMLINUXGCC
 	export EDK_TOOLS_PATH=`pwd`/BaseTools
-	. edksetup.sh `pwd`/BaseTools/
+	. edksetup.sh BaseTools
 	make -C $EDK_TOOLS_PATH
 	if [ $? -ne 0 ]; then
 		echo " !!! UEFI BaseTools failed to build !!! " >&2
