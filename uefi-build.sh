@@ -17,7 +17,7 @@
 #   build command to use.
 #
 
-boards=( a5 a9 tc1 tc2 panda origen arndale rtsm_a9x4 rtsm_a15x1 rtsm_a15mpcore rtsm_aarch64 beagle fvp foundation fvp_minimal )
+boards=( a5 a9 tc1 tc2 panda arndale rtsm_a9x4 rtsm_a15x1 rtsm_a15mpcore rtsm_aarch64 beagle fvp foundation fvp_minimal )
 
 fvp_LONGNAME="aarch64 FVP RTSM"
 fvp_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.dsc"
@@ -79,11 +79,6 @@ panda_LONGNAME="TI Pandaboard"
 panda_BUILDCMD="./PandaBoardPkg/build.sh"
 panda_BUILDFLAGS=""
 panda_ARCH="ARM"
-
-origen_LONGNAME="Samsung Origen"
-origen_BUILDFLAGS=""
-origen_DSC="SamsungPlatformPkgOrigen/OrigenBoardPkg/OrigenBoardPkg-Exynos.dsc"
-origen_ARCH="ARM"
 
 arndale_LONGNAME="Samsung Arndale"
 arndale_BUILDFLAGS="-D EXYNOS5250_EVT1 -D DDR3"
@@ -170,7 +165,7 @@ function build_platform
 			eval ${!PLATFORM_PREBUILD_CMDS}
 		fi
 		if [ X"${!PLATFORM_BUILDCMD}" == X"" ]; then
-			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "${!PLATFORM_ARCH}" -t ARMLINUXGCC -p "${!PLATFORM_DSC}" -b "$target" \
+			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "${!PLATFORM_ARCH}" -t ARMGCC -p "${!PLATFORM_DSC}" -b "$target" \
 				${PLATFORM_BUILDFLAGS}
 		else
 			${!PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
@@ -196,7 +191,7 @@ function uefishell
 	esac
 	export ARCH
 	echo "Setting up shell for building UEFI"
-	export TOOLCHAIN=ARMLINUXGCC
+	export TOOLCHAIN=ARMGCC
 	export EDK_TOOLS_PATH=`pwd`/BaseTools
 	. edksetup.sh BaseTools
 	make -C $EDK_TOOLS_PATH
