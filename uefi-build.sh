@@ -4,109 +4,24 @@
 # Board Configuration Section
 # ===========================
 #
-# To add a new platform:
-# - add a <shortname> to the "boards" array
-# - create a <shortname>_LONGNAME variable with a descriptive name
-# - create a <shortname>_BUILDFLAGS variable with any platform specific
-#   options for edk2 'build'.
-# And for platforms using standard edk2 'build':
-# - create a <shortname>_DSC variable containing the path to the
-#   platform .dsc file.
-# Or for platforms not using edk2 'build' directly:
-# - create a <shortname>_BUILDCMD variable pointing to the path of the
-#   build command to use.
-#
-
-boards=( a5 a9 tc1 tc2 panda arndale rtsm_a9x4 rtsm_a15x1 rtsm_a15mpcore rtsm_aarch64 beagle fvp foundation fvp_minimal )
-
-fvp_LONGNAME="aarch64 FVP RTSM"
-fvp_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.dsc"
-fvp_BUILDFLAGS=""
-fvp_ARCH="AARCH64"
-
-fvp_minimal_LONGNAME="aarch64 FVP RTSM with minimal perhiperhal set"
-fvp_minimal_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.dsc"
-fvp_minimal_BUILDFLAGS="-D ARM_FOUNDATION_FVP=1"
-fvp_minimal_ARCH="AARCH64"
-
-rtsm_aarch64_LONGNAME="aarch64 RTSM"
-rtsm_aarch64_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-AEMv8Ax4.dsc"
-rtsm_aarch64_BUILDFLAGS=""
-rtsm_aarch64_ARCH="AARCH64"
-
-foundation_LONGNAME="Foundation Model RTSM"
-foundation_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-AEMv8Ax4-foundation.dsc"
-foundation_BUILDFLAGS=""
-foundation_PREBUILD_CMDS="pushd ArmPlatformPkg/ArmVExpressPkg/Scripts/uefi-aarch64-bootstrap/ ; CROSS_COMPILE=aarch64-linux-gnu- make uefi-bootstrap-el3-foundation.axf; popd"
-foundation_ARCH="AARCH64"
-
-a5_LONGNAME="Versatile Express A5"
-a5_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
-a5_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA5s.dsc"
-a5_ARCH="ARM"
-
-a9_LONGNAME="Versatile Express A9"
-a9_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1 -D EDK2_ARMVE_SINGLE_BINARY=1"
-a9_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA9x4.dsc"
-a9_ARCH="ARM"
-
-rtsm_a9x4_LONGNAME="Versatile Express RTSM A9x4"
-rtsm_a9x4_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
-rtsm_a9x4_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-A9x4.dsc"
-rtsm_a9x4_ARCH="ARM"
-
-rtsm_a15x1_LONGNAME="Versatile Express RTSM A15 single core"
-rtsm_a15x1_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
-rtsm_a15x1_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-A15.dsc"
-rtsm_a15x1_ARCH="ARM"
-
-rtsm_a15mpcore_LONGNAME="Versatile Express RTSM A15 MPCore"
-rtsm_a15mpcore_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
-rtsm_a15mpcore_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-RTSM-A15_MPCore.dsc"
-rtsm_a15mpcore_ARCH="ARM"
-
-tc1_LONGNAME="Versatile Express TC1"
-tc1_BUILDFLAGS="-D EDK2_ARMVE_STANDALONE=1"
-tc1_DSC=" ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15x2.dsc"
-tc1_ARCH="ARM"
-
-tc2_LONGNAME="Versatile Express TC2"
-tc2_BUILDFLAGS="-D ARM_BIGLITTLE_TC2=1"
-tc2_DSC="ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-CTA15-A7.dsc"
-tc2_ARCH="ARM"
-
-panda_LONGNAME="TI Pandaboard"
-panda_BUILDCMD="./PandaBoardPkg/build.sh"
-panda_BUILDFLAGS=""
-panda_ARCH="ARM"
-
-arndale_LONGNAME="Samsung Arndale"
-arndale_BUILDFLAGS="-D EXYNOS5250_EVT1 -D DDR3"
-arndale_DSC="SamsungPlatformPkg/ArndaleBoardPkg/arndale-Exynos5250.dsc"
-arndale_ARCH="ARM"
-
-beagle_LONGNAME="BeagleBoard"
-beagle_BUILDFLAGS=""
-beagle_DSC="BeagleBoardPkg/BeagleBoardPkg.dsc"
-beagle_ARCH="ARM"
-
-#
-# End of Board Configuration Section.
+# Board configuration moved to parse-platforms.sh and platforms.config.
 #
 # No need to edit below unless you are changing script functionality.
 #
 
-RESULT_BUF=`echo -e --------------------------------------------`
+RESULT_BUF=`echo -e ------------------------------------------------------------`
 PASS_COUNT=0
 FAIL_COUNT=0
+
+TOOLS_DIR="`dirname $0`"
 
 function log_result
 {
 	if [ $1 -eq 0 ]; then
-		RESULT_BUF="`printf \"%s\n%32s\tpass\" \"$RESULT_BUF\" \"$2\"`"
+		RESULT_BUF="`printf \"%s\n%55s\tpass\" \"$RESULT_BUF\" \"$2\"`"
 		PASS_COUNT=$(($PASS_COUNT + 1))
 	else
-		RESULT_BUF="`printf \"%s\n%32s\tfail\" \"$RESULT_BUF\" \"$2\"`"
+		RESULT_BUF="`printf \"%s\n%55s\tfail\" \"$RESULT_BUF\" \"$2\"`"
 		FAIL_COUNT=$(($FAIL_COUNT + 1))
 	fi
 }
@@ -114,7 +29,7 @@ function log_result
 function print_result
 {
 	printf "%s" "$RESULT_BUF"
-	echo -e "\n--------------------------------------------"
+	echo -e "\n------------------------------------------------------------"
 	printf "pass\t$PASS_COUNT\n"
 	printf "fail\t$FAIL_COUNT\n"
 
@@ -123,54 +38,63 @@ function print_result
 
 function build_platform
 {
-	PLATFORM_NAME="$board"_LONGNAME
-	PLATFORM_PREBUILD_CMDS="$board"_PREBUILD_CMDS
-	PLATFORM_BUILDFLAGS="$board"_BUILDFLAGS
-	PLATFORM_BUILDFLAGS="${!PLATFORM_BUILDFLAGS} ${EXTRA_OPTIONS[@]}"
-	PLATFORM_BUILDCMD="$board"_BUILDCMD
-	PLATFORM_DSC="$board"_DSC
-	PLATFORM_ARCH="$board"_ARCH
+	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.sh -p $board get-longname`"
+	PLATFORM_PREBUILD_CMDS="`$TOOLS_DIR/parse-platforms.sh -p $board get-prebuild_cmds`"
+	PLATFORM_BUILDFLAGS="`$TOOLS_DIR/parse-platforms.sh -p $board get-buildflags`"
+	PLATFORM_BUILDFLAGS="$PLATFORM_BUILDFLAGS ${EXTRA_OPTIONS[@]}"
+	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.sh -p $board get-buildcmd`"
+	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.sh -p $board get-dsc`"
+	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.sh -p $board get-arch`"
 
-	BUILD_ARCH=`uname -m`
-	case $BUILD_ARCH in
-		arm*)
-			TEMP_CROSS_COMPILE=
-			;;
-		aarch64)
-			TEMP_CROSS_COMPILE=
-			;;
-		*)
-			if [ "${!PLATFORM_ARCH}" == "AARCH64" ]; then
-				TEMP_CROSS_COMPILE=aarch64-linux-gnu-
-			else
-				TEMP_CROSS_COMPILE=arm-linux-gnueabi-
-			fi
-			;;
+	case `uname -m` in
+	    arm*)
+		BUILD_ARCH=ARM;;
+	    aarch64*)
+		BUILD_ARCH=AARCH64;;
+	    *)
+		BUILD_ARCH=other;;
 	esac
-	if [ "$CROSS_COMPILE" != "" ]; then
-		TEMP_CROSS_COMPILE="$CROSS_COMPILE"
+	echo "$PLATFORM_ARCH" "$BUILD_ARCH"
+	if [ "$PLATFORM_ARCH" = "$BUILD_ARCH" ]; then
+	    TEMP_CROSS_COMPILE=
+	elif [ "$PLATFORM_ARCH" == "AARCH64" ]; then
+	    if [ X"$CROSS_COMPILE_64" != X"" ]; then
+		TEMP_CROSS_COMPILE="$CROSS_COMPILE_64"
+	    else
+		TEMP_CROSS_COMPILE=aarch64-linux-gnu-
+	    fi
+	else
+	    if [ X"$CROSS_COMPILE_32" != X"" ]; then
+		TEMP_CROSS_COMPILE="$CROSS_COMPILE_32"
+	    else
+		TEMP_CROSS_COMPILE=arm-linux-gnueabihf-
+	    fi
 	fi
 
-	echo "Building ${!PLATFORM_NAME}"
+	CROSS_COMPILE="$TEMP_CROSS_COMPILE"
+
+	echo "Building $PLATFORM_NAME"
 	echo "CROSS_COMPILE=\"$TEMP_CROSS_COMPILE\""
-	echo "$board"_BUILDFLAGS="'${PLATFORM_BUILDFLAGS}'"
+	echo "$board"_BUILDFLAGS="'$PLATFORM_BUILDFLAGS'"
 
 	if [ "$TARGETS" == "" ]; then
 		TARGETS=( RELEASE )
 	fi
 
 	for target in "${TARGETS[@]}" ; do
-		if [ X"${!PLATFORM_PREBUILD_CMDS}" != X"" ]; then
+		if [ X"$PLATFORM_PREBUILD_CMDS" != X"" ]; then
 			echo "Run pre build commands"
-			eval ${!PLATFORM_PREBUILD_CMDS}
+			eval ${PLATFORM_PREBUILD_CMDS}
 		fi
-		if [ X"${!PLATFORM_BUILDCMD}" == X"" ]; then
-			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "${!PLATFORM_ARCH}" -t ARMGCC -p "${!PLATFORM_DSC}" -b "$target" \
+		if [ X"$PLATFORM_BUILDCMD" == X"" ]; then
+			echo CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "$PLATFORM_ARCH" -t ARMGCC -p "$PLATFORM_DSC" -b "$target" \
+				${PLATFORM_BUILDFLAGS}
+			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "$PLATFORM_ARCH" -t ARMGCC -p "$PLATFORM_DSC" -b "$target" \
 				${PLATFORM_BUILDFLAGS}
 		else
-			${!PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
+			${PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
 		fi
-		log_result $? "${!PLATFORM_NAME} ${target}"
+		log_result $? "$PLATFORM_NAME $target"
 	done
 }
 
@@ -213,11 +137,16 @@ function usage
 	printf "%8s\tbuild %s\n" "all" "all supported platforms"
 	for board in "${boards[@]}" ; do
 		PLATFORM_NAME="$board"_LONGNAME
-		printf "%8s\tbuild %s\n" "$board" "${!PLATFORM_NAME}"
+		printf "%8s\tbuild %s\n" "$board" "${PLATFORM_NAME}"
 	done
 }
 
 builds=()
+boards=()
+boardlist=`$TOOLS_DIR/parse-platforms.sh shortlist`
+for board in $boardlist; do
+    boards=(${boards[@]} $board)
+done
 
 # If there were no args, use a menu to select a single board / all boards to build
 if [ $# = 0 ]
