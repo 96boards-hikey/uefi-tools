@@ -81,15 +81,30 @@ function build_platform
 		TARGETS=( RELEASE )
 	fi
 
+	if [ "$TOOLCHAIN" == "" ]; then
+		gcc_version=$(${CROSS_COMPILE}gcc -dumpversion)
+		case $gcc_version in
+		4.6|4.7|4.8)
+			export TOOLCHAIN=GCC$(echo ${gcc_version} | sed s-\\.--g)
+			;;
+		*)
+			echo "Unknown toolchain version '$gcc_version'" >&2
+			echo "Attempting to build using GCC48 profile." >&2
+			export TOOLCHAIN=GCC48
+			;;
+		esac
+	fi
+	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
+
 	for target in "${TARGETS[@]}" ; do
 		if [ X"$PLATFORM_PREBUILD_CMDS" != X"" ]; then
 			echo "Run pre build commands"
 			eval ${PLATFORM_PREBUILD_CMDS}
 		fi
 		if [ X"$PLATFORM_BUILDCMD" == X"" ]; then
-			echo CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "$PLATFORM_ARCH" -t ARMGCC -p "$PLATFORM_DSC" -b "$target" \
+			echo CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
 				${PLATFORM_BUILDFLAGS}
-			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "$PLATFORM_ARCH" -t ARMGCC -p "$PLATFORM_DSC" -b "$target" \
+			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
 				${PLATFORM_BUILDFLAGS}
 		else
 			${PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
@@ -115,7 +130,6 @@ function uefishell
 	esac
 	export ARCH
 	echo "Setting up shell for building UEFI"
-	export TOOLCHAIN=ARMGCC
 	export EDK_TOOLS_PATH=`pwd`/BaseTools
 	. edksetup.sh BaseTools
 	make -C $EDK_TOOLS_PATH
