@@ -85,16 +85,25 @@ function build_platform
 		gcc_version=$(${CROSS_COMPILE}gcc -dumpversion)
 		case $gcc_version in
 		4.6|4.7|4.8)
-			export TOOLCHAIN=GCC$(echo ${gcc_version} | sed s-\\.--g)
+			TOOLCHAIN=GCC$(echo ${gcc_version} | sed s-\\.--g)
+			echo "Setting TOOLCHAIN ${TOOLCHAIN}"
 			;;
 		*)
 			echo "Unknown toolchain version '$gcc_version'" >&2
 			echo "Attempting to build using GCC48 profile." >&2
-			export TOOLCHAIN=GCC48
+			TOOLCHAIN=GCC48
 			;;
 		esac
+	else
+		echo "TOOLCHAIN is already set to ${TOOLCHAIN}"
 	fi
-	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
+	${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
+	echo "Setting toolchain prefix: ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
+
+	# By way of resilience, define the other prefixes for aarch64 because something is going wrong
+	GCC46_AARCH64_PREFIX=aarch64-linux-gnu-
+	GCC47_AARCH64_PREFIX=aarch64-linux-gnu-
+	GCC48_AARCH64_PREFIX=aarch64-linux-gnu-
 
 	for target in "${TARGETS[@]}" ; do
 		if [ X"$PLATFORM_PREBUILD_CMDS" != X"" ]; then
