@@ -84,8 +84,8 @@ function build_platform
 	#if [ "$TOOLCHAIN" == "" ]; then
 		gcc_version=$(${CROSS_COMPILE}gcc -dumpversion)
 		case $gcc_version in
-		4.6|4.7|4.8)
-			export TOOLCHAIN=GCC$(echo ${gcc_version} | sed s-\\.--g)
+		4.6*|4.7*|4.8*)
+			export TOOLCHAIN=GCC$(echo ${gcc_version} | awk -F. '{print $1$2}')
 			echo "Setting TOOLCHAIN ${TOOLCHAIN}"
 			;;
 		*)
