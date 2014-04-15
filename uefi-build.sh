@@ -97,9 +97,6 @@ function build_platform
 	#else
 		#echo "TOOLCHAIN is already set to ${TOOLCHAIN}"
 	#fi
-	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
-	echo "Setting toolchain prefix: ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
-
 	# By way of resilience, define the other prefixes for aarch64 because something is going wrong
 	export GCC46_AARCH64_PREFIX=aarch64-linux-gnu-
 	export GCC47_AARCH64_PREFIX=aarch64-linux-gnu-
@@ -107,6 +104,9 @@ function build_platform
 	export GCC46_ARM_PREFIX=arm-linux-gnueabihf-
 	export GCC47_ARM_PREFIX=arm-linux-gnueabihf-
 	export GCC48_ARM_PREFIX=arm-linux-gnueabihf-
+
+	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
+	echo "Setting toolchain prefix: ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
 
 	for target in "${TARGETS[@]}" ; do
 		if [ X"$PLATFORM_PREBUILD_CMDS" != X"" ]; then
