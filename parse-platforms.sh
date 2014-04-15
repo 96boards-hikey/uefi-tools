@@ -7,7 +7,7 @@ OUTPUT=""
 check_for_header()
 {
 	(echo "$1" | grep '^\[' | grep '\]') >/dev/null || return 1
-	HEADER=`echo $1 | cut -d'[' -f2 | cut -d']' -f1`
+	HEADER=`echo "$1" | cut -d'[' -f2 | cut -d']' -f1`
 	if [ X"$HEADER" != X"" ]; then
 		PLATFORM="$HEADER"
 		return 0
@@ -19,7 +19,7 @@ check_for_header()
 check_for_option()
 {
 	(echo "$1" | grep '=') >/dev/null || return 1
-	OPTION=`echo "$1" | cut -d'=' -f1 | tr [a-z] [A-Z]`
+	OPTION=`echo "$1" | cut -d'=' -f1 | tr \"[a-z]\" \"[A-Z]\"`
 	VALUE=`echo "$1" | cut -d'=' -f2-`
 }
 
@@ -68,7 +68,7 @@ do
 		fi
 		case "$CMD" in
 		    get-*)
-			GETVAR="`echo $CMD | cut -d- -f2- | tr [a-z] [A-Z]`"
+			GETVAR="`echo $CMD | cut -d- -f2- | tr \"[a-z]\" \"[A-Z]\"`"
 			if [ X"$TARGET_PLAT" = X"$PLATFORM" ]; then
 			    if [ X"$OPTION" = X"$GETVAR" ]; then
 				echo "$VALUE"
