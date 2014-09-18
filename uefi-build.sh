@@ -11,7 +11,7 @@
 
 TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
-ATF_DIR=../arm-trusted-firmware
+ATF_DIR=
 
 # By way of resilience, define the other prefixes for aarch64
 # because something is going wrong
@@ -78,10 +78,12 @@ function build_platform
 		fi
 		RESULT=$?
 		if [ $RESULT -eq 0 ]; then
-			pushd $ATF_DIR >/dev/null
-			$TOOLS_DIR/atf-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board
-			RESULT=$?
-			popd >/dev/null
+			if [ X"$ATF_DIR" != X"" ]; then
+				pushd $ATF_DIR >/dev/null
+				$TOOLS_DIR/atf-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board
+				RESULT=$?
+				popd >/dev/null
+			fi
 		fi
 		result_log $RESULT "$PLATFORM_NAME $target"
 	done
@@ -164,6 +166,10 @@ else
 			"/h" | "/?" | "-?" | "-h" | "--help" )
 				usage
 				exit
+				;;
+			"-a" )
+				shift
+				ATF_DIR="$1"
 				;;
 			"-b" | "--build" )
 				shift

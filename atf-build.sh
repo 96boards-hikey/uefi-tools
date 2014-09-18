@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 # Builds ARM Trusted Firmware, and generates FIPs with UEFI
-# for the supported platforms.
+# for the supported platforms. Not intended to be called directly,
+# invoked from uefi-build.sh.
 #
 # Board configuration is extracted from
 # parse-platforms.sh and platforms.config.
@@ -14,16 +15,14 @@ OUTPUT_DIR="$PWD"/uefi-build
 function usage
 {
 	echo "usage:"
-	echo -n "atf-build.sh -e <EDK2 source directory> -t <UEFI build profile/toolchain> [ all "
+	echo "atf-build.sh -e <EDK2 source directory> -t <UEFI build profile/toolchain> <platform>"
+
+	echo
+	echo "Where <platform> is one of:"
 	for platform in "${platforms[@]}" ; do
-	    echo -n "| $platform "
+	    echo -n " $platform"
 	done
-	echo "]"
-	printf "%8s\tbuild %s\n" "all" "all supported platforms"
-	for platform in "${platforms[@]}" ; do
-		PLATFORM_NAME="$platform"_LONGNAME
-		printf "%8s\tbuild %s\n" "$platform" "${PLATFORM_NAME}"
-	done
+	echo
 }
 
 function build_platform
@@ -33,26 +32,43 @@ function build_platform
 		return 1
 	fi
 
+	#
+	# Read platform configuration
+	#
 	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.sh -p $1 get-longname`"
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.sh -p $1 get-arch`"
 	PLATFORM_IMAGE_DIR="`$TOOLS_DIR/parse-platforms.sh -p $1 get-uefi_image_dir`"
 	PLATFORM_UEFI_IMAGE="$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/`$TOOLS_DIR/parse-platforms.sh -p $1 get-uefi_bin`"
 
+	#
+	# Set up cross compilation variables (if applicable)
+	#
 	set_cross_compile
 	CROSS_COMPILE="$TEMP_CROSS_COMPILE"
-
 	echo "Building $PLATFORM_NAME - $BUILD_PROFILE"
 	echo "CROSS_COMPILE=\"$TEMP_CROSS_COMPILE\""
 
-	CROSS_COMPILE="$CROSS_COMPILE" BL33="$PLATFORM_UEFI_IMAGE" make PLAT="$1" all fip
-	result_log $? "$PLATFORM_NAME"
+	#
+	# Build ARM Trusted Firmware and create FIP
+	#
+	CROSS_COMPILE="$CROSS_COMPILE" BL33="$PLATFORM_UEFI_IMAGE" make PLAT="$1" all fip || return 1
 
-	rm -rf "$OUTPUT_DIR"/"$1"/"$BUILD_PROFILE"
-	mkdir -p "$OUTPUT_DIR"/"$1"/"$BUILD_PROFILE"
-	cp -a build/"$1"/release/*.bin "$OUTPUT_DIR"/"$1"/"$BUILD_PROFILE"
+	#
+	# Copy resulting images to UEFI image dir
+	#
+	cp -a build/"$1"/release/*.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
 }
 
-builds=()
+# Check to see if we are in a trusted firmware directory
+# refuse to continue if we aren't
+if [ ! -d bl32 ]
+then
+	echo "ERROR: we aren't in the arm-trusted-firmware directory."
+	usage
+	exit 1
+fi
+
+build=
 platforms=()
 platformlist=`$TOOLS_DIR/parse-platforms.sh shortlist`
 for platform in $platformlist; do
@@ -61,31 +77,13 @@ for platform in $platformlist; do
     fi
 done
 
-# If there were no args, display a menu
 if [ $# = 0 ]
 then
-	read -p "$(
-			f=0
-			for platform in "${platforms[@]}" ; do
-					echo "$((++f)): $platform"
-			done
-			echo $((++f)): all
-
-			echo -ne '> '
-	)" selection
-
-	if [ "$selection" -eq $((${#platforms[@]} + 1)) ]; then
-		builds=(${platforms[@]})
-	else
-		builds="${platforms[$((selection-1))]}"
-	fi
+	usage
+	exit 1
 else
 	while [ "$1" != "" ]; do
 		case $1 in
-			all )
-				builds=(${platforms[@]})
-				break
-				;;
 			"-e" )
 				shift
 				EDK2_DIR="$1"
@@ -103,40 +101,30 @@ else
 				for platform in "${platforms[@]}" ; do
 					if [ "$1" == $platform ]; then
 						MATCH=1
-						builds=(${builds[@]} "$platform")
+						build="$platform"
 						break
 					fi
 				done
 
 				if [ $MATCH -eq 0 ]; then
-					echo "unknown arg $1"
+					echo "unknown platform '$1'"
 					usage
 					exit 1
 				fi
+
+				break
 				;;
 		esac
 		shift
 	done
 fi
 
-# Check to see if we are in a trusted firmware directory
-# refuse to continue if we aren't
-if [ ! -d bl32 ]
-then
-	echo "ERROR: we aren't in the arm-trusted-firmware directory."
+if [ X"$build" = X"" ]; then
+	echo "Unsupported platform!" >&2
+	echo
+	usage
 	exit 1
 fi
 
-if [ ! -d $OUTPUT_DIR ]; then
-	mkdir $OUTPUT_DIR
-fi
-
-FAILURES=0
-for platform in "${builds[@]}" ; do
-	build_platform $platform
-	if [ $? -ne 0 ]; then
-		FAILURES=$(($FAILURES + 1))
-	fi
-done
-
-exit $FAILURES
+build_platform $build
+exit $?
