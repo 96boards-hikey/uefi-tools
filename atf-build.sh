@@ -9,6 +9,7 @@
 
 TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
+OUTPUT_DIR="$PWD"/uefi-build
 
 function usage
 {
@@ -31,6 +32,7 @@ function build_platform
 		echo "EDK2_DIR not set!" >&2
 		return 1
 	fi
+
 	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.sh -p $1 get-longname`"
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.sh -p $1 get-arch`"
 	PLATFORM_IMAGE_DIR="`$TOOLS_DIR/parse-platforms.sh -p $1 get-uefi_image_dir`"
@@ -44,6 +46,10 @@ function build_platform
 
 	CROSS_COMPILE="$CROSS_COMPILE" BL33="$PLATFORM_UEFI_IMAGE" make PLAT="$1" all fip
 	result_log $? "$PLATFORM_NAME"
+
+	rm -rf "$OUTPUT_DIR"/"$1"/"$BUILD_PROFILE"
+	mkdir -p "$OUTPUT_DIR"/"$1"/"$BUILD_PROFILE"
+	cp -a build/"$1"/release/*.bin "$OUTPUT_DIR"/"$1"/"$BUILD_PROFILE"
 }
 
 builds=()
@@ -115,14 +121,22 @@ fi
 
 # Check to see if we are in a trusted firmware directory
 # refuse to continue if we aren't
-if [ ! -e bl32 ]
+if [ ! -d bl32 ]
 then
 	echo "ERROR: we aren't in the arm-trusted-firmware directory."
 	exit 1
 fi
 
+if [ ! -d $OUTPUT_DIR ]; then
+	mkdir $OUTPUT_DIR
+fi
+
+FAILURES=0
 for platform in "${builds[@]}" ; do
 	build_platform $platform
+	if [ $? -ne 0 ]; then
+		FAILURES=$(($FAILURES + 1))
+	fi
 done
 
-result_print
+exit $FAILURES

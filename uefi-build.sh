@@ -9,32 +9,18 @@
 # No need to edit below unless you are changing script functionality.
 #
 
-RESULT_BUF=`echo -e ------------------------------------------------------------`
-PASS_COUNT=0
-FAIL_COUNT=0
-
 TOOLS_DIR="`dirname $0`"
+. "$TOOLS_DIR"/common-functions
+ATF_DIR=../arm-trusted-firmware
 
-function log_result
-{
-	if [ $1 -eq 0 ]; then
-		RESULT_BUF="`printf \"%s\n%55s\tpass\" \"$RESULT_BUF\" \"$2\"`"
-		PASS_COUNT=$(($PASS_COUNT + 1))
-	else
-		RESULT_BUF="`printf \"%s\n%55s\tfail\" \"$RESULT_BUF\" \"$2\"`"
-		FAIL_COUNT=$(($FAIL_COUNT + 1))
-	fi
-}
-
-function print_result
-{
-	printf "%s" "$RESULT_BUF"
-	echo -e "\n------------------------------------------------------------"
-	printf "pass\t$PASS_COUNT\n"
-	printf "fail\t$FAIL_COUNT\n"
-
-	exit $FAIL_COUNT
-}
+# By way of resilience, define the other prefixes for aarch64
+# because something is going wrong
+export GCC46_AARCH64_PREFIX=aarch64-linux-gnu-
+export GCC47_AARCH64_PREFIX=aarch64-linux-gnu-
+export GCC48_AARCH64_PREFIX=aarch64-linux-gnu-
+export GCC46_ARM_PREFIX=arm-linux-gnueabihf-
+export GCC47_ARM_PREFIX=arm-linux-gnueabihf-
+export GCC48_ARM_PREFIX=arm-linux-gnueabihf-
 
 function build_platform
 {
@@ -46,31 +32,7 @@ function build_platform
 	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.sh -p $board get-dsc`"
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.sh -p $board get-arch`"
 
-	case `uname -m` in
-	    arm*)
-		BUILD_ARCH=ARM;;
-	    aarch64*)
-		BUILD_ARCH=AARCH64;;
-	    *)
-		BUILD_ARCH=other;;
-	esac
-	echo "$PLATFORM_ARCH" "$BUILD_ARCH"
-	if [ "$PLATFORM_ARCH" = "$BUILD_ARCH" ]; then
-	    TEMP_CROSS_COMPILE=
-	elif [ "$PLATFORM_ARCH" == "AARCH64" ]; then
-	    if [ X"$CROSS_COMPILE_64" != X"" ]; then
-		TEMP_CROSS_COMPILE="$CROSS_COMPILE_64"
-	    else
-		TEMP_CROSS_COMPILE=aarch64-linux-gnu-
-	    fi
-	else
-	    if [ X"$CROSS_COMPILE_32" != X"" ]; then
-		TEMP_CROSS_COMPILE="$CROSS_COMPILE_32"
-	    else
-		TEMP_CROSS_COMPILE=arm-linux-gnueabihf-
-	    fi
-	fi
-
+	set_cross_compile
 	CROSS_COMPILE="$TEMP_CROSS_COMPILE"
 
 	echo "Building $PLATFORM_NAME"
@@ -97,13 +59,6 @@ function build_platform
 	#else
 		#echo "TOOLCHAIN is already set to ${TOOLCHAIN}"
 	#fi
-	# By way of resilience, define the other prefixes for aarch64 because something is going wrong
-	export GCC46_AARCH64_PREFIX=aarch64-linux-gnu-
-	export GCC47_AARCH64_PREFIX=aarch64-linux-gnu-
-	export GCC48_AARCH64_PREFIX=aarch64-linux-gnu-
-	export GCC46_ARM_PREFIX=arm-linux-gnueabihf-
-	export GCC47_ARM_PREFIX=arm-linux-gnueabihf-
-	export GCC48_ARM_PREFIX=arm-linux-gnueabihf-
 
 	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
 	echo "Setting toolchain prefix: ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
@@ -121,7 +76,14 @@ function build_platform
 		else
 			${PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
 		fi
-		log_result $? "$PLATFORM_NAME $target"
+		RESULT=$?
+		if [ $RESULT -eq 0 ]; then
+			pushd $ATF_DIR >/dev/null
+			$TOOLS_DIR/atf-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board
+			RESULT=$?
+			popd >/dev/null
+		fi
+		result_log $RESULT "$PLATFORM_NAME $target"
 	done
 }
 
@@ -243,10 +205,12 @@ then
 	exit 1
 fi
 
+EDK2_DIR="$PWD"
+
 uefishell
 
 for board in "${builds[@]}" ; do
 	build_platform
 done
 
-print_result
+result_print
