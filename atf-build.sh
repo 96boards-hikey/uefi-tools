@@ -5,7 +5,7 @@
 # invoked from uefi-build.sh.
 #
 # Board configuration is extracted from
-# parse-platforms.sh and platforms.config.
+# parse-platforms.py and platforms.config.
 #
 
 TOOLS_DIR="`dirname $0`"
@@ -35,10 +35,10 @@ function build_platform
 	#
 	# Read platform configuration
 	#
-	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.sh -p $1 get-longname`"
-	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.sh -p $1 get-arch`"
-	PLATFORM_IMAGE_DIR="`$TOOLS_DIR/parse-platforms.sh -p $1 get-uefi_image_dir`"
-	PLATFORM_UEFI_IMAGE="$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/`$TOOLS_DIR/parse-platforms.sh -p $1 get-uefi_bin`"
+	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py -p $1 get -o longname`"
+	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py -p $1 get -o arch`"
+	PLATFORM_IMAGE_DIR="`$TOOLS_DIR/parse-platforms.py -p $1 get -o uefi_image_dir`"
+	PLATFORM_UEFI_IMAGE="$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/`$TOOLS_DIR/parse-platforms.py -p $1 get -o uefi_bin`"
 
 	#
 	# Set up cross compilation variables (if applicable)
@@ -70,9 +70,9 @@ fi
 
 build=
 platforms=()
-platformlist=`$TOOLS_DIR/parse-platforms.sh shortlist`
+platformlist=`$TOOLS_DIR/parse-platforms.py shortlist`
 for platform in $platformlist; do
-    if $TOOLS_DIR/parse-platforms.sh -p $platform get-build_atf; then
+    if $TOOLS_DIR/parse-platforms.py -p $platform get -o build_atf; then
         platforms=(${platforms[@]} $platform)
     fi
 done

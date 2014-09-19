@@ -4,7 +4,7 @@
 # Board Configuration Section
 # ===========================
 #
-# Board configuration moved to parse-platforms.sh and platforms.config.
+# Board configuration moved to parse-platforms.py and platforms.config.
 #
 # No need to edit below unless you are changing script functionality.
 #
@@ -24,13 +24,13 @@ export GCC48_ARM_PREFIX=arm-linux-gnueabihf-
 
 function build_platform
 {
-	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.sh -p $board get-longname`"
-	PLATFORM_PREBUILD_CMDS="`$TOOLS_DIR/parse-platforms.sh -p $board get-prebuild_cmds`"
-	PLATFORM_BUILDFLAGS="`$TOOLS_DIR/parse-platforms.sh -p $board get-buildflags`"
+	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py -p $board get -o longname`"
+	PLATFORM_PREBUILD_CMDS="`$TOOLS_DIR/parse-platforms.py -p $board get -o prebuild_cmds`"
+	PLATFORM_BUILDFLAGS="`$TOOLS_DIR/parse-platforms.py -p $board get -o buildflags`"
 	PLATFORM_BUILDFLAGS="$PLATFORM_BUILDFLAGS ${EXTRA_OPTIONS[@]}"
-	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.sh -p $board get-buildcmd`"
-	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.sh -p $board get-dsc`"
-	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.sh -p $board get-arch`"
+	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.py -p $board get -o buildcmd`"
+	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.py -p $board get -o dsc`"
+	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py -p $board get -o arch`"
 
 	set_cross_compile
 	CROSS_COMPILE="$TEMP_CROSS_COMPILE"
@@ -133,7 +133,7 @@ function usage
 
 builds=()
 boards=()
-boardlist=`$TOOLS_DIR/parse-platforms.sh shortlist`
+boardlist=`$TOOLS_DIR/parse-platforms.py shortlist`
 for board in $boardlist; do
     boards=(${boards[@]} $board)
 done

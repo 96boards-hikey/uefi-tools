@@ -2,7 +2,7 @@
 
 import sys, os, argparse, ConfigParser
 
-config_filename='platforms.pyfig'
+config_filename='platforms.config'
 
 def list_platforms():
     for p in platforms: print p
