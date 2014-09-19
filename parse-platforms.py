@@ -1,0 +1,52 @@
+#!/usr/bin/python
+
+import sys, os, argparse, ConfigParser
+
+config_filename='platforms.pyfig'
+
+def list_platforms():
+    for p in platforms: print p
+
+def shortlist_platforms():
+    for p in platforms: print p,
+
+def get_option():
+    if args.platform:
+        if args.option:
+            try:
+                value = config.get(args.platform, args.option)
+                if value:
+                    print value
+                    return True
+            except:
+#                print "Option not found!"
+                return False
+        else:
+            print "No option specified!"
+    else:
+        print "No platform specified!"
+    return False
+
+parser = argparse.ArgumentParser(description='Parses platform configuration for Linaro UEFI build scripts.')
+parser.add_argument('-p', '--platform', help='Read configuration for PLATFORM only.', required=False)
+parser.add_argument('command', action="store", help='Action to perform')
+parser.add_argument('-o', '--option', help='Option to retreive')
+    
+args = parser.parse_args()
+
+config = ConfigParser.ConfigParser()
+config.read(os.path.dirname(os.path.realpath(sys.argv[0])) + '/' + config_filename)
+
+platforms = config.sections()
+
+commands = {"shortlist": shortlist_platforms,
+            "list": list_platforms,
+            "get": get_option}
+
+try:
+    retval = commands[args.command]()
+except:
+    print ("Unrecognized command '%s'" % args.command)
+
+if retval != True:
+    sys.exit(1)
