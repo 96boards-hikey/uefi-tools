@@ -56,7 +56,7 @@ function build_platform
 	#
 	# Copy resulting images to UEFI image dir
 	#
-	cp -a build/"$1"/release/*.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
+	cp -a build/"$1"/release/{bl1,fip}.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
 }
 
 # Check to see if we are in a trusted firmware directory
