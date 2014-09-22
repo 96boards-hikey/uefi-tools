@@ -13,6 +13,9 @@ TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
 ATF_DIR=
 
+# Number of threads to use for build
+NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
+
 # By way of resilience, define the other prefixes for aarch64
 # because something is going wrong
 export GCC46_AARCH64_PREFIX=aarch64-linux-gnu-
@@ -69,9 +72,9 @@ function build_platform
 			eval ${PLATFORM_PREBUILD_CMDS}
 		fi
 		if [ X"$PLATFORM_BUILDCMD" == X"" ]; then
-			echo CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
+			echo CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
 				${PLATFORM_BUILDFLAGS}
-			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
+			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
 				${PLATFORM_BUILDFLAGS}
 		else
 			${PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
