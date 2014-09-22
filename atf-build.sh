@@ -16,12 +16,6 @@ function usage
 {
 	echo "usage:"
 	echo "atf-build.sh -e <EDK2 source directory> -t <UEFI build profile/toolchain> <platform>"
-
-	echo
-	echo "Where <platform> is one of:"
-	for platform in "${platforms[@]}" ; do
-	    echo -n " $platform"
-	done
 	echo
 }
 
@@ -32,6 +26,10 @@ function build_platform
 		return 1
 	fi
 
+	if [ X"`$TOOLS_DIR/parse-platforms.py -p $1 get -o build_atf`" = X"" ]; then
+		echo "Platform '$1' is not configured to build ARM Trusted Firmware."
+		return 0
+	fi
 	#
 	# Read platform configuration
 	#
@@ -69,13 +67,6 @@ then
 fi
 
 build=
-platforms=()
-platformlist=`$TOOLS_DIR/parse-platforms.py shortlist`
-for platform in $platformlist; do
-    if $TOOLS_DIR/parse-platforms.py -p $platform get -o build_atf; then
-        platforms=(${platforms[@]} $platform)
-    fi
-done
 
 if [ $# = 0 ]
 then
@@ -97,22 +88,7 @@ else
 				BUILD_PROFILE="$1"
 				;;
 			* )
-				MATCH=0
-				for platform in "${platforms[@]}" ; do
-					if [ "$1" == $platform ]; then
-						MATCH=1
-						build="$platform"
-						break
-					fi
-				done
-
-				if [ $MATCH -eq 0 ]; then
-					echo "unknown platform '$1'"
-					usage
-					exit 1
-				fi
-
-				break
+				build="$1"
 				;;
 		esac
 		shift
@@ -120,7 +96,7 @@ else
 fi
 
 if [ X"$build" = X"" ]; then
-	echo "Unsupported platform!" >&2
+	echo "No platform specified!" >&2
 	echo
 	usage
 	exit 1
