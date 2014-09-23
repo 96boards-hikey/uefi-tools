@@ -10,6 +10,25 @@ def list_platforms():
 def shortlist_platforms():
     for p in platforms: print p,
 
+def get_images():
+    if args.platform:
+        try:
+            value = config.get(args.platform, "BUILD_ATF")
+            if value == "yes":
+                print "bl1.bin fip.bin"
+                return True
+        except:
+            try:
+                value = config.get(args.platform, "UEFI_BIN")
+                print value
+                return True
+            except:
+                print "No images found!"
+    else:
+        print "No platform specified!"
+
+    return False
+
 def get_option():
     if args.platform:
         if args.option:
@@ -31,7 +50,7 @@ parser = argparse.ArgumentParser(description='Parses platform configuration for 
 parser.add_argument('-p', '--platform', help='Read configuration for PLATFORM only.', required=False)
 parser.add_argument('command', action="store", help='Action to perform')
 parser.add_argument('-o', '--option', help='Option to retreive')
-    
+
 args = parser.parse_args()
 
 config = ConfigParser.ConfigParser()
@@ -41,6 +60,7 @@ platforms = config.sections()
 
 commands = {"shortlist": shortlist_platforms,
             "list": list_platforms,
+            "images": get_images,
             "get": get_option}
 
 try:
