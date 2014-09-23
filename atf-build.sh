@@ -30,6 +30,12 @@ function build_platform
 		echo "Platform '$1' is not configured to build ARM Trusted Firmware."
 		return 0
 	fi
+
+	ATF_PLATFORM=`$TOOLS_DIR/parse-platforms.py -p $1 get -o atf_platform`
+	if [ X"$ATF_PLATFORM" = X"" ]; then
+		ATF_PLATFORM=$1
+	fi
+
 	#
 	# Read platform configuration
 	#
@@ -49,12 +55,12 @@ function build_platform
 	#
 	# Build ARM Trusted Firmware and create FIP
 	#
-	CROSS_COMPILE="$CROSS_COMPILE" BL33="$PLATFORM_UEFI_IMAGE" make PLAT="$1" all fip || return 1
+	CROSS_COMPILE="$CROSS_COMPILE" BL33="$PLATFORM_UEFI_IMAGE" make PLAT="$ATF_PLATFORM" all fip || return 1
 
 	#
 	# Copy resulting images to UEFI image dir
 	#
-	cp -a build/"$1"/release/{bl1,fip}.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
+	cp -a build/"$ATF_PLATFORM"/release/{bl1,fip}.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
 }
 
 # Check to see if we are in a trusted firmware directory
