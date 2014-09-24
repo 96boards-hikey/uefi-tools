@@ -42,7 +42,12 @@ function build_platform
 	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py -p $1 get -o longname`"
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py -p $1 get -o arch`"
 	PLATFORM_IMAGE_DIR="`$TOOLS_DIR/parse-platforms.py -p $1 get -o uefi_image_dir`"
-	PLATFORM_UEFI_IMAGE="$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/`$TOOLS_DIR/parse-platforms.py -p $1 get -o uefi_bin`"
+	unset BL30 BL31 BL32 BL33
+	BL30="`$TOOLS_DIR/parse-platforms.py -p $1 get -o scp_bin`"
+	BL31="`$TOOLS_DIR/parse-platforms.py -p $1 get -o el3_bin`"
+	BL32="`$TOOLS_DIR/parse-platforms.py -p $1 get -o tos_bin`"
+	BL33="$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/`$TOOLS_DIR/parse-platforms.py -p $1 get -o uefi_bin`"
+	export BL33
 
 	#
 	# Set up cross compilation variables (if applicable)
@@ -52,10 +57,21 @@ function build_platform
 	echo "Building $PLATFORM_NAME - $BUILD_PROFILE"
 	echo "CROSS_COMPILE=\"$TEMP_CROSS_COMPILE\""
 
+	if [ X"$BL30" != X"" ]; then
+		BL30="${EDK2_DIR}"/"${BL30}"
+	fi
+	if [ X"$BL31" != X"" ]; then
+		BL31="${EDK2_DIR}"/"${BL31}"
+	fi
+	if [ X"$BL32" != X"" ]; then
+		BL32="${EDK2_DIR}"/"${BL32}"
+	fi
+	export BL30 BL31 BL32
+
 	#
 	# Build ARM Trusted Firmware and create FIP
 	#
-	CROSS_COMPILE="$CROSS_COMPILE" BL33="$PLATFORM_UEFI_IMAGE" make PLAT="$ATF_PLATFORM" all fip || return 1
+	CROSS_COMPILE="$CROSS_COMPILE" make PLAT="$ATF_PLATFORM" all fip || return 1
 
 	#
 	# Copy resulting images to UEFI image dir
