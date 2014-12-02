@@ -46,22 +46,18 @@ function build_platform
 		TARGETS=( RELEASE )
 	fi
 
-	#if [ "$TOOLCHAIN" == "" ]; then
-		gcc_version=$(${CROSS_COMPILE}gcc -dumpversion)
-		case $gcc_version in
+	gcc_version=$(${CROSS_COMPILE}gcc -dumpversion)
+	case $gcc_version in
 		4.6*|4.7*|4.8*|4.9*)
-			export TOOLCHAIN=GCC$(echo ${gcc_version} | awk -F. '{print $1$2}')
-			echo "Setting TOOLCHAIN ${TOOLCHAIN}"
-			;;
+		export TOOLCHAIN=GCC$(echo ${gcc_version} | awk -F. '{print $1$2}')
+		echo "Setting TOOLCHAIN ${TOOLCHAIN}"
+		;;
 		*)
-			echo "Unknown toolchain version '$gcc_version'" >&2
-			echo "Attempting to build using GCC48 profile." >&2
-			export TOOLCHAIN=GCC48
-			;;
-		esac
-	#else
-		#echo "TOOLCHAIN is already set to ${TOOLCHAIN}"
-	#fi
+		echo "Unknown toolchain version '$gcc_version'" >&2
+		echo "Attempting to build using GCC48 profile." >&2
+		export TOOLCHAIN=GCC48
+		;;
+	esac
 
 	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
 	echo "Setting toolchain prefix: ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
