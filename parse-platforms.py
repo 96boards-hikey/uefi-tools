@@ -2,7 +2,7 @@
 
 import sys, os, argparse, ConfigParser
 
-config_filename='platforms.config'
+default_filename='platforms.config'
 
 def list_platforms():
     for p in platforms: print p
@@ -47,14 +47,19 @@ def get_option():
     return False
 
 parser = argparse.ArgumentParser(description='Parses platform configuration for Linaro UEFI build scripts.')
+parser.add_argument('-c', '--config-file', help='Specify a non-default platform config file.', required=False)
 parser.add_argument('-p', '--platform', help='Read configuration for PLATFORM only.', required=False)
 parser.add_argument('command', action="store", help='Action to perform')
 parser.add_argument('-o', '--option', help='Option to retreive')
 
 args = parser.parse_args()
+if args.config_file:
+    config_filename = args.config_file
+else:
+    config_filename = os.path.dirname(os.path.realpath(sys.argv[0])) + '/' + default_filename
 
 config = ConfigParser.ConfigParser()
-config.read(os.path.dirname(os.path.realpath(sys.argv[0])) + '/' + config_filename)
+config.read(config_filename)
 
 platforms = config.sections()
 

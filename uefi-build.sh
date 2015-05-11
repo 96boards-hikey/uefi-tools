@@ -11,6 +11,7 @@
 
 TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
+PLATFORM_CONFIG=""
 ATF_DIR=
 
 # Number of threads to use for build
@@ -27,18 +28,18 @@ export GCC48_ARM_PREFIX=arm-linux-gnueabihf-
 
 function build_platform
 {
-	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py -p $board get -o longname`"
-	PLATFORM_PREBUILD_CMDS="`$TOOLS_DIR/parse-platforms.py -p $board get -o prebuild_cmds`"
-	PLATFORM_BUILDFLAGS="`$TOOLS_DIR/parse-platforms.py -p $board get -o buildflags`"
+	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o longname`"
+	PLATFORM_PREBUILD_CMDS="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o prebuild_cmds`"
+	PLATFORM_BUILDFLAGS="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o buildflags`"
 	PLATFORM_BUILDFLAGS="$PLATFORM_BUILDFLAGS ${EXTRA_OPTIONS[@]}"
-	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.py -p $board get -o buildcmd`"
-	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.py -p $board get -o dsc`"
-	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py -p $board get -o arch`"
+	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o buildcmd`"
+	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o dsc`"
+	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o arch`"
 
 	set_cross_compile
 	CROSS_COMPILE="$TEMP_CROSS_COMPILE"
 
-	echo "Building $PLATFORM_NAME"
+	echo "Building $PLATFORM_NAME - $PLATFORM_ARCH ($PLATFORM_CONFIG)"
 	echo "CROSS_COMPILE=\"$TEMP_CROSS_COMPILE\""
 	echo "$board"_BUILDFLAGS="'$PLATFORM_BUILDFLAGS'"
 
@@ -130,9 +131,16 @@ function usage
 	done
 }
 
+if [ $1 == "-c" ]; then
+	shift
+	echo "Platform config file: '$1'"
+	PLATFORM_CONFIG="-c $1"
+	shift
+fi
+
 builds=()
 boards=()
-boardlist=`$TOOLS_DIR/parse-platforms.py shortlist`
+boardlist=`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG shortlist`
 for board in $boardlist; do
     boards=(${boards[@]} $board)
 done
