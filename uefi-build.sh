@@ -17,15 +17,6 @@ ATF_DIR=
 # Number of threads to use for build
 NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
 
-# By way of resilience, define the other prefixes for aarch64
-# because something is going wrong
-export GCC46_AARCH64_PREFIX=aarch64-linux-gnu-
-export GCC47_AARCH64_PREFIX=aarch64-linux-gnu-
-export GCC48_AARCH64_PREFIX=aarch64-linux-gnu-
-export GCC46_ARM_PREFIX=arm-linux-gnueabihf-
-export GCC47_ARM_PREFIX=arm-linux-gnueabihf-
-export GCC48_ARM_PREFIX=arm-linux-gnueabihf-
-
 function build_platform
 {
 	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o longname`"
@@ -39,7 +30,7 @@ function build_platform
 	set_cross_compile
 	CROSS_COMPILE="$TEMP_CROSS_COMPILE"
 
-	echo "Building $PLATFORM_NAME - $PLATFORM_ARCH ($PLATFORM_CONFIG)"
+	echo "Building $PLATFORM_NAME - $PLATFORM_ARCH"
 	echo "CROSS_COMPILE=\"$TEMP_CROSS_COMPILE\""
 	echo "$board"_BUILDFLAGS="'$PLATFORM_BUILDFLAGS'"
 
@@ -51,17 +42,17 @@ function build_platform
 	case $gcc_version in
 		4.6*|4.7*|4.8*|4.9*)
 		export TOOLCHAIN=GCC$(echo ${gcc_version} | awk -F. '{print $1$2}')
-		echo "Setting TOOLCHAIN ${TOOLCHAIN}"
+		echo "TOOLCHAIN is ${TOOLCHAIN}"
 		;;
 		*)
 		echo "Unknown toolchain version '$gcc_version'" >&2
-		echo "Attempting to build using GCC48 profile." >&2
-		export TOOLCHAIN=GCC48
+		echo "Attempting to build using GCC49 profile." >&2
+		export TOOLCHAIN=GCC49
 		;;
 	esac
 
 	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
-	echo "Setting toolchain prefix: ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
+	echo "Toolchain prefix: ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
 
 	for target in "${TARGETS[@]}" ; do
 		if [ X"$PLATFORM_PREBUILD_CMDS" != X"" ]; then
@@ -69,9 +60,9 @@ function build_platform
 			eval ${PLATFORM_PREBUILD_CMDS}
 		fi
 		if [ X"$PLATFORM_BUILDCMD" == X"" ]; then
-			echo CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
+			echo  ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
 				${PLATFORM_BUILDFLAGS}
-			CROSS_COMPILE="$TEMP_CROSS_COMPILE" build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
+			build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
 				${PLATFORM_BUILDFLAGS}
 		else
 			${PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
