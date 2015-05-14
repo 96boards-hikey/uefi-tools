@@ -124,8 +124,16 @@ function usage
 
 if [ $1 == "-c" ]; then
 	shift
+	case "$1" in
+		/*)
+			PLATFORM_CONFIG="-c $1"
+		;;
+		*)
+			PLATFORM_CONFIG="-c `readlink -f \"$1\"`"
+		;;
+	esac
 	echo "Platform config file: '$1'"
-	PLATFORM_CONFIG="-c $1"
+	export PLATFORM_CONFIG
 	shift
 fi
 
