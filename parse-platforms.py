@@ -38,8 +38,7 @@ def get_option():
                     print value
                     return True
             except:
-#                print "Option not found!"
-                return False
+                return True   # Option not found, return True, and no output
         else:
             print "No option specified!"
     else:
