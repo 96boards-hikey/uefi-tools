@@ -27,7 +27,6 @@ function build_platform
 	fi
 
 	echo "PLATFORM_CONFIG: $PLATFORM_CONFIG"
-	echo -n "LEIF: "
 	$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o build_atf
 
 	if [ X"`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o build_atf`" = X"" ]; then
