@@ -219,6 +219,16 @@ fi
 
 EDK2_DIR="$PWD"
 
+if [[ "${EXTRA_OPTIONS[@]}" != *"FIRMWARE_VER"* ]]; then
+	if test -d .git && head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
+		FIRMWARE_VER=`git rev-parse --short HEAD`
+		if ! git diff-index --quiet HEAD --; then
+			FIRMWARE_VER="${FIRMWARE_VER}-dirty"
+		fi
+		EXTRA_OPTIONS=( $EXTRA_OPTIONS "-D" FIRMWARE_VER=$FIRMWARE_VER )
+	fi
+fi
+
 uefishell
 
 for board in "${builds[@]}" ; do
