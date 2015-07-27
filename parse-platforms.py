@@ -13,6 +13,11 @@ def shortlist_platforms():
 def get_images():
     if args.platform:
         try:
+            value = config.get(args.platform, "EXTRA_FILES")
+            print value,
+        except:
+            pass
+        try:
             value = config.get(args.platform, "BUILD_ATF")
             if value == "yes":
                 print "bl1.bin fip.bin"
