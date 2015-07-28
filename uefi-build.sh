@@ -117,7 +117,7 @@ function usage
 	echo "]"
 	printf "%8s\tbuild %s\n" "all" "all supported platforms"
 	for board in "${boards[@]}" ; do
-		PLATFORM_NAME="$board"_LONGNAME
+		PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o longname`"
 		printf "%8s\tbuild %s\n" "$board" "${PLATFORM_NAME}"
 	done
 }
