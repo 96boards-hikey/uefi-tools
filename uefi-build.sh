@@ -13,9 +13,10 @@ TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
 PLATFORM_CONFIG=""
 ATF_DIR=
+TOS_DIR=
 
 # Number of threads to use for build
-NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
+export NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
 
 function build_platform
 {
@@ -68,6 +69,14 @@ function build_platform
 			${PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
 		fi
 		RESULT=$?
+		if [ $RESULT -eq 0 ]; then
+			if [ X"$TOS_DIR" != X"" ]; then
+				pushd $TOS_DIR >/dev/null
+				$TOOLS_DIR/tos-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board
+				RESULT=$?
+				popd >/dev/null
+			fi
+		fi
 		if [ $RESULT -eq 0 ]; then
 			if [ X"$ATF_DIR" != X"" ]; then
 				pushd $ATF_DIR >/dev/null
@@ -176,6 +185,10 @@ else
 			"-a" )
 				shift
 				ATF_DIR="$1"
+				;;
+			"-s" )
+				shift
+				export TOS_DIR="$1"
 				;;
 			"-b" | "--build" )
 				shift
