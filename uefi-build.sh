@@ -14,6 +14,7 @@ TOOLS_DIR="`dirname $0`"
 PLATFORM_CONFIG=""
 ATF_DIR=
 TOS_DIR=
+TOOLCHAIN=
 
 # Number of threads to use for build
 export NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
@@ -39,18 +40,25 @@ function build_platform
 		TARGETS=( RELEASE )
 	fi
 
-	gcc_version=$(${CROSS_COMPILE}gcc -dumpversion)
-	case $gcc_version in
-		4.6*|4.7*|4.8*|4.9*)
-		export TOOLCHAIN=GCC$(echo ${gcc_version} | awk -F. '{print $1$2}')
-		echo "TOOLCHAIN is ${TOOLCHAIN}"
-		;;
-		*)
-		echo "Unknown toolchain version '$gcc_version'" >&2
-		echo "Attempting to build using GCC49 profile." >&2
-		export TOOLCHAIN=GCC49
-		;;
+	case $TOOLCHAIN in
+		"gcc")
+			gcc_version=$(${CROSS_COMPILE}gcc -dumpversion)
+			case $gcc_version in
+				4.6*|4.7*|4.8*|4.9*)
+				export TOOLCHAIN=GCC$(echo ${gcc_version} | awk -F. '{print $1$2}')
+				;;
+				*)
+				echo "Unknown toolchain version '$gcc_version'" >&2
+				echo "Attempting to build using GCC49 profile." >&2
+				export TOOLCHAIN=GCC49
+				;;
+			esac
+			;;
+		"clang")
+			export TOOLCHAIN=CLANG
+			;;
 	esac
+	echo "TOOLCHAIN is ${TOOLCHAIN}"
 
 	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
 	echo "Toolchain prefix: ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
@@ -214,6 +222,11 @@ else
 				echo "Adding option: -D $1"
 				EXTRA_OPTIONS=( ${EXTRA_OPTIONS[@]} "-D" $1 )
 				;;
+			"-T" )
+				shift
+				echo "Setting toolchain to '$1'"
+				TOOLCHAIN="$1"
+				;;
 			* )
 				MATCH=0
 				for board in "${boards[@]}" ; do
@@ -257,6 +270,10 @@ if [[ "${EXTRA_OPTIONS[@]}" != *"FIRMWARE_VER"* ]]; then
 fi
 
 uefishell
+
+if [ X"$TOOLCHAIN" = X"" ]; then
+	TOOLCHAIN=gcc
+fi
 
 for board in "${builds[@]}" ; do
 	build_platform
