@@ -131,20 +131,30 @@ function usage
 	done
 }
 
-if [ $1 == "-c" ]; then
-	shift
-	case "$1" in
-		/*)
-			PLATFORM_CONFIG="-c $1"
-		;;
-		*)
-			PLATFORM_CONFIG="-c `readlink -f \"$1\"`"
-		;;
-	esac
-	echo "Platform config file: '$1'"
-	export PLATFORM_CONFIG
-	shift
-fi
+#
+# Since we do a command line validation on whether specified platforms exist or
+# not, do a first pass of command line to see if there is an explicit config
+# file there to read valid platforms from.
+#
+commandline=( "$@" )
+i=0
+for arg;
+do
+	if [ $arg == "-c" ]; then
+		FILE_ARG=${commandline[i + 1]}
+		case "$FILE_ARG" in
+			/*)
+				PLATFORM_CONFIG="-c \"$FILE_ARG\""
+			;;
+			*)
+				PLATFORM_CONFIG="-c `readlink -f \"$FILE_ARG\"`"
+			;;
+		esac
+		echo "Platform config file: '$FILE_ARG'"
+		export PLATFORM_CONFIG
+	fi
+	i=$(($i + 1))
+done
 
 builds=()
 boards=()
@@ -185,6 +195,10 @@ else
 			"-a" )
 				shift
 				ATF_DIR="$1"
+				;;
+			"-c" )
+				# Already parsed above - skip this + option
+				shift
 				;;
 			"-s" )
 				shift
