@@ -26,7 +26,8 @@ function build_platform
 		return 1
 	fi
 
-	if [ X"`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o build_atf`" = X"" ]; then
+	BUILD_ATF="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o build_atf`"
+	if [ X"$BUILD_ATF" = X"" ]; then
 		echo "Platform '$1' is not configured to build ARM Trusted Firmware."
 		return 0
 	fi
@@ -88,6 +89,20 @@ function build_platform
 		fi
 	fi
 
+	#
+	# Debug extraction handling
+	#
+	case "$BUILD_ATF" in
+	debug*)
+		DEBUG=1
+		BUILD_TYPE="debug"
+		;;
+	*)
+		DEBUG=0
+		BUILD_TYPE="release"
+		;;
+	esac
+
 	export BL30 BL31 BL32 BL33 SPD_OPTION
 
 	echo "BL30=$BL30"
@@ -95,23 +110,24 @@ function build_platform
 	echo "BL32=$BL32"
 	echo "BL33=$BL33"
 	echo "$SPD_OPTION"
+	echo "BUILD_TYPE=$BUILD_TYPE"
 
 	#
 	# If a build was done with BL32, and followed by another without,
 	# the BL32 component remains in fip.bin, so we delete the build dir
 	# contents before calling make
 	#
-	rm -rf build/"$ATF_PLATFORM"/release/*
+	rm -rf build/"$ATF_PLATFORM/$BUILD_TYPE"/*
 
 	#
 	# Build ARM Trusted Firmware and create FIP
 	#
-	CROSS_COMPILE="$CROSS_COMPILE" make -j$NUM_THREADS PLAT="$ATF_PLATFORM" $SPD_OPTION all fip
+	CROSS_COMPILE="$CROSS_COMPILE" make -j$NUM_THREADS PLAT="$ATF_PLATFORM" $SPD_OPTION DEBUG=$DEBUG all fip
 	if [ $? -eq 0 ]; then
 		#
 		# Copy resulting images to UEFI image dir
 		#
-		cp -a build/"$ATF_PLATFORM"/release/{bl1,fip}.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
+		cp -a build/"$ATF_PLATFORM/$BUILD_TYPE"/{bl1,fip}.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
 	else
 		return 1
 	fi

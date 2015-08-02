@@ -25,7 +25,7 @@ function build_platform
 		return 1
 	fi
 
-	if [ X"`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o build_tos`" != X"yes" ]; then
+	if [ X"`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o build_tos`" = X"" ]; then
 		echo "Platform '$1' is not configured to build Trusted OS."
 		return 0
 	fi

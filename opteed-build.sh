@@ -21,7 +21,7 @@ function usage
 
 function build_platform
 {
-	unset CFG_ARM64_core PLATFORM PLATFORM_FLAVOR
+	unset CFG_ARM64_core PLATFORM PLATFORM_FLAVOR DEBUG
 	TOS_PLATFORM=`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_platform`
 	if [ X"$TOS_PLATFORM" = X"" ]; then
 		TOS_PLATFORM=`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o atf_platform`
@@ -62,6 +62,18 @@ function build_platform
 	#
 	# Set up build variables
 	#
+	BUILD_TOS="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o build_tos`"
+	case "$BUILD_TOS" in
+	debug*)
+		export DEBUG=1
+		echo "PROFILE=DEBUG"
+		;;
+	*)
+		export DEBUG=0
+		echo "PROFILE=RELEASE"
+		;;
+	esac
+
 	export PLATFORM=$TOS_PLATFORM
 	export PLATFORM_FLAVOR=$TOS_PLATFORM_FLAVOR
 	echo "PLATFORM=$PLATFORM"
