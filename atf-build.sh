@@ -32,7 +32,7 @@ function build_platform
 		return 0
 	fi
 
-	ATF_PLATFORM=`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o atf_platform`
+	ATF_PLATFORM="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o atf_platform`"
 	if [ X"$ATF_PLATFORM" = X"" ]; then
 		ATF_PLATFORM=$1
 	fi
@@ -43,7 +43,7 @@ function build_platform
 	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o longname`"
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o arch`"
 	PLATFORM_IMAGE_DIR="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o uefi_image_dir`"
-	unset BL30 BL31 BL32 BL33 SPD_OPTION
+	unset BL30 BL31 BL32 BL33
 	BL30="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o scp_bin`"
 	BL31="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o el3_bin`"
 	BL33="$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o uefi_bin`"
@@ -71,7 +71,7 @@ function build_platform
 	if [ X"$TOS_DIR" != X"" ]; then
 		SPD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o atf_spd`"
 
-		TOS_BIN=`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_bin`
+		TOS_BIN="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_bin`"
 		if [ X"$TOS_BIN" != X"" ]; then
 			BL32=$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/$TOS_BIN
 		fi
@@ -103,7 +103,7 @@ function build_platform
 		;;
 	esac
 
-	export BL30 BL31 BL32 BL33 SPD_OPTION
+	export BL30 BL31 BL32 BL33
 
 	echo "BL30=$BL30"
 	echo "BL31=$BL31"

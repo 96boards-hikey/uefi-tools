@@ -22,14 +22,14 @@ function usage
 function build_platform
 {
 	unset CFG_ARM64_core PLATFORM PLATFORM_FLAVOR DEBUG
-	TOS_PLATFORM=`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_platform`
+	TOS_PLATFORM="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_platform`"
 	if [ X"$TOS_PLATFORM" = X"" ]; then
-		TOS_PLATFORM=`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o atf_platform`
+		TOS_PLATFORM="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o atf_platform`"
 		if [ X"$TOS_PLATFORM" = X"" ]; then
 			TOS_PLATFORM=$1
 		fi
 	fi
-	TOS_PLATFORM_FLAVOR=`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_platform_flavor`
+	TOS_PLATFORM_FLAVOR="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_platform_flavor`"
 
 	#
 	# Read platform configuration
@@ -82,7 +82,7 @@ function build_platform
 	#
 	# Build OP-TEE
 	#
-	make -j$NUM_THREADS || return 1
+	make -j$NUM_THREADS
 	if [ $? -eq 0 ]; then
 		#
 		# Copy resulting images to UEFI image dir

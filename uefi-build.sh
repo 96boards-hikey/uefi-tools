@@ -166,7 +166,7 @@ done
 
 builds=()
 boards=()
-boardlist=`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG shortlist`
+boardlist="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG shortlist`"
 for board in $boardlist; do
     boards=(${boards[@]} $board)
 done
