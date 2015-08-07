@@ -9,6 +9,8 @@
 # No need to edit below unless you are changing script functionality.
 #
 
+unset WORKSPACE EDK_TOOLS_DIR
+
 TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
 PLATFORM_CONFIG=""
