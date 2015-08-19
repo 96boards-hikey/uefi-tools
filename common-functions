@@ -63,3 +63,24 @@ function set_cross_compile
 	    echo "Unsupported target architecture '$PLATFORM_ARCH'!" >&2
 	fi
 }
+
+function get_gcc_version
+{
+	gcc_version=$($1 -dumpversion)
+	case $gcc_version in
+		4.6*|4.7*|4.8*|4.9*)
+			echo GCC$(echo ${gcc_version} | awk -F. '{print $1$2}')
+			;;
+		*)
+			echo "Unknown toolchain version '$gcc_version'" >&2
+			echo "Attempting to build using GCC49 profile." >&2
+			echo GCC49
+			;;
+	esac
+}
+
+function get_clang_version
+{
+	clang_version=`$1 --version | head -1 | sed 's/^.*version\s*\([0-9]*\).\([0-9]*\).*/\1\2/g'`
+	echo "CLANG$clang_version"
+}

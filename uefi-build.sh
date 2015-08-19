@@ -44,20 +44,10 @@ function build_platform
 
 	case $TOOLCHAIN in
 		"gcc")
-			gcc_version=$(${CROSS_COMPILE}gcc -dumpversion)
-			case $gcc_version in
-				4.6*|4.7*|4.8*|4.9*)
-				export TOOLCHAIN=GCC$(echo ${gcc_version} | awk -F. '{print $1$2}')
-				;;
-				*)
-				echo "Unknown toolchain version '$gcc_version'" >&2
-				echo "Attempting to build using GCC49 profile." >&2
-				export TOOLCHAIN=GCC49
-				;;
-			esac
+			export TOOLCHAIN=`get_gcc_version $(CROSS_COMPILE)gcc`
 			;;
 		"clang")
-			export TOOLCHAIN=CLANG
+			export TOOLCHAIN=`get_clang_version clang`
 			;;
 	esac
 	echo "TOOLCHAIN is ${TOOLCHAIN}"
