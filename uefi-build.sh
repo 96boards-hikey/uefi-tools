@@ -44,7 +44,7 @@ function build_platform
 
 	case $TOOLCHAIN in
 		"gcc")
-			export TOOLCHAIN=`get_gcc_version $(CROSS_COMPILE)gcc`
+			export TOOLCHAIN=`get_gcc_version "$CROSS_COMPILE"gcc`
 			;;
 		"clang")
 			export TOOLCHAIN=`get_clang_version clang`
