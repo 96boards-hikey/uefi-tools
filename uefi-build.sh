@@ -257,7 +257,7 @@ if [[ "${EXTRA_OPTIONS[@]}" != *"FIRMWARE_VER"* ]]; then
 		if ! git diff-index --quiet HEAD --; then
 			FIRMWARE_VER="${FIRMWARE_VER}-dirty"
 		fi
-		EXTRA_OPTIONS=( $EXTRA_OPTIONS "-D" FIRMWARE_VER=$FIRMWARE_VER )
+		EXTRA_OPTIONS=( ${EXTRA_OPTIONS[@]} "-D" FIRMWARE_VER=$FIRMWARE_VER )
 	fi
 fi
 
