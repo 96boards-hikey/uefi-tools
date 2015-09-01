@@ -17,6 +17,7 @@ PLATFORM_CONFIG=""
 ATF_DIR=
 TOS_DIR=
 TOOLCHAIN=
+OPENSSL_CONFIGURED=FALSE
 
 # Number of threads to use for build
 export NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
@@ -30,6 +31,10 @@ function build_platform
 	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o buildcmd`"
 	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o dsc`"
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o arch`"
+
+	if [[ "${PLATFORM_BUILDFLAGS}" =~ "SECURE_BOOT_ENABLE=TRUE" ]]; then
+	    import_openssl
+	fi
 
 	set_cross_compile
 	CROSS_COMPILE="$TEMP_CROSS_COMPILE"
