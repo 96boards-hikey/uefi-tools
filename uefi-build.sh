@@ -14,6 +14,7 @@ unset WORKSPACE EDK_TOOLS_DIR
 TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
 PLATFORM_CONFIG=""
+VERBOSE=0
 ATF_DIR=
 TOS_DIR=
 TOOLCHAIN=
@@ -31,6 +32,16 @@ function build_platform
 	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o buildcmd`"
 	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o dsc`"
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o arch`"
+
+	if [ $VERBOSE -eq 1 ]; then
+		echo "Setting build parallellism to $NUM_THREADS processes\n"
+		echo "PLATFORM_NAME=$PLATFORM_NAME"
+		echo "PLATFORM_PREBUILD_CMDS=$PLATFORM_PREBUILD_CMDS"
+		echo "PLATFORM_BUILDFLAGS=$PLATFORM_BUILDFLAGS"
+		echo "PLATFORM_BUILDCMD=$PLATFORM_BUILDCMD"
+		echo "PLATFORM_DSC=$PLATFORM_DSC"
+		echo "PLATFORM_ARCH=$PLATFORM_ARCH"
+	fi
 
 	if [[ "${PLATFORM_BUILDFLAGS}" =~ "SECURE_BOOT_ENABLE=TRUE" ]]; then
 	    import_openssl
@@ -77,6 +88,9 @@ function build_platform
 		if [ $RESULT -eq 0 ]; then
 			if [ X"$TOS_DIR" != X"" ]; then
 				pushd $TOS_DIR >/dev/null
+				if [ $VERBOSE -eq 1 ]; then
+					echo "$TOOLS_DIR/tos-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board"
+				fi
 				$TOOLS_DIR/tos-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board
 				RESULT=$?
 				popd >/dev/null
@@ -85,6 +99,9 @@ function build_platform
 		if [ $RESULT -eq 0 ]; then
 			if [ X"$ATF_DIR" != X"" ]; then
 				pushd $ATF_DIR >/dev/null
+				if [ $VERBOSE -eq 1 ]; then
+					echo "$TOOLS_DIR/atf-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board"
+				fi
 				$TOOLS_DIR/atf-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board
 				RESULT=$?
 				popd >/dev/null
@@ -110,7 +127,9 @@ function uefishell
 			;;
 	esac
 	export ARCH
-	echo "Setting up shell for building UEFI"
+	if [ $VERBOSE -eq 1 ]; then
+		echo "Building BaseTools"
+	fi
 	export EDK_TOOLS_PATH=`pwd`/BaseTools
 	. edksetup.sh BaseTools
 	make -C $EDK_TOOLS_PATH
@@ -197,6 +216,9 @@ else
 				usage
 				exit
 				;;
+			"-v" )
+				export VERBOSE=1
+				;;
 			"-a" )
 				shift
 				ATF_DIR="$1"
@@ -263,6 +285,10 @@ if [[ "${EXTRA_OPTIONS[@]}" != *"FIRMWARE_VER"* ]]; then
 			FIRMWARE_VER="${FIRMWARE_VER}-dirty"
 		fi
 		EXTRA_OPTIONS=( ${EXTRA_OPTIONS[@]} "-D" FIRMWARE_VER=$FIRMWARE_VER )
+		if [ $VERBOSE -eq 1 ]; then
+			echo "FIRMWARE_VER=$FIRMWARE_VER"
+			echo "EXTRA_OPTIONS=$EXTRA_OPTIONS"
+		fi
 	fi
 fi
 

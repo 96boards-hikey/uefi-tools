@@ -36,6 +36,9 @@ function build_platform
 	ATF_SPD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o atf_spd`"
 	if [ -f $TOOLS_DIR/$ATF_SPD-build.sh ]; then
 		echo "Building $ATF_SPD Trusted OS"
+		if [ $VERBOSE -eq 1 ]; then
+			echo "$TOOLS_DIR/$ATF_SPD-build.sh -e "$EDK2_DIR" -t "$BUILD_PROFILE" $build"
+		fi
 		$TOOLS_DIR/$ATF_SPD-build.sh -e "$EDK2_DIR" -t "$BUILD_PROFILE" $build
 		return $?
 	else

@@ -36,6 +36,10 @@ function build_platform
 	#
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o arch`"
 	PLATFORM_IMAGE_DIR="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o uefi_image_dir`"
+	if [ $VERBOSE -eq 1 ]; then
+		echo "PLATFORM_ARCH=$PLATFORM_ARCH"
+		echo "PLATFORM_IMAGE_DIR=$PLATFORM_IMAGE_DIR"
+	fi
 
 	#
 	# Set up cross compilation variables (if applicable)
@@ -83,11 +87,17 @@ function build_platform
 	#
 	# Build OP-TEE
 	#
+	if [ $VERBOSE -eq 1 ]; then
+		echo "Calling OP-TEE build:"
+	fi
 	make -j$NUM_THREADS
 	if [ $? -eq 0 ]; then
 		#
 		# Copy resulting images to UEFI image dir
 		#
+		if [ $VERBOSE -eq 1 ]; then
+			echo "Copying tee.bin to "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/""
+		fi
 		cp -a out/arm-plat-"$TOS_PLATFORM"/core/tee.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
 	else
 		return 1
