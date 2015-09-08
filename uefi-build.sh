@@ -217,7 +217,7 @@ else
 				exit
 				;;
 			"-v" )
-				export VERBOSE=1
+				VERBOSE=1
 				;;
 			"-a" )
 				shift
@@ -277,6 +277,7 @@ then
 fi
 
 EDK2_DIR="$PWD"
+export VERBOSE
 
 if [[ "${EXTRA_OPTIONS[@]}" != *"FIRMWARE_VER"* ]]; then
 	if test -d .git && head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
