@@ -187,8 +187,74 @@ for board in $boardlist; do
     boards=(${boards[@]} $board)
 done
 
+NUM_TARGETS=0
+
+while [ "$1" != "" ]; do
+	case $1 in
+		all )
+			builds=(${boards[@]})
+			break
+			;;
+		"/h" | "/?" | "-?" | "-h" | "--help" )
+			usage
+			exit
+			;;
+		"-v" )
+			VERBOSE=1
+			;;
+		"-a" )
+			shift
+			ATF_DIR="$1"
+			;;
+		"-c" )
+			# Already parsed above - skip this + option
+			shift
+			;;
+		"-s" )
+			shift
+			export TOS_DIR="$1"
+			;;
+		"-b" | "--build" )
+			shift
+			echo "Adding Build profile: $1"
+			TARGETS=( ${TARGETS[@]} $1 )
+			;;
+		"-D" )
+			shift
+			echo "Adding option: -D $1"
+			EXTRA_OPTIONS=( ${EXTRA_OPTIONS[@]} "-D" $1 )
+			;;
+		"-T" )
+			shift
+			echo "Setting toolchain to '$1'"
+			TOOLCHAIN="$1"
+			;;
+		"-1" )
+			NUM_THREADS=1
+			;;
+		* )
+			MATCH=0
+			for board in "${boards[@]}" ; do
+				if [ "$1" == $board ]; then
+					MATCH=1
+					builds=(${builds[@]} "$board")
+					break
+				fi
+			done
+
+			if [ $MATCH -eq 0 ]; then
+				echo "unknown arg $1"
+				usage
+				exit 1
+			fi
+			NUM_TARGETS=$(($NUM_TARGETS + 1))
+			;;
+	esac
+	shift
+done
+
 # If there were no args, use a menu to select a single board / all boards to build
-if [ $# = 0 ]
+if [ $NUM_TARGETS -eq 0 ]
 then
 	read -p "$(
 			f=0
@@ -205,66 +271,6 @@ then
 	else
 		builds="${boards[$((selection-1))]}"
 	fi
-else
-	while [ "$1" != "" ]; do
-		case $1 in
-			all )
-				builds=(${boards[@]})
-				break
-				;;
-			"/h" | "/?" | "-?" | "-h" | "--help" )
-				usage
-				exit
-				;;
-			"-v" )
-				VERBOSE=1
-				;;
-			"-a" )
-				shift
-				ATF_DIR="$1"
-				;;
-			"-c" )
-				# Already parsed above - skip this + option
-				shift
-				;;
-			"-s" )
-				shift
-				export TOS_DIR="$1"
-				;;
-			"-b" | "--build" )
-				shift
-				echo "Adding Build profile: $1"
-				TARGETS=( ${TARGETS[@]} $1 )
-				;;
-			"-D" )
-				shift
-				echo "Adding option: -D $1"
-				EXTRA_OPTIONS=( ${EXTRA_OPTIONS[@]} "-D" $1 )
-				;;
-			"-T" )
-				shift
-				echo "Setting toolchain to '$1'"
-				TOOLCHAIN="$1"
-				;;
-			* )
-				MATCH=0
-				for board in "${boards[@]}" ; do
-					if [ "$1" == $board ]; then
-						MATCH=1
-						builds=(${builds[@]} "$board")
-						break
-					fi
-				done
-
-				if [ $MATCH -eq 0 ]; then
-					echo "unknown arg $1"
-					usage
-					exit 1
-				fi
-				;;
-		esac
-		shift
-	done
 fi
 
 # Check to see if we are in a UEFI repository
