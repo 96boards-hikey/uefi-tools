@@ -55,10 +55,12 @@ function build_platform
 	if [ "$PLATFORM_ARCH" = "AARCH64" ]; then
 		export CFG_ARM64_core=y
 		export CROSS_COMPILE_core="$TEMP_CROSS_COMPILE"
+		export CROSS_COMPILE_ta_arm64="$TEMP_CROSS_COMPILE"
 		PLATFORM_ARCH="ARM"
 		set_cross_compile
 		PLATFORM_ARCH="AARCH64"
 		echo "CFG_ARM64_core=$CFG_ARM64_core"
+		echo "CROSS_COMPILE_ta_arm64=$CROSS_COMPILE_ta_arm64"
 	else
 		export CFG_ARM64_core=n
 	fi
