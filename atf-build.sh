@@ -43,11 +43,13 @@ function build_platform
 	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o longname`"
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o arch`"
 	PLATFORM_IMAGE_DIR="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o uefi_image_dir`"
+	PLATFORM_BUILDFLAGS="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o atf_buildflags`"
 
 	if [ $VERBOSE -eq 1 ]; then
 		echo "PLATFORM_NAME=$PLATFORM_NAME"
 		echo "PLATFORM_ARCH=$PLATFORM_ARCH"
 		echo "PLATFORM_IMAGE_DIR=$PLATFORM_IMAGE_DIR"
+		echo "PLATFORM_BUILDFLAGS=$PLATFORM_BUILDFLAGS"
 	fi
 
 	unset BL30 BL31 BL32 BL33
@@ -131,9 +133,9 @@ function build_platform
 	#
 	if [ $VERBOSE -eq 1 ]; then
 		echo "Calling ARM Trusted Firmware build:"
-		echo "CROSS_COMPILE="$CROSS_COMPILE" make -j$NUM_THREADS PLAT="$ATF_PLATFORM" $SPD_OPTION DEBUG=$DEBUG all fip"
+		echo "CROSS_COMPILE="$CROSS_COMPILE" make -j$NUM_THREADS PLAT="$ATF_PLATFORM" $SPD_OPTION DEBUG=$DEBUG ${PLATFORM_BUILDFLAGS} all fip"
 	fi
-	CROSS_COMPILE="$CROSS_COMPILE" make -j$NUM_THREADS PLAT="$ATF_PLATFORM" $SPD_OPTION DEBUG=$DEBUG all fip
+	CROSS_COMPILE="$CROSS_COMPILE" make -j$NUM_THREADS PLAT="$ATF_PLATFORM" $SPD_OPTION DEBUG=$DEBUG ${PLATFORM_BUILDFLAGS} all fip
 	if [ $? -eq 0 ]; then
 		#
 		# Copy resulting images to UEFI image dir

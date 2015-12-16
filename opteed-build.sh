@@ -36,9 +36,12 @@ function build_platform
 	#
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o arch`"
 	PLATFORM_IMAGE_DIR="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o uefi_image_dir`"
+	PLATFORM_BUILDFLAGS="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_buildflags`"
+
 	if [ $VERBOSE -eq 1 ]; then
 		echo "PLATFORM_ARCH=$PLATFORM_ARCH"
 		echo "PLATFORM_IMAGE_DIR=$PLATFORM_IMAGE_DIR"
+		echo "PLATFORM_BUILDFLAGS=$PLATFORM_BUILDFLAGS"
 	fi
 
 	#
@@ -90,7 +93,7 @@ function build_platform
 	if [ $VERBOSE -eq 1 ]; then
 		echo "Calling OP-TEE build:"
 	fi
-	make -j$NUM_THREADS
+	make -j$NUM_THREADS ${PLATFORM_BUILDFLAGS}
 	if [ $? -eq 0 ]; then
 		#
 		# Copy resulting images to UEFI image dir
