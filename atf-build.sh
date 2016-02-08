@@ -12,11 +12,25 @@ TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
 OUTPUT_DIR="$PWD"/uefi-build
 
+ATF_BUILDVER=1
+
 function usage
 {
 	echo "usage:"
 	echo "atf-build.sh -e <EDK2 source directory> -t <UEFI build profile/toolchain> <platform>"
 	echo
+}
+
+function check_atf_buildver
+{
+	MAJOR=`grep "^VERSION_MAJOR" Makefile | sed 's/.*:= *\([0-9]*\).*/\1/'`
+	[ $? -ne 0 ] && return 1
+	MINOR=`grep "^VERSION_MINOR" Makefile | sed 's/.*:= *\([0-9]*\).*/\1/'`
+	[ $? -ne 0 ] && return 1
+
+	if [ "$MAJOR" -eq 1 -a "$MINOR" -ge 2 ]; then
+		ATF_BUILDVER=2
+	fi
 }
 
 function build_platform
@@ -54,6 +68,10 @@ function build_platform
 
 	unset BL30 BL31 BL32 BL33
 	BL30="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o scp_bin`"
+	if [ $ATF_BUILDVER -gt 1 ]; then
+		unset SCP_BL2
+		SCP_BL2="$EDK2_DIR/$BL30"
+	fi
 	BL31="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o el3_bin`"
 	BL33="$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o uefi_bin`"
 
@@ -115,6 +133,10 @@ function build_platform
 	export BL30 BL31 BL32 BL33
 
 	echo "BL30=$BL30"
+	if [ $ATF_BUILDVER -gt 1 ]; then
+		export SCP_BL2
+		echo "SCP_BL2=$BL30"
+	fi
 	echo "BL31=$BL31"
 	echo "BL32=$BL32"
 	echo "BL33=$BL33"
