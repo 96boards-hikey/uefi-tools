@@ -193,7 +193,7 @@ while [ "$1" != "" ]; do
 	case $1 in
 		all )
 			builds=(${boards[@]})
-			break
+			NUM_TARGETS=$(($NUM_TARGETS + 1))
 			;;
 		"/h" | "/?" | "-?" | "-h" | "--help" )
 			usage
