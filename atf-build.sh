@@ -40,6 +40,8 @@ function build_platform
 		return 1
 	fi
 
+	check_atf_buildver || return 1
+
 	BUILD_ATF="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o build_atf`"
 	if [ X"$BUILD_ATF" = X"" ]; then
 		echo "Platform '$1' is not configured to build ARM Trusted Firmware."
