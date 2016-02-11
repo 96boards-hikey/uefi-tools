@@ -166,6 +166,10 @@ for arg;
 do
 	if [ $arg == "-c" ]; then
 		FILE_ARG=${commandline[i + 1]}
+		if [ ! -f "$FILE_ARG" ]; then
+			echo "ERROR: configuration file '$FILE_ARG' not found" >&2
+			exit 1
+		fi
 		case "$FILE_ARG" in
 			/*)
 				PLATFORM_CONFIG="-c \"$FILE_ARG\""
