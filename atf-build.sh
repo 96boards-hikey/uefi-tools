@@ -166,8 +166,14 @@ function build_platform
 		#
 		if [ $VERBOSE -eq 1 ]; then
 			echo "Copying bl1.bin and fip.bin to "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/""
+			if [ -f build/"$ATF_PLATFORM/$BUILD_TYPE"/bl2u.bin ]; then
+				echo "Copying bl2u.bin to "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/""
+			fi
 		fi
 		cp -a build/"$ATF_PLATFORM/$BUILD_TYPE"/{bl1,fip}.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
+		if [ -f build/"$ATF_PLATFORM/$BUILD_TYPE"/bl2u.bin ]; then
+			cp -a build/"$ATF_PLATFORM/$BUILD_TYPE"/bl2u.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
+		fi
 	else
 		return 1
 	fi
