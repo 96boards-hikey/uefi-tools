@@ -32,7 +32,23 @@ function build_platform
 	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o buildcmd`"
 	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o dsc`"
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o arch`"
+	PLATFORM_PACKAGES_PATH="$PWD"
 
+	TEMP_PACKAGES_PATH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o packages_path`"
+	if [ -n "$TEMP_PACKAGES_PATH" ]; then
+		IFS=:
+		for path in "$TEMP_PACKAGES_PATH"; do
+			case "$path" in
+				/*)
+					PLATFORM_PACKAGES_PATH="$PLATFORM_PACKAGES_PATH:$path"
+				;;
+				*)
+					PLATFORM_PACKAGES_PATH="$PLATFORM_PACKAGES_PATH:$PWD/$path"
+				;;
+		        esac
+		done
+		unset IFS
+	fi
 	if [ $VERBOSE -eq 1 ]; then
 		echo "Setting build parallellism to $NUM_THREADS processes\n"
 		echo "PLATFORM_NAME=$PLATFORM_NAME"
@@ -41,6 +57,7 @@ function build_platform
 		echo "PLATFORM_BUILDCMD=$PLATFORM_BUILDCMD"
 		echo "PLATFORM_DSC=$PLATFORM_DSC"
 		echo "PLATFORM_ARCH=$PLATFORM_ARCH"
+		echo "PLATFORM_PACKAGES_PATH=$PLATFORM_PACKAGES_PATH"
 	fi
 
 	if [[ "${PLATFORM_BUILDFLAGS}" =~ "SECURE_BOOT_ENABLE=TRUE" ]]; then
@@ -71,6 +88,7 @@ function build_platform
 	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
 	echo "Toolchain prefix: ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
 
+	export PACKAGES_PATH="$PLATFORM_PACKAGES_PATH"
 	for target in "${TARGETS[@]}" ; do
 		if [ X"$PLATFORM_PREBUILD_CMDS" != X"" ]; then
 			echo "Run pre build commands"
@@ -109,6 +127,7 @@ function build_platform
 		fi
 		result_log $RESULT "$PLATFORM_NAME $target"
 	done
+	unset PACKAGES_PATH
 }
 
 
