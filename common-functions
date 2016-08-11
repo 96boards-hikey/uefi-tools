@@ -67,14 +67,20 @@ function set_cross_compile
 function get_gcc_version
 {
 	gcc_version=$($1 -dumpversion)
+	MAJVER=`echo $gcc_version | cut -d. -f1`
+
 	case $gcc_version in
-		4.6*|4.7*|4.8*|4.9*)
+		4*)
 			echo GCC$(echo ${gcc_version} | awk -F. '{print $1$2}')
 			;;
 		*)
-			echo "Unknown toolchain version '$gcc_version'" >&2
-			echo "Attempting to build using GCC49 profile." >&2
-			echo GCC49
+			if [ "$MAJVER" -ge 5 ]; then
+			    echo GCC$MAJVER
+			else
+			    echo "Unknown toolchain version '$gcc_version'" >&2
+			    echo "Attempting to build using GCC49 profile." >&2
+			    echo GCC49
+			fi
 			;;
 	esac
 }
