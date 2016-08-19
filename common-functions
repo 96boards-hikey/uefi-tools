@@ -75,7 +75,9 @@ function get_gcc_version
 			;;
 		*)
 			if [ "$MAJVER" -ge 5 ]; then
-			    echo GCC$MAJVER
+			    # We only have a GCC5 build profile for now, so...
+			    # echo GCC$MAJVER
+			    echo GCC5
 			else
 			    echo "Unknown toolchain version '$gcc_version'" >&2
 			    echo "Attempting to build using GCC49 profile." >&2
