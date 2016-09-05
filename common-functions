@@ -126,7 +126,7 @@ function import_openssl
     fi
 
     echo "Importing OpenSSL $OPENSSL_VER"
-    ( cd ${OPENSSL_DIR}; patch -p0 -i ../${OPENSSL_PATCH} )
+    ( cd ${OPENSSL_DIR}; patch -p1 -i ../${OPENSSL_PATCH} )
     ./Install.sh
 
     if [ $? -eq 0 ]; then
