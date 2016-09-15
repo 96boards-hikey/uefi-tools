@@ -191,7 +191,7 @@ do
 		fi
 		case "$FILE_ARG" in
 			/*)
-				PLATFORM_CONFIG="-c \"$FILE_ARG\""
+				PLATFORM_CONFIG="-c $FILE_ARG"
 			;;
 			*)
 				PLATFORM_CONFIG="-c `readlink -f \"$FILE_ARG\"`"
