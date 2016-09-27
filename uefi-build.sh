@@ -23,7 +23,7 @@ OPENSSL_CONFIGURED=FALSE
 # Number of threads to use for build
 export NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
 
-function build_platform
+function do_build
 {
 	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o longname`"
 	PLATFORM_PREBUILD_CMDS="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o prebuild_cmds`"
@@ -31,9 +31,23 @@ function build_platform
 	PLATFORM_BUILDFLAGS="$PLATFORM_BUILDFLAGS ${EXTRA_OPTIONS[@]}"
 	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o buildcmd`"
 	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o dsc`"
-	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o arch`"
 	PLATFORM_PACKAGES_PATH="$PWD"
+	COMPONENT_INF="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o inf`"
 
+	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o arch`"
+	if [ -n "$PLATFORM_ARCH" ]; then
+		if [ -n "$DEFAULT_PLATFORM_ARCH" -a "$DEFAULT_PLATFORM_ARCH" != "$PLATFORM_ARCH" ]; then
+			echo "Command line specified architecture '$DEFAULT_PLATFORM_ARCH'" >&2
+			echo "differs from config file specified '$PLATFORM_ARCH'" >&2
+			return 1
+		fi
+	else
+		if [ ! -n "$DEFAULT_PLATFORM_ARCH" ]; then
+			echo "Unknown target architecture - aborting!" >&2
+			return 1
+		fi
+		PLATFORM_ARCH="$DEFAULT_PLATFORM_ARCH"
+	fi
 	TEMP_PACKAGES_PATH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o packages_path`"
 	if [ -n "$TEMP_PACKAGES_PATH" ]; then
 		IFS=:
@@ -94,14 +108,17 @@ function build_platform
 			echo "Run pre build commands"
 			eval ${PLATFORM_PREBUILD_CMDS}
 		fi
-		if [ X"$PLATFORM_BUILDCMD" == X"" ]; then
-			echo  ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
-				${PLATFORM_BUILDFLAGS}
-			build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" -b "$target" \
-				${PLATFORM_BUILDFLAGS}
+
+		if [ -n "$COMPONENT_INF" ]; then
+			# Build a standalone component
+			build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" \
+				-m "$COMPONENT_INF" -b "$target" ${PLATFORM_BUILDFLAGS}
 		else
-			${PLATFORM_BUILDCMD} -b "$target" ${PLATFORM_BUILDFLAGS}
+			# Build a platform
+			build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" \
+				-b "$target" ${PLATFORM_BUILDFLAGS}
 		fi
+
 		RESULT=$?
 		if [ $RESULT -eq 0 ]; then
 			if [ X"$TOS_DIR" != X"" ]; then
@@ -229,6 +246,10 @@ while [ "$1" != "" ]; do
 			shift
 			ATF_DIR="$1"
 			;;
+		"-A" )
+			shift
+			DEFAULT_PLATFORM_ARCH="$1"
+			;;
 		"-c" )
 			# Already parsed above - skip this + option
 			shift
@@ -329,7 +350,7 @@ if [ X"$TOOLCHAIN" = X"" ]; then
 fi
 
 for board in "${builds[@]}" ; do
-	build_platform
+	do_build
 done
 
 result_print
