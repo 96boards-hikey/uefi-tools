@@ -162,7 +162,7 @@ function clearcache
   do
     TEMPLATE_FILE="$TEMPLATE_PATH/$File.template"
     CACHE_FILE="Conf/$File.txt"
-    if [ "$TEMPLATE_FILE" -nt "$CACHE_FILE" ]
+    if [ -e "$CACHE_FILE" -a "$TEMPLATE_FILE" -nt "$CACHE_FILE" ]
     then
       echo "Removing outdated '$CACHE_FILE'."
       rm "$CACHE_FILE"
