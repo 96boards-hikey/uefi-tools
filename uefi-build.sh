@@ -148,6 +148,31 @@ function do_build
 }
 
 
+function clearcache
+{
+  CONF_FILES="build_rule target tools_def"
+  if [ -z "$EDK_TOOLS_PATH" ]
+  then
+    TEMPLATE_PATH=./BaseTools/Conf/
+  else
+    TEMPLATE_PATH="$EDK_TOOLS_PATH/Conf/"
+  fi
+
+  for File in $CONF_FILES
+  do
+    TEMPLATE_FILE="$TEMPLATE_PATH/$File.template"
+    CACHE_FILE="Conf/$File.txt"
+    if [ "$TEMPLATE_FILE" -nt "$CACHE_FILE" ]
+    then
+      echo "Removing outdated '$CACHE_FILE'."
+      rm "$CACHE_FILE"
+    fi
+  done
+
+  unset TEMPLATE_PATH TEMPLATE_FILE CACHE_FILE
+}
+
+
 function uefishell
 {
 	BUILD_ARCH=`uname -m`
@@ -163,11 +188,12 @@ function uefishell
 			;;
 	esac
 	export ARCH
+	export EDK_TOOLS_PATH=`pwd`/BaseTools
+	clearcache
+	. edksetup.sh BaseTools
 	if [ $VERBOSE -eq 1 ]; then
 		echo "Building BaseTools"
 	fi
-	export EDK_TOOLS_PATH=`pwd`/BaseTools
-	. edksetup.sh BaseTools
 	make -C $EDK_TOOLS_PATH
 	if [ $? -ne 0 ]; then
 		echo " !!! UEFI BaseTools failed to build !!! " >&2
