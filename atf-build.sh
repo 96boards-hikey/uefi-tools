@@ -145,7 +145,7 @@ function build_platform
 	export BL30 BL31 BL32 BL33
 
 	echo "BL30=$BL30"
-	if [ $ATF_BUILDVER -gt 1 ]; then
+	if [ $ATF_BUILDVER -gt 1 ] && [ X"$BL30" != X"" ]; then
 		export SCP_BL2
 		echo "SCP_BL2=$BL30"
 	fi
