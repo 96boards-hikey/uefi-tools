@@ -102,20 +102,17 @@ function get_clang_version
 	esac
 }
 
-function import_openssl
+function download_patch_openssl
 {
-    cd CryptoPkg/Library/OpensslLib/
     OPENSSL_VER=`ls EDKII_openssl-*.patch | sed 's/^.*-\([0-9.a-z]*\).patch/\1/'`
     OPENSSL_TAR=openssl-${OPENSSL_VER}.tar.gz
     OPENSSL_URL=http://www.openssl.org/source/${OPENSSL_TAR}
     OPENSSL_DIR=openssl-${OPENSSL_VER}
     OPENSSL_PATCH=EDKII_openssl-${OPENSSL_VER}.patch
 
-    # Don't re-import if already done
-    if [ "$OPENSSL_CONFIGURED" = "TRUE" -o -e "$WORKSPACE"/CryptoPkg/Include/openssl/opensslconf.h ]; then
-	echo "Using existing OpenSSL $OPENSSL_VER"
-	cd -
-	return 0
+    if [ -e "$WORKSPACE"/CryptoPkg/Include/openssl/opensslconf.h ]; then
+        echo "OpenSSL already imported!"
+        return 0
     fi
 
     # Use cached copy if available
@@ -134,9 +131,49 @@ function import_openssl
     else
 	echo "OpenSSL $OPENSSL_VER import failed!" >&2
 	rm -rf $OPENSSL_TAR $OPENSSL_DIR
-	cd -
 	return 1
     fi
+}
 
+function clone_process_openssl
+{
+    if [ -e openssl/include/openssl/opensslconf.h ]; then
+        echo "OpenSSL already imported!"
+        return 0
+    fi
+
+    OPENSSL_VER=`git ls-remote --tags git://github.com/openssl/openssl.git | awk '{print $2;}' | sed 's-^refs/tags/--g' | grep -v '\^{}$' | grep '^OpenSSL' | grep -v '^OpenSSL_FIPS' | tail -1 | sed -n 's/^OpenSSL_\([0-9]*\)_\([0-9]*\)_\([0-9.a-z]*\)$/openssl-\1.\2.\3\n/p'`
+    OPENSSL_TAR="$OPENSSL_VER.tar.gz"
+    if [ -z "$OPENSSL_TAR" ]; then
+        return 1
+    fi
+    OPENSSL_URL=http://www.openssl.org/source/${OPENSSL_TAR}
+    if [ ! -f "$OPENSSL_TAR" ]; then
+        wget -q ${OPENSSL_URL}
+    else
+        rm -rf openssl
+    fi
+    tar xzf "$OPENSSL_TAR"
+    mv "$OPENSSL_VER" openssl
+    # perl process_files.pl # not needed and not currently working
+    return $?
+}
+
+function import_openssl
+{
+    # Don't re-import if already done
+    if [ "$OPENSSL_CONFIGURED" = "TRUE" ]; then
+	echo "Using existing OpenSSL $OPENSSL_VER"
+	return 0
+    fi
+
+    cd CryptoPkg/Library/OpensslLib/
+    if [ -f EDKII_openssl-*.patch ]; then
+        download_patch_openssl
+    else
+        clone_process_openssl
+    fi
+    RET=$?
     cd - >/dev/null
+    return $RET
 }
