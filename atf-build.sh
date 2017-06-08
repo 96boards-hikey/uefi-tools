@@ -118,21 +118,20 @@ function build_platform
 		fi
 	else
 	#
-	# BL32 could be the secure partition.
-	# If TOS_DIR is not set and the SPD is none then include BL32 as a
-	# prebuilt secure partition.
+	# Since TOS_DIR is not set, user does not want a Trusted OS
+	# even if the source directory and/or binary for it exists.
+	# Next, Check whether user wants secure partition image.
+	# If SPM_BIN is set then include pre-built secure partition image as a
+	# BL32 Image and implicitly set SPM=1.
 	#
-		SPD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o atf_spd`"
-		TOS_BIN="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_bin`"
+		SPM_BIN="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o spm_bin`"
 
-		if [ X"$SPD" == X"none" ] && [ X"$TOS_BIN" != X"" ]; then
-			BL32=$EDK2_DIR/$TOS_BIN
-			SPD_OPTION="BL32=$BL32"
-		else
-			echo "WARNING:	Proceeding without Secure Partition!"
-			echo "		Please specify both ATF_SPD=none and TOS_BIN"
-			echo "		if you wish to use a Secure Partition!"
+		if [ X"$SPM_BIN" != X"" ]; then
+			BL32=$EDK2_DIR/Build/StandaloneSmmPkg/$BUILD_PROFILE/FV/$SPM_BIN
+			PLATFORM_BUILDFLAGS="$PLATFORM_BUILDFLAGS SPM=1"
 		fi
+	# We assume that user does not want secure partition either.
+	# Todo: Revisit if either one of Trusted OS or Secure Partition Image is Mandatory.
 	fi
 
 
