@@ -1,24 +1,32 @@
 #!/bin/bash
 
 #
-# Board Configuration Section
-# ===========================
-#
-# Board configuration moved to parse-platforms.py and platforms.config.
-#
-# No need to edit below unless you are changing script functionality.
+# tianocore-build.sh: evolution of edk2-build.sh for edk2-platforms
 #
 
-unset WORKSPACE EDK_TOOLS_DIR MAKEFLAGS
+unset MAKEFLAGS  # BaseTools not safe to build parallel, prevent env overrides
 
 TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
-PLATFORM_CONFIG=""
+PLATFORM_CONFIG="-c $TOOLS_DIR/tianocore-platforms.config"
+ARCH=
 VERBOSE=0
 ATF_DIR=
 TOS_DIR=
 TOOLCHAIN=
 OPENSSL_CONFIGURED=FALSE
+
+# Check to see if we are in a UEFI repository
+# refuse to continue if we aren't
+if [ ! -e edk2/BaseTools ]
+then
+	echo "ERROR: we aren't in a TianoCore build root."
+	echo "       I can tell because I can't see the edk2/BaseTools directory"
+	exit 1
+fi
+
+EDK2_DIR="$PWD/edk2"
+WORKSPACE="$PWD"
 
 # Number of threads to use for build
 export NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
@@ -31,7 +39,7 @@ function do_build
 	PLATFORM_BUILDFLAGS="$PLATFORM_BUILDFLAGS ${EXTRA_OPTIONS[@]}"
 	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o buildcmd`"
 	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o dsc`"
-	PLATFORM_PACKAGES_PATH="$PWD"
+	PLATFORM_PACKAGES_PATH="$PWD/edk2:$PWD/edk2-platforms:$PWD/edk2-non-osi"
 	COMPONENT_INF="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o inf`"
 
 	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o arch`"
@@ -148,32 +156,7 @@ function do_build
 }
 
 
-function clearcache
-{
-  CONF_FILES="build_rule target tools_def"
-  if [ -z "$EDK_TOOLS_PATH" ]
-  then
-    TEMPLATE_PATH=./BaseTools/Conf/
-  else
-    TEMPLATE_PATH="$EDK_TOOLS_PATH/Conf/"
-  fi
-
-  for File in $CONF_FILES
-  do
-    TEMPLATE_FILE="$TEMPLATE_PATH/$File.template"
-    CACHE_FILE="Conf/$File.txt"
-    if [ -e "$CACHE_FILE" -a "$TEMPLATE_FILE" -nt "$CACHE_FILE" ]
-    then
-      echo "Removing outdated '$CACHE_FILE'."
-      rm "$CACHE_FILE"
-    fi
-  done
-
-  unset TEMPLATE_PATH TEMPLATE_FILE CACHE_FILE
-}
-
-
-function uefishell
+function prepare_build
 {
 	BUILD_ARCH=`uname -m`
 	case $BUILD_ARCH in
@@ -183,20 +166,24 @@ function uefishell
 		aarch64)
 			ARCH=AARCH64
 			;;
+		x86_64)
+			ARCH=X64
+			;;
 		*)
 			unset ARCH
 			;;
 	esac
 	export ARCH
-	export EDK_TOOLS_PATH=`pwd`/BaseTools
-	clearcache
-	. edksetup.sh BaseTools
+	cd $EDK2_DIR
+	. edksetup.sh --reconfig
 	if [ $VERBOSE -eq 1 ]; then
 		echo "Building BaseTools"
 	fi
-	make -C $EDK_TOOLS_PATH
-	if [ $? -ne 0 ]; then
-		echo " !!! UEFI BaseTools failed to build !!! " >&2
+	make -C BaseTools
+	RET=$?
+	cd -
+	if [ $RET -ne 0 ]; then
+		echo " !!! BaseTools failed to build !!! " >&2
 		exit 1
 	fi
 }
@@ -323,36 +310,6 @@ while [ "$1" != "" ]; do
 	shift
 done
 
-# If there were no args, use a menu to select a single board / all boards to build
-if [ $NUM_TARGETS -eq 0 ]
-then
-	read -p "$(
-			f=0
-			for board in "${boards[@]}" ; do
-					echo "$((++f)): $board"
-			done
-			echo $((++f)): all
-
-			echo -ne '> '
-	)" selection
-
-	if [ "$selection" -eq $((${#boards[@]} + 1)) ]; then
-		builds=(${boards[@]})
-	else
-		builds="${boards[$((selection-1))]}"
-	fi
-fi
-
-# Check to see if we are in a UEFI repository
-# refuse to continue if we aren't
-if [ ! -e BaseTools ]
-then
-	echo "ERROR: we aren't in the UEFI directory."
-	echo "       I can tell because I can't see the BaseTools directory"
-	exit 1
-fi
-
-EDK2_DIR="$PWD"
 export VERBOSE
 
 if [[ "${EXTRA_OPTIONS[@]}" != *"FIRMWARE_VER"* ]]; then
@@ -369,7 +326,7 @@ if [[ "${EXTRA_OPTIONS[@]}" != *"FIRMWARE_VER"* ]]; then
 	fi
 fi
 
-uefishell
+prepare_build
 
 if [ X"$TOOLCHAIN" = X"" ]; then
 	TOOLCHAIN=gcc
