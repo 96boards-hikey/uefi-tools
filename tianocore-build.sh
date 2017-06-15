@@ -51,24 +51,23 @@ function do_build
 	PLATFORM_BUILDFLAGS="$PLATFORM_BUILDFLAGS ${EXTRA_OPTIONS[@]}"
 	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o buildcmd`"
 	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o dsc`"
-	PLATFORM_PACKAGES_PATH="$PACKAGES_PATH"
+	PLATFORM_PACKAGES_PATH=""
 	COMPONENT_INF="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o inf`"
 
 	TEMP_PACKAGES_PATH="$DEFAULT_PACKAGES_PATH:`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o packages_path`"
-	if [ -n "$TEMP_PACKAGES_PATH" ]; then
-		IFS=:
-		for path in "$TEMP_PACKAGES_PATH"; do
-			case "$path" in
-				/*)
-					PLATFORM_PACKAGES_PATH="$PLATFORM_PACKAGES_PATH:$path"
-				;;
-				*)
-					PLATFORM_PACKAGES_PATH="$PLATFORM_PACKAGES_PATH:$PWD/$path"
-				;;
-		        esac
-		done
-		unset IFS
-	fi
+	IFS=:
+	for path in "$TEMP_PACKAGES_PATH"; do
+		case "$path" in
+			/*)
+				PLATFORM_PACKAGES_PATH="$PLATFORM_PACKAGES_PATH:$path"
+			;;
+			*)
+				PLATFORM_PACKAGES_PATH="$PLATFORM_PACKAGES_PATH:$PWD/$path"
+			;;
+	        esac
+	done
+	unset IFS
+
 	if [ $VERBOSE -eq 1 ]; then
 		echo "Setting build parallellism to $NUM_THREADS processes"
 		echo "PLATFORM_NAME=$PLATFORM_NAME"
