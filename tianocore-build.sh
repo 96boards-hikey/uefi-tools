@@ -27,36 +27,34 @@ fi
 
 EDK2_DIR="$PWD/edk2"
 WORKSPACE="$PWD"
+export WORKSPACE
+DEFAULT_PACKAGES_PATH="$PWD/edk2:$PWD/edk2-platforms:$PWD/edk2-non-osi"
 
 # Number of threads to use for build
 export NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
 
 function do_build
 {
-	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o longname`"
+	PLATFORM_ARCH=`echo $board | cut -s -d: -f2`
+	if [ -n "$PLATFORM_ARCH" ]; then
+		board=`echo $board | cut -d: -f1`
+	else
+		PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o arch`"
+	fi
+	PLATFORM_NAME="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o longname` ($PLATFORM_ARCH)"
+	if [ -z "$PLATFORM_ARCH" ]; then
+		echo "Unknown target architecture - aborting!" >&2
+		return 1
+	fi
 	PLATFORM_PREBUILD_CMDS="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o prebuild_cmds`"
 	PLATFORM_BUILDFLAGS="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o buildflags`"
 	PLATFORM_BUILDFLAGS="$PLATFORM_BUILDFLAGS ${EXTRA_OPTIONS[@]}"
 	PLATFORM_BUILDCMD="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o buildcmd`"
 	PLATFORM_DSC="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o dsc`"
-	PLATFORM_PACKAGES_PATH="$PWD/edk2:$PWD/edk2-platforms:$PWD/edk2-non-osi"
+	PLATFORM_PACKAGES_PATH="$PACKAGES_PATH"
 	COMPONENT_INF="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o inf`"
 
-	PLATFORM_ARCH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o arch`"
-	if [ -n "$PLATFORM_ARCH" ]; then
-		if [ -n "$DEFAULT_PLATFORM_ARCH" -a "$DEFAULT_PLATFORM_ARCH" != "$PLATFORM_ARCH" ]; then
-			echo "Command line specified architecture '$DEFAULT_PLATFORM_ARCH'" >&2
-			echo "differs from config file specified '$PLATFORM_ARCH'" >&2
-			return 1
-		fi
-	else
-		if [ ! -n "$DEFAULT_PLATFORM_ARCH" ]; then
-			echo "Unknown target architecture - aborting!" >&2
-			return 1
-		fi
-		PLATFORM_ARCH="$DEFAULT_PLATFORM_ARCH"
-	fi
-	TEMP_PACKAGES_PATH="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o packages_path`"
+	TEMP_PACKAGES_PATH="$DEFAULT_PACKAGES_PATH:`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o packages_path`"
 	if [ -n "$TEMP_PACKAGES_PATH" ]; then
 		IFS=:
 		for path in "$TEMP_PACKAGES_PATH"; do
@@ -72,7 +70,7 @@ function do_build
 		unset IFS
 	fi
 	if [ $VERBOSE -eq 1 ]; then
-		echo "Setting build parallellism to $NUM_THREADS processes\n"
+		echo "Setting build parallellism to $NUM_THREADS processes"
 		echo "PLATFORM_NAME=$PLATFORM_NAME"
 		echo "PLATFORM_PREBUILD_CMDS=$PLATFORM_PREBUILD_CMDS"
 		echo "PLATFORM_BUILDFLAGS=$PLATFORM_BUILDFLAGS"
@@ -113,16 +111,27 @@ function do_build
 	export PACKAGES_PATH="$PLATFORM_PACKAGES_PATH"
 	for target in "${TARGETS[@]}" ; do
 		if [ X"$PLATFORM_PREBUILD_CMDS" != X"" ]; then
-			echo "Run pre build commands"
+			echo "Run pre-build commands:"
+			if [ $VERBOSE -eq 1 ]; then
+				echo "  ${PLATFORM_PREBUILD_CMDS}"
+			fi
 			eval ${PLATFORM_PREBUILD_CMDS}
 		fi
 
 		if [ -n "$COMPONENT_INF" ]; then
 			# Build a standalone component
+			if [ $VERBOSE -eq 1 ]; then
+				echo "build -n $NUM_THREADS -a \"$PLATFORM_ARCH\" -t ${TOOLCHAIN} -p \"$PLATFORM_DSC\"" \
+					"-m \"$COMPONENT_INF\" -b "$target" ${PLATFORM_BUILDFLAGS}"
+			fi
 			build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" \
 				-m "$COMPONENT_INF" -b "$target" ${PLATFORM_BUILDFLAGS}
 		else
 			# Build a platform
+			if [ $VERBOSE -eq 1 ]; then
+				echo "build -n $NUM_THREADS -a \"$PLATFORM_ARCH\" -t ${TOOLCHAIN} -p \"$PLATFORM_DSC\"" \
+					"-b "$target" ${PLATFORM_BUILDFLAGS}"
+			fi
 			build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" \
 				-b "$target" ${PLATFORM_BUILDFLAGS}
 		fi
@@ -175,7 +184,11 @@ function prepare_build
 	esac
 	export ARCH
 	cd $EDK2_DIR
-	. edksetup.sh --reconfig
+	PACKAGES_PATH=$DEFAULT_PACKAGES_PATH . edksetup.sh --reconfig
+	if [ $? -ne 0 ]; then
+		echo "Sourcing edksetup.sh failed!" >&2
+		exit 1
+	fi
 	if [ $VERBOSE -eq 1 ]; then
 		echo "Building BaseTools"
 	fi
@@ -259,10 +272,6 @@ while [ "$1" != "" ]; do
 			shift
 			ATF_DIR="$1"
 			;;
-		"-A" )
-			shift
-			DEFAULT_PLATFORM_ARCH="$1"
-			;;
 		"-c" )
 			# Already parsed above - skip this + option
 			shift
@@ -292,9 +301,9 @@ while [ "$1" != "" ]; do
 		* )
 			MATCH=0
 			for board in "${boards[@]}" ; do
-				if [ "$1" == $board ]; then
+				if [ "`echo $1 | cut -d: -f1`" == $board ]; then
 					MATCH=1
-					builds=(${builds[@]} "$board")
+					builds=(${builds[@]} "$1")
 					break
 				fi
 			done
@@ -309,6 +318,11 @@ while [ "$1" != "" ]; do
 	esac
 	shift
 done
+
+if [ $NUM_TARGETS -le  0 ]; then
+	echo "No targets specified - exiting!" >&2
+	exit 0
+fi
 
 export VERBOSE
 
