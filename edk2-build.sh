@@ -10,25 +10,15 @@ TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
 PLATFORM_CONFIG="-c $TOOLS_DIR/edk2-platforms.config"
 ARCH=
-VERBOSE=0
+VERBOSE=0                  # Override with -v
 ATF_DIR=
 TOS_DIR=
-TOOLCHAIN=
+TOOLCHAIN="gcc"            # Override with -T
+WORKSPACE=
+EDK2_DIR=
+PLATFORMS_DIR=
+NON_OSI_DIR=
 OPENSSL_CONFIGURED=FALSE
-
-# Check to see if we are in a UEFI repository
-# refuse to continue if we aren't
-if [ ! -e edk2/BaseTools ]
-then
-	echo "ERROR: we aren't in a TianoCore build root."
-	echo "       I can tell because I can't see the edk2/BaseTools directory"
-	exit 1
-fi
-
-EDK2_DIR="$PWD/edk2"
-WORKSPACE="$PWD"
-export WORKSPACE
-DEFAULT_PACKAGES_PATH="$PWD/edk2:$PWD/edk2-platforms:$PWD/edk2-non-osi"
 
 # Number of threads to use for build
 export NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
@@ -54,7 +44,7 @@ function do_build
 	PLATFORM_PACKAGES_PATH=""
 	COMPONENT_INF="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o inf`"
 
-	TEMP_PACKAGES_PATH="$DEFAULT_PACKAGES_PATH:`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o packages_path`"
+	TEMP_PACKAGES_PATH="$GLOBAL_PACKAGES_PATH:`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $board get -o packages_path`"
 	IFS=:
 	for path in "$TEMP_PACKAGES_PATH"; do
 		case "$path" in
@@ -164,6 +154,48 @@ function do_build
 }
 
 
+function configure_paths
+{
+	WORKSPACE="$PWD"
+
+	# Check to see if we are in a UEFI repository
+	# refuse to continue if we aren't
+	if [ ! -e edk2/BaseTools ]
+	then
+		echo "ERROR: we aren't in a TianoCore build root."
+		echo "       I can tell because I can't see the edk2/BaseTools directory"
+		exit 1
+	fi
+
+	if [ -z "$EDK2_DIR" -a -d "$PWD/edk2" ]; then
+		EDK2_DIR="$PWD/edk2"
+	else
+		echo "Unable to locate EDK2 directory!" >&2
+		exit 1
+	fi
+
+	GLOBAL_PACKAGES_PATH="$EDK2_DIR"
+
+	# locate edk2-platforms
+	if [ -z "$PLATFORMS_DIR" -a -d "$PWD"/edk2-platforms ]; then
+		PLATFORMS_DIR="$PWD"/edk2-platforms
+	fi
+	if [ -n "$PLATFORMS_DIR" ]; then
+		GLOBAL_PACKAGES_PATH="$GLOBAL_PACKAGES_PATH:$PLATFORMS_DIR"
+	fi
+
+	# locate edk2-non-osi
+	if [ -z "$NON_OSI_DIR" -a -d "$PWD"/edk2-non-osi ]; then
+		NON_OSI_DIR="$PWD"/edk2-non-osi
+	fi
+	if [ -n "$NON_OSI_DIR" ]; then
+		GLOBAL_PACKAGES_PATH="$GLOBAL_PACKAGES_PATH:$NON_OSI_DIR"
+	fi
+
+	export WORKSPACE
+}
+
+
 function prepare_build
 {
 	BUILD_ARCH=`uname -m`
@@ -183,7 +215,7 @@ function prepare_build
 	esac
 	export ARCH
 	cd $EDK2_DIR
-	PACKAGES_PATH=$DEFAULT_PACKAGES_PATH . edksetup.sh --reconfig
+	PACKAGES_PATH=$GLOBAL_PACKAGES_PATH . edksetup.sh --reconfig
 	if [ $? -ne 0 ]; then
 		echo "Sourcing edksetup.sh failed!" >&2
 		exit 1
@@ -256,48 +288,59 @@ NUM_TARGETS=0
 
 while [ "$1" != "" ]; do
 	case $1 in
-		all )
-			builds=(${boards[@]})
-			NUM_TARGETS=$(($NUM_TARGETS + 1))
+		-1)     # Disable build parallellism
+			NUM_THREADS=1
 			;;
-		"/h" | "/?" | "-?" | "-h" | "--help" )
-			usage
-			exit
-			;;
-		"-v" )
-			VERBOSE=1
-			;;
-		"-a" )
+		-a | --arm-tf-dir)
 			shift
 			ATF_DIR="$1"
 			;;
-		"-c" )
-			# Already parsed above - skip this + option
+		-c)     # Already parsed above - skip this + option
 			shift
 			;;
-		"-s" )
+		-b | --build-target)
+			shift
+			echo "Adding Build target: $1"
+			TARGETS=(${TARGETS[@]} $1)
+			;;
+		-D)     # Pass through as -D option to 'build'
+			shift
+			echo "Adding Macro: -D $1"
+			EXTRA_OPTIONS=(${EXTRA_OPTIONS[@]} "-D" $1)
+			;;
+		-e | --edk2-dir)
+			shift
+			export EDK2_DIR=$1
+			;;
+		-h | --help)
+			usage
+			exit
+			;;
+		-n | --non-osi-dir)
+			shift
+			NON_OSI_DIR=$1
+			;;
+		-p | --platforms-dir)
+			shift
+			PLATFORMS_DIR=$1
+			;;
+		-s | --tos-dir)
 			shift
 			export TOS_DIR="$1"
 			;;
-		"-b" | "--build" )
+		-T)     # Set specific toolchain tag, or clang/gcc for autoselection
 			shift
-			echo "Adding Build profile: $1"
-			TARGETS=( ${TARGETS[@]} $1 )
-			;;
-		"-D" )
-			shift
-			echo "Adding option: -D $1"
-			EXTRA_OPTIONS=( ${EXTRA_OPTIONS[@]} "-D" $1 )
-			;;
-		"-T" )
-			shift
-			echo "Setting toolchain to '$1'"
+			echo "Setting toolchain tag to '$1'"
 			TOOLCHAIN="$1"
 			;;
-		"-1" )
-			NUM_THREADS=1
+		-v)
+			VERBOSE=1
 			;;
-		* )
+		all)    # Add all targets in configuration file to list
+			builds=(${boards[@]})
+			NUM_TARGETS=$(($NUM_TARGETS + 1))
+			;;
+		*)      # Try to match target in configuration file, add to list
 			MATCH=0
 			for board in "${boards[@]}" ; do
 				if [ "`echo $1 | cut -d: -f1`" == $board ]; then
@@ -325,6 +368,10 @@ fi
 
 export VERBOSE
 
+configure_paths
+
+prepare_build
+
 if [[ "${EXTRA_OPTIONS[@]}" != *"FIRMWARE_VER"* ]]; then
 	if test -d .git && head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
 		FIRMWARE_VER=`git rev-parse --short HEAD`
@@ -337,12 +384,6 @@ if [[ "${EXTRA_OPTIONS[@]}" != *"FIRMWARE_VER"* ]]; then
 			echo "EXTRA_OPTIONS=$EXTRA_OPTIONS"
 		fi
 	fi
-fi
-
-prepare_build
-
-if [ X"$TOOLCHAIN" = X"" ]; then
-	TOOLCHAIN=gcc
 fi
 
 for board in "${builds[@]}" ; do
