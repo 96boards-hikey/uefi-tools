@@ -1,14 +1,14 @@
 #!/bin/bash
 
 #
-# tianocore-build.sh: evolution of edk2-build.sh for edk2-platforms
+# edk2-build.sh: evolution of uefi-build.sh for edk2-platforms
 #
 
 unset MAKEFLAGS  # BaseTools not safe to build parallel, prevent env overrides
 
 TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
-PLATFORM_CONFIG="-c $TOOLS_DIR/tianocore-platforms.config"
+PLATFORM_CONFIG="-c $TOOLS_DIR/edk2-platforms.config"
 ARCH=
 VERBOSE=0
 ATF_DIR=
