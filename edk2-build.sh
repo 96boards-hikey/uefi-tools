@@ -86,16 +86,19 @@ function do_build
 
 	case $TOOLCHAIN in
 		"gcc")
-			export TOOLCHAIN=`get_gcc_version "$CROSS_COMPILE"gcc`
+			export PLATFORM_TOOLCHAIN=`get_gcc_version "$CROSS_COMPILE"gcc`
 			;;
 		"clang")
-			export TOOLCHAIN=`get_clang_version clang`
+			export PLATFORM_TOOLCHAIN=`get_clang_version clang`
+			;;
+		*)
+			# Use command-line specified profile directly
 			;;
 	esac
-	echo "TOOLCHAIN is ${TOOLCHAIN}"
+	echo "PLATFORM_TOOLCHAIN is ${PLATFORM_TOOLCHAIN}"
 
-	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
-	echo "Toolchain prefix: ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
+	export ${PLATFORM_TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE
+	echo "Toolchain prefix: ${PLATFORM_TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE"
 
 	export PACKAGES_PATH="$PLATFORM_PACKAGES_PATH"
 	for target in "${TARGETS[@]}" ; do
@@ -110,18 +113,18 @@ function do_build
 		if [ -n "$COMPONENT_INF" ]; then
 			# Build a standalone component
 			if [ $VERBOSE -eq 1 ]; then
-				echo "build -n $NUM_THREADS -a \"$PLATFORM_ARCH\" -t ${TOOLCHAIN} -p \"$PLATFORM_DSC\"" \
+				echo "build -n $NUM_THREADS -a \"$PLATFORM_ARCH\" -t ${PLATFORM_TOOLCHAIN} -p \"$PLATFORM_DSC\"" \
 					"-m \"$COMPONENT_INF\" -b "$target" ${PLATFORM_BUILDFLAGS}"
 			fi
-			build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" \
+			build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${PLATFORM_TOOLCHAIN} -p "$PLATFORM_DSC" \
 				-m "$COMPONENT_INF" -b "$target" ${PLATFORM_BUILDFLAGS}
 		else
 			# Build a platform
 			if [ $VERBOSE -eq 1 ]; then
-				echo "build -n $NUM_THREADS -a \"$PLATFORM_ARCH\" -t ${TOOLCHAIN} -p \"$PLATFORM_DSC\"" \
+				echo "build -n $NUM_THREADS -a \"$PLATFORM_ARCH\" -t ${PLATFORM_TOOLCHAIN} -p \"$PLATFORM_DSC\"" \
 					"-b "$target" ${PLATFORM_BUILDFLAGS}"
 			fi
-			build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${TOOLCHAIN} -p "$PLATFORM_DSC" \
+			build -n $NUM_THREADS -a "$PLATFORM_ARCH" -t ${PLATFORM_TOOLCHAIN} -p "$PLATFORM_DSC" \
 				-b "$target" ${PLATFORM_BUILDFLAGS}
 		fi
 
@@ -130,9 +133,9 @@ function do_build
 			if [ X"$TOS_DIR" != X"" ]; then
 				pushd $TOS_DIR >/dev/null
 				if [ $VERBOSE -eq 1 ]; then
-					echo "$TOOLS_DIR/tos-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board"
+					echo "$TOOLS_DIR/tos-build.sh -e "$EDK2_DIR" -t "$target"_${PLATFORM_TOOLCHAIN} $board"
 				fi
-				$TOOLS_DIR/tos-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board
+				$TOOLS_DIR/tos-build.sh -e "$EDK2_DIR" -t "$target"_${PLATFORM_TOOLCHAIN} $board
 				RESULT=$?
 				popd >/dev/null
 			fi
@@ -141,9 +144,9 @@ function do_build
 			if [ X"$ATF_DIR" != X"" ]; then
 				pushd $ATF_DIR >/dev/null
 				if [ $VERBOSE -eq 1 ]; then
-					echo "$TOOLS_DIR/atf-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board"
+					echo "$TOOLS_DIR/atf-build.sh -e "$EDK2_DIR" -t "$target"_${PLATFORM_TOOLCHAIN} $board"
 				fi
-				$TOOLS_DIR/atf-build.sh -e "$EDK2_DIR" -t "$target"_${TOOLCHAIN} $board
+				$TOOLS_DIR/atf-build.sh -e "$EDK2_DIR" -t "$target"_${PLATFORM_TOOLCHAIN} $board
 				RESULT=$?
 				popd >/dev/null
 			fi
