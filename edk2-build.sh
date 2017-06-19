@@ -86,13 +86,14 @@ function do_build
 
 	case $TOOLCHAIN in
 		"gcc")
-			export PLATFORM_TOOLCHAIN=`get_gcc_version "$CROSS_COMPILE"gcc`
+			PLATFORM_TOOLCHAIN=`get_gcc_version "$CROSS_COMPILE"gcc`
 			;;
 		"clang")
-			export PLATFORM_TOOLCHAIN=`get_clang_version clang`
+			PLATFORM_TOOLCHAIN=`get_clang_version clang`
 			;;
 		*)
 			# Use command-line specified profile directly
+			PLATFORM_TOOLCHAIN=$TOOLCHAIN
 			;;
 	esac
 	echo "PLATFORM_TOOLCHAIN is ${PLATFORM_TOOLCHAIN}"
