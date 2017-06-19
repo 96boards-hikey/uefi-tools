@@ -202,21 +202,9 @@ function configure_paths
 
 function prepare_build
 {
-	BUILD_ARCH=`uname -m`
-	case $BUILD_ARCH in
-		arm*)
-			ARCH=ARM
-			;;
-		aarch64)
-			ARCH=AARCH64
-			;;
-		x86_64)
-			ARCH=X64
-			;;
-		*)
-			unset ARCH
-			;;
-	esac
+	get_build_arch
+	export ARCH=$BUILD_ARCH
+
 	export ARCH
 	cd $EDK2_DIR
 	PACKAGES_PATH=$GLOBAL_PACKAGES_PATH . edksetup.sh --reconfig
