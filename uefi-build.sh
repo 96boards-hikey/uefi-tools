@@ -78,7 +78,14 @@ function do_build
 	    import_openssl
 	fi
 
-	set_cross_compile
+	if [ -n "$CROSS_COMPILE_64" -a "$PLATFORM_ARCH" == "AARCH64" ]; then
+		TEMP_CROSS_COMPILE="$CROSS_COMPILE_64"
+	elif [ -n "$CROSS_COMPILE_32" -a "$PLATFORM_ARCH" == "ARM" ]; then
+		TEMP_CROSS_COMPILE="$CROSS_COMPILE_32"
+	else
+		set_cross_compile
+	fi
+
 	CROSS_COMPILE="$TEMP_CROSS_COMPILE"
 
 	echo "Building $PLATFORM_NAME - $PLATFORM_ARCH"
@@ -91,12 +98,20 @@ function do_build
 
 	case $TOOLCHAIN in
 		"gcc")
-			export TOOLCHAIN=`get_gcc_version "$CROSS_COMPILE"gcc`
+			TOOLCHAIN=`get_gcc_version "$CROSS_COMPILE"gcc`
+			if [ $? -ne 0 ]; then
+				echo "${CROSS_COMPILE}gcc not found!" >&2
+				return 1
+			fi
 			;;
 		"clang")
-			export TOOLCHAIN=`get_clang_version clang`
+			TOOLCHAIN=`get_clang_version clang`
+			if [ $? -ne 0 ]; then
+				return 1
+			fi
 			;;
 	esac
+	export TOOLCHAIN
 	echo "TOOLCHAIN is ${TOOLCHAIN}"
 
 	export ${TOOLCHAIN}_${PLATFORM_ARCH}_PREFIX=$CROSS_COMPILE

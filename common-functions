@@ -77,6 +77,7 @@ function set_cross_compile
 
 function get_gcc_version
 {
+	$1 -v >/dev/null 2>&1 || return 1
 	gcc_version=$($1 -dumpversion)
 	MAJVER=`echo $gcc_version | cut -d. -f1`
 
@@ -96,6 +97,8 @@ function get_gcc_version
 			fi
 			;;
 	esac
+
+	return 0
 }
 
 function get_clang_version
