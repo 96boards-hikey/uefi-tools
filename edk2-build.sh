@@ -264,10 +264,11 @@ do
 			;;
 		esac
 		echo "Platform config file: '$FILE_ARG'"
-		export PLATFORM_CONFIG
 	fi
 	i=$(($i + 1))
 done
+
+export PLATFORM_CONFIG
 
 builds=()
 boards=()
