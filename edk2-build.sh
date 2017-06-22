@@ -164,18 +164,15 @@ function configure_paths
 
 	# Check to see if we are in a UEFI repository
 	# refuse to continue if we aren't
-	if [ ! -e edk2/BaseTools ]
+	if [ ! -d "$EDK2_DIR"/BaseTools ]
 	then
-		echo "ERROR: we aren't in a TianoCore build root."
-		echo "       I can tell because I can't see the edk2/BaseTools directory"
-		exit 1
-	fi
-
-	if [ -z "$EDK2_DIR" -a -d "$PWD/edk2" ]; then
-		EDK2_DIR="$PWD/edk2"
-	else
-		echo "Unable to locate EDK2 directory!" >&2
-		exit 1
+		if [ -d "$PWD"/edk2/BaseTools ]; then
+			EDK2_DIR="$PWD"/edk2
+		else
+			echo "ERROR: can't locate the edk2 directory" >&2
+			echo "       please specify -e/--edk2-dir" >&2
+			exit 1
+		fi
 	fi
 
 	GLOBAL_PACKAGES_PATH="$EDK2_DIR"
