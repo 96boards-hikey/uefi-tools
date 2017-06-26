@@ -193,6 +193,11 @@ function configure_paths
 		GLOBAL_PACKAGES_PATH="$GLOBAL_PACKAGES_PATH:$NON_OSI_DIR"
 	fi
 
+	# locate arm-trusted-firmware
+	if [ -z "$ATF_DIR" -a -d "$PWD"/arm-trusted-firmware ]; then
+		ATF_DIR="$PWD"/arm-trusted-firmware
+	fi
+
 	export WORKSPACE
 }
 

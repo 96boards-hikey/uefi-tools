@@ -72,10 +72,10 @@ function build_platform
 	BL30="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o scp_bin`"
 	if [ $ATF_BUILDVER -gt 1 ]; then
 		unset SCP_BL2
-		SCP_BL2="$EDK2_DIR/$BL30"
+		SCP_BL2=`search_packages_path "$BL30"`
 	fi
 	BL31="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o el3_bin`"
-	BL33="$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o uefi_bin`"
+	BL33="$WORKSPACE/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o uefi_bin`"
 
 	#
 	# Set up cross compilation variables (if applicable)
@@ -86,10 +86,10 @@ function build_platform
 	echo "CROSS_COMPILE=\"$TEMP_CROSS_COMPILE\""
 
 	if [ X"$BL30" != X"" ]; then
-		BL30="${EDK2_DIR}"/"${BL30}"
+		BL30=`search_packages_path "$BL30"`
 	fi
 	if [ X"$BL31" != X"" ]; then
-		BL31="${EDK2_DIR}"/"${BL31}"
+		BL31=`search_packages_path "$BL31"`
 	fi
 
 	#
@@ -102,7 +102,7 @@ function build_platform
 
 		TOS_BIN="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_bin`"
 		if [ X"$TOS_BIN" != X"" ]; then
-			BL32=$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/$TOS_BIN
+			BL32=$WORKSPACE/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/$TOS_BIN
 		fi
 
 		if [ X"$SPD" != X"" ] && [ X"$BL32" != X"" ]; then
@@ -127,7 +127,7 @@ function build_platform
 		SPM_BIN="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o spm_bin`"
 
 		if [ X"$SPM_BIN" != X"" ]; then
-			BL32=$EDK2_DIR/Build/StandaloneSmmPkg/$BUILD_PROFILE/FV/$SPM_BIN
+			BL32=$WORKSPACE/Build/StandaloneSmmPkg/$BUILD_PROFILE/FV/$SPM_BIN
 			PLATFORM_BUILDFLAGS="$PLATFORM_BUILDFLAGS SPM=1"
 		fi
 	# We assume that user does not want secure partition either.
@@ -183,9 +183,9 @@ function build_platform
 		# Copy resulting images to UEFI image dir
 		#
 		if [ $VERBOSE -eq 1 ]; then
-			echo "Copying bl1.bin and fip.bin to "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/""
+			echo "Copying bl1.bin and fip.bin to "$WORKSPACE/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/""
 		fi
-		cp -a build/"$ATF_PLATFORM/$BUILD_TYPE"/{bl1,fip}.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
+		cp -a build/"$ATF_PLATFORM/$BUILD_TYPE"/{bl1,fip}.bin "$WORKSPACE/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
 	else
 		return 1
 	fi

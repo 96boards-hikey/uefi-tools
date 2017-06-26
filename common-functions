@@ -191,3 +191,21 @@ function import_openssl
     cd - >/dev/null
     return $RET
 }
+
+function search_packages_path
+{
+    file="$1"
+
+    IFS=:
+    for dir in $PACKAGES_PATH; do
+	if [ -e "$dir/$file" ]; then
+	    echo "$dir/$file"
+	    unset IFS
+	    return 0
+	fi
+    done
+
+    echo "$file not found in any directory on PACKAGES_PATH!" >&2
+    unset IFS
+    return 1
+}
