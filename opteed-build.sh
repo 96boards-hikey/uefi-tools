@@ -100,10 +100,11 @@ function build_platform
 		#
 		# Copy resulting images to UEFI image dir
 		#
+		TOS_BIN="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_bin`"
 		if [ $VERBOSE -eq 1 ]; then
-			echo "Copying tee.bin to "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/""
+			echo "Copying '$TOS_BIN' to '$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/'"
 		fi
-		cp -a out/arm-plat-"$TOS_PLATFORM"/core/tee.bin "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
+		cp -a out/arm-plat-"$TOS_PLATFORM"/core/"$TOS_BIN" "$EDK2_DIR/Build/$PLATFORM_IMAGE_DIR/$BUILD_PROFILE/FV/"
 	else
 		return 1
 	fi
