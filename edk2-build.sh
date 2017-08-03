@@ -21,7 +21,7 @@ NON_OSI_DIR=
 OPENSSL_CONFIGURED=FALSE
 
 # Number of threads to use for build
-export NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
+export NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + `getconf _NPROCESSORS_ONLN`))
 
 function do_build
 {
