@@ -288,7 +288,7 @@ while [ "$1" != "" ]; do
 			;;
 		-a | --arm-tf-dir)
 			shift
-			ATF_DIR="$1"
+			ATF_DIR="`readlink -f $1`"
 			;;
 		-c)     # Already parsed above - skip this + option
 			shift
@@ -305,7 +305,7 @@ while [ "$1" != "" ]; do
 			;;
 		-e | --edk2-dir)
 			shift
-			export EDK2_DIR=$1
+			export EDK2_DIR="`readlink -f $1`"
 			;;
 		-h | --help)
 			usage
@@ -313,15 +313,15 @@ while [ "$1" != "" ]; do
 			;;
 		-n | --non-osi-dir)
 			shift
-			NON_OSI_DIR=$1
+			NON_OSI_DIR="`readlink -f $1`"
 			;;
 		-p | --platforms-dir)
 			shift
-			PLATFORMS_DIR=$1
+			PLATFORMS_DIR="`readlink -f $1`"
 			;;
 		-s | --tos-dir)
 			shift
-			export TOS_DIR="$1"
+			export TOS_DIR="`readlink -f $1`"
 			;;
 		-T)     # Set specific toolchain tag, or clang/gcc for autoselection
 			shift
