@@ -4,8 +4,6 @@ RESULT_BUF=`echo -e ------------------------------------------------------------
 RESULT_PASS_COUNT=0
 RESULT_FAIL_COUNT=0
 
-TOOLS_DIR="`dirname $0`"
-
 function result_log
 {
 	if [ $1 -eq 0 ]; then

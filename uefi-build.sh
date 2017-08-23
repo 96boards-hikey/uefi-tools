@@ -12,6 +12,7 @@
 unset WORKSPACE EDK_TOOLS_DIR MAKEFLAGS
 
 TOOLS_DIR="`dirname $0`"
+export TOOLS_DIR
 . "$TOOLS_DIR"/common-functions
 PLATFORM_CONFIG=""
 VERBOSE=0

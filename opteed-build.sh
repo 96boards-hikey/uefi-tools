@@ -7,7 +7,6 @@
 # parse-platforms.py and platforms.config.
 #
 
-TOOLS_DIR="`dirname $0`"
 . "$TOOLS_DIR"/common-functions
 
 export CFG_TEE_CORE_LOG_LEVEL=2  # 0=none 1=err 2=info 3=debug 4=flow

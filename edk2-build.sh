@@ -7,6 +7,8 @@
 unset MAKEFLAGS  # BaseTools not safe to build parallel, prevent env overrides
 
 TOOLS_DIR="`dirname $0`"
+TOOLS_DIR="`readlink -f \"$TOOLS_DIR\"`"
+export TOOLS_DIR
 . "$TOOLS_DIR"/common-functions
 PLATFORM_CONFIG="-c $TOOLS_DIR/edk2-platforms.config"
 ARCH=
