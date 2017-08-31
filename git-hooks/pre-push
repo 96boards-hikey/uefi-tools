@@ -1,0 +1,84 @@
+#!/bin/sh
+
+# Called by "git push" after it has checked the remote status, but before
+# anything has been pushed.  If this script exits with a non-zero status nothing
+# will be pushed.
+#
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local sha1> <remote ref> <remote sha1>
+
+remote="$1"
+url="$2"
+
+ME="`git config --get user.name` <`git config --get user.email`>"
+STATUS=0
+
+case "$url" in
+    *github.com/tianocore/edk2*.git)
+        echo "Doing pre-push sanity checks..."
+        ;;
+    *)
+        echo "Not pushing to a \"real\" upstream - skipping push hook."
+        exit 0
+        ;;
+esac
+
+check_reviewed()
+{
+    signoff=`git rev-list -n 1 --grep "^Signed-off-by: $ME\$" "$1^..$1"`
+    if [ -z "$signoff" ]; then
+	REVIEWER="$ME"
+    else
+	signoff=`git rev-list -n 1 --grep "^Signed-off-by: .*\$" "$1^..$1"`
+	if [ -z "$signoff" ]; then
+	    echo "$1 missing 'Signed-off-by:'!" >&2
+	    STATUS=1
+	    return
+	fi
+	REVIEWER=".*"
+    fi
+
+    reviewed=`git rev-list -n 1 --grep "^Reviewed-by: $REVIEWER\$" "$1^..$1"`
+    if [ -z "$reviewed" ]; then
+        echo "$1 missing 'Reviewed-by:'!" >&2
+        STATUS=1
+	return
+    fi
+}
+
+check_contributed()
+{
+    contributed=`git rev-list -n 1 --grep "^Contributed-under: TianoCore Contribution Agreement 1.1\$" "$1^..$1"`
+    if [ -z "$contributed" ]; then
+	echo "$1: incorrect or missing 'Contributed-under:'!" >&2
+	STATUS=1
+	contributed=`git rev-list -n 1 --grep "^Contributed-under: TianoCore Contribution Agreement 1.0\$" "$1^..$1"`
+	if [ -n "$contributed" ]; then
+	    echo "  Contribution Agreement version 1.0 outdated" >&2
+	fi
+	return
+    fi
+}
+
+while read local_ref local_sha remote_ref remote_sha
+do
+    git rev-list $remote_sha..$local_sha | while read rev
+    do
+	echo "Checking: $rev"
+	check_reviewed $rev
+	check_contributed $rev
+    done
+done
+
+[ $STATUS -ne 0 ] && exit 1
+
+echo "Att checks passed!"
