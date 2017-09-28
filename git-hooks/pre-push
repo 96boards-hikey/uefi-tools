@@ -20,7 +20,6 @@ remote="$1"
 url="$2"
 
 ME="`git config --get user.name` <`git config --get user.email`>"
-STATUS=0
 
 case "$url" in
     *github.com/tianocore/edk2*.git)
@@ -41,8 +40,7 @@ check_reviewed()
 	signoff=`git rev-list -n 1 --grep "^Signed-off-by: .*\$" "$1^..$1"`
 	if [ -z "$signoff" ]; then
 	    echo "$1 missing 'Signed-off-by:'!" >&2
-	    STATUS=1
-	    return
+	    return 1
 	fi
 	REVIEWER=".*"
     fi
@@ -50,8 +48,7 @@ check_reviewed()
     reviewed=`git rev-list -n 1 --grep "^Reviewed-by: $REVIEWER\$" "$1^..$1"`
     if [ -z "$reviewed" ]; then
         echo "$1 missing 'Reviewed-by:'!" >&2
-        STATUS=1
-	return
+	return 1
     fi
 }
 
@@ -60,12 +57,11 @@ check_contributed()
     contributed=`git rev-list -n 1 --grep "^Contributed-under: TianoCore Contribution Agreement 1.1\$" "$1^..$1"`
     if [ -z "$contributed" ]; then
 	echo "$1: incorrect or missing 'Contributed-under:'!" >&2
-	STATUS=1
 	contributed=`git rev-list -n 1 --grep "^Contributed-under: TianoCore Contribution Agreement 1.0\$" "$1^..$1"`
 	if [ -n "$contributed" ]; then
 	    echo "  Contribution Agreement version 1.0 outdated" >&2
 	fi
-	return
+	return 1
     fi
 }
 
@@ -73,12 +69,18 @@ while read local_ref local_sha remote_ref remote_sha
 do
     git rev-list $remote_sha..$local_sha | while read rev
     do
+	STATUS=0
 	echo "Checking: $rev"
-	check_reviewed $rev
-	check_contributed $rev
-    done
-done
 
-[ $STATUS -ne 0 ] && exit 1
+	check_reviewed $rev
+	STATUS=$(($STATUS + $?))
+
+	check_contributed $rev
+	STATUS=$(($STATUS + $?))
+
+	[ $STATUS -ne 0 ] && exit 1
+    done
+    [ $? -ne 0 ] && exit 1
+done
 
 echo "Att checks passed!"
