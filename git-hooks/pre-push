@@ -78,7 +78,11 @@ do
 	check_contributed $rev
 	STATUS=$(($STATUS + $?))
 
-	[ $STATUS -ne 0 ] && exit 1
+	if [ $STATUS -ne 0 ]; then
+	    exit 1
+	else
+	    true
+	fi
     done
     [ $? -ne 0 ] && exit 1
 done
