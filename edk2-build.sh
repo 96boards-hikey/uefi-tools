@@ -20,6 +20,7 @@ WORKSPACE=
 EDK2_DIR=
 PLATFORMS_DIR=
 NON_OSI_DIR=
+IMPORT_OPENSSL=TRUE
 OPENSSL_CONFIGURED=FALSE
 
 # Number of threads to use for build
@@ -69,10 +70,6 @@ function do_build
 		echo "PLATFORM_DSC=$PLATFORM_DSC"
 		echo "PLATFORM_ARCH=$PLATFORM_ARCH"
 		echo "PLATFORM_PACKAGES_PATH=$PLATFORM_PACKAGES_PATH"
-	fi
-
-	if [[ "${PLATFORM_BUILDFLAGS}" =~ "SECURE_BOOT_ENABLE=TRUE" ]]; then
-	    import_openssl
 	fi
 
 	set_cross_compile
@@ -226,6 +223,17 @@ function prepare_build
 		echo " !!! BaseTools failed to build !!! " >&2
 		exit 1
 	fi
+
+	if [ "$IMPORT_OPENSSL" = "TRUE" ]; then
+		cd $EDK2_DIR
+		import_openssl
+		if [ $? -ne 0 ]; then
+			echo "Importing OpenSSL failed - aborting!" >&2
+			echo "  specify --no-openssl to attempt build anyway." >&2
+			exit 1
+		fi
+		cd $WORKSPACE
+	fi
 }
 
 
@@ -312,6 +320,9 @@ while [ "$1" != "" ]; do
 		-h | --help)
 			usage
 			exit
+			;;
+		--no-openssl)
+			IMPORT_OPENSSL=FALSE
 			;;
 		-n | --non-osi-dir)
 			shift
