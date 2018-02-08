@@ -21,6 +21,9 @@ function usage
 function build_platform
 {
 	unset CFG_ARM64_core PLATFORM PLATFORM_FLAVOR DEBUG
+	if [ X"$TOS_ARCH" = X"" ]; then
+		TOS_ARCH=arm
+	fi
 	TOS_PLATFORM="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o tos_platform`"
 	if [ X"$TOS_PLATFORM" = X"" ]; then
 		TOS_PLATFORM="`$TOOLS_DIR/parse-platforms.py $PLATFORM_CONFIG -p $1 get -o atf_platform`"
@@ -94,7 +97,7 @@ function build_platform
 	if [ $VERBOSE -eq 1 ]; then
 		echo "Calling OP-TEE build:"
 	fi
-	make -j$NUM_THREADS ${PLATFORM_BUILDFLAGS}
+	make ARCH=$TOS_ARCH -j$NUM_THREADS ${PLATFORM_BUILDFLAGS}
 	if [ $? -eq 0 ]; then
 		#
 		# Copy resulting images to UEFI image dir
