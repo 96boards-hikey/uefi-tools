@@ -103,15 +103,20 @@ function get_clang_version
 {
 	clang_version=`$1 --version | head -1 | sed 's/^.*version\s*\([0-9]*\).\([0-9]*\).*/\1\2/g'`
 	case $clang_version in
-		35*)
-			echo "CLANG$clang_version"
+		38|35)
 			;;
 		*)
 			echo "Unknown toolchain version '$clang_version'" >&2
-			echo "Attempting to build using CLANG35 profile." >&2
-			echo CLANG35
+			if [ $clang_version -gt 38 ]; then
+				clang_version=38
+			else
+				clang_version=35
+			fi
+			echo "Attempting to build using CLANG$clang_version profile." >&2
 			;;
 	esac
+
+	echo "CLANG$clang_version"
 }
 
 function download_patch_openssl
