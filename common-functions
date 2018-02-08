@@ -171,7 +171,11 @@ function clone_process_openssl
         rm -rf openssl
     fi
     tar xzf "$OPENSSL_TAR"
-    mv "$OPENSSL_VER" openssl
+    if [ ! -d openssl ]; then
+        mkdir openssl
+    fi
+    mv "$OPENSSL_VER"/* openssl
+    rm -r "$OPENSSL_VER"/
     # perl process_files.pl # not needed and not currently working
     return $?
 }
