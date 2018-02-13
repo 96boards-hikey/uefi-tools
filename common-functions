@@ -160,7 +160,7 @@ function clone_process_openssl
         return 0
     fi
 
-    OPENSSL_VER=`git ls-remote --tags git://github.com/openssl/openssl.git | awk '{print $2;}' | sed 's-^refs/tags/--g' | grep -v '\^{}$' | grep '^OpenSSL' | grep -v '^OpenSSL_FIPS' | tail -1 | sed -n 's/^OpenSSL_\([0-9]*\)_\([0-9]*\)_\([0-9.a-z]*\)$/openssl-\1.\2.\3\n/p'`
+    OPENSSL_VER=`git ls-remote --tags git://github.com/openssl/openssl.git | awk '{print $2;}' | sed 's-^refs/tags/--g' | grep -v '\^{}$' | grep '^OpenSSL' | grep -v '^OpenSSL_FIPS' | grep -v "\-pre" | tail -1 | sed -n 's/^OpenSSL_\([0-9]*\)_\([0-9]*\)_\([0-9.a-z]*\)$/openssl-\1.\2.\3\n/p'`
     OPENSSL_TAR="$OPENSSL_VER.tar.gz"
     if [ -z "$OPENSSL_TAR" ]; then
         return 1
