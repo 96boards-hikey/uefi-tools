@@ -154,7 +154,8 @@ function download_patch_openssl
 
 function clone_process_openssl
 {
-    if [ -e openssl/include/openssl/opensslconf.h ]; then
+    if [ -e openssl/include/openssl/opensslconf.h -o \
+	 -e openssl/include/openssl/opensslconf.h.in ]; then
         echo "OpenSSL already imported!"
         return 0
     fi
