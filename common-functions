@@ -172,6 +172,10 @@ function clone_process_openssl
         rm -rf openssl
     fi
     tar xzf "$OPENSSL_TAR"
+    if [ $? -ne 0 -o ! -d "OPENSSL_VER" ]; then
+	echo "OpenSSL import failed!"
+	return 1
+    fi
     if [ ! -d openssl ]; then
         mkdir openssl
     fi
